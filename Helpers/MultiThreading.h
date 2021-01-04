@@ -30,7 +30,6 @@
 #include "Helpers.h"
 
 #include <sched.h>
-#include <numa.h>
 
 #include <omp.h>
 

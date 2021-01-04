@@ -56,7 +56,7 @@ public:
     Query(const Graph& forward, const Graph& backward, const std::vector<int>& forwardWeight, const std::vector<int>& backwardWeight, const Vertex::ValueType endOfPOIs = 0) :
         graph {&forward, &backward},
         weight {&forwardWeight, &backwardWeight},
-        root({noVertex, noVertex}),
+        root{noVertex, noVertex},
         Q {ExternalKHeap<2, Distance>(forward.numVertices()), ExternalKHeap<2, Distance>(backward.numVertices())},
         distance {std::vector<Distance>(forward.numVertices()), std::vector<Distance>(backward.numVertices())},
         parent {std::vector<Vertex>(forward.numVertices()), std::vector<Vertex>(backward.numVertices())},

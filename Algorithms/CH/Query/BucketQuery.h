@@ -46,7 +46,7 @@ public:
         baseQuery(forward, backward, forwardWeight, backwardWeight, forward.numVertices()),
         bucketGraph {CHGraph(), CHGraph()},
         distance {std::vector<int>(forward.numVertices(), INFTY), std::vector<int>(backward.numVertices(), INFTY)},
-        root({noVertex, noVertex}),
+        root{noVertex, noVertex},
         endOfPOIs(endOfPOIs),
         reachedPOIs {std::vector<Vertex>(), std::vector<Vertex>()} {
         buildBucketGraph<FORWARD, BACKWARD>();

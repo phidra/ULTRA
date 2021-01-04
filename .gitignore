@@ -1,0 +1,13 @@
+*.swp
+_data
+hl-csa-raptor.o
+tags
+
+Runnables/BuildBucketCH
+Runnables/BuildCoreCH
+Runnables/ComputeShortcuts
+Runnables/RunCSAQueries
+Runnables/RunRAPTORQueries
+
+DATA
+WORKDIR

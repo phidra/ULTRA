@@ -26,7 +26,6 @@
 
 #include "CHData.h"
 
-#include "../../../assert.h"
 #include "../../../Helpers/Ranges/Range.h"
 
 namespace CH {

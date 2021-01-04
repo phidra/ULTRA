@@ -26,8 +26,6 @@
 
 #include "CHData.h"
 
-#include "../../../assert.h"
-
 namespace CH {
 
 class NoStopCriterion {
