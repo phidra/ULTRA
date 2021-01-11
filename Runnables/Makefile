@@ -8,7 +8,7 @@ RELEASE=-ffast-math -ftree-vectorize -Wfatal-errors -DNDEBUG
 all: BuildBucketCH BuildCoreCH ComputeShortcuts RunCSAQueries RunRAPTORQueries
 
 clean:
-	rm -f BuildBucketCH BuildCoreCH ComputeShortcuts RunCSAQueries RunRAPTORQueries 
+	rm -f BuildBucketCH BuildCoreCH ComputeShortcuts RunCSAQueries RunRAPTORQueries
 
 BuildBucketCH:
 	$(CC) $(FLAGS) $(OPTIMIZATION) $(RELEASE) -o BuildBucketCH BuildBucketCH.cpp $(LINKFLAGS)
