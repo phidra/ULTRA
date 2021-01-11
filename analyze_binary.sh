@@ -19,14 +19,12 @@ make -j -C "$BUILD_DIR"
 # the used compiler is a "local" one (system's clang is not c++17 compliant) :
 CLANG_LIBS="/home/pdrabczuk/Logiciels/clang+llvm-9.0.1-x86_64-linux-gnu-ubuntu-16.04/lib"
 
-# STEP 0 = download data :
-#==========
+# download data :
 "${this_script_parent}"/download_KIT_data.sh
 DOWNLOADED_DATA="${this_script_parent}/DATA/complete"
 
 
-# STEP 1 = MyBinaryAnalysis
-#==========
+# run analyzer :
 WORKDIR="${this_script_parent}/WORKDIR_analyze_binary"
 echo "Using WORKDIR = $WORKDIR"
 mkdir -p "$WORKDIR"
