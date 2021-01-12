@@ -6,6 +6,9 @@ set(BIN binary-analyzer)
 project($(BIN))
 set(CMAKE_BUILD_TYPE Release)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
+
 add_executable(${BIN}
     binary-analyzer.cpp
 )
