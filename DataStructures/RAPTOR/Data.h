@@ -403,17 +403,33 @@ public:
         std::cout << "First route : " << first_route << std::endl;
 
         std::cout << "Tailles : " << std::endl;
-        std::cout << "firstRouteSegmentOfStop      = " << firstRouteSegmentOfStop.size() << std::endl;
-        std::cout << "firstStopIdOfRoute           = " << firstStopIdOfRoute.size() << std::endl;
-        std::cout << "firstStopEventOfRoute        = " << firstStopEventOfRoute.size() << std::endl;
-        std::cout << "routeSegments                = " << routeSegments.size() << std::endl;
-        std::cout << "stopIds                      = " << stopIds.size() << std::endl;
-        std::cout << "stopEvents                   = " << stopEvents.size() << std::endl;
         std::cout << "stopData                     = " << stopData.size() << std::endl;
+        std::cout << "---" << std::endl;
+        std::cout << "firstRouteSegmentOfStop      = " << firstRouteSegmentOfStop.size() << std::endl;
+        std::cout << "routeSegments                = " << routeSegments.size() << std::endl;
+        std::cout << "---" << std::endl;
         std::cout << "routeData                    = " << routeData.size() << std::endl;
+        std::cout << "---" << std::endl;
+        std::cout << "firstStopIdOfRoute           = " << firstStopIdOfRoute.size() << std::endl;
+        std::cout << "stopIds                      = " << stopIds.size() << std::endl;
+        std::cout << "---" << std::endl;
+        std::cout << "firstStopEventOfRoute        = " << firstStopEventOfRoute.size() << std::endl;
+        std::cout << "stopEvents                   = " << stopEvents.size() << std::endl;
+        std::cout << "---" << std::endl;
         std::cout << "implicitDepartureBufferTimes = " << std::boolalpha << implicitDepartureBufferTimes << std::endl;
         std::cout << "implicitArrivalBufferTimes   = " << std::boolalpha << implicitArrivalBufferTimes << std::endl;
         std::cout << std::endl;
+
+        // ici, récupérer une route (e.g. la 42) :
+        auto route42 = routeData[42];
+        std::cout << "La route n°42 est : " << route42;
+        std::cout << "Elle contient #stops = " << numberOfStopsInRoute(RouteId(42)) << std::endl;
+        std::cout << "Elle contient #trips = " << numberOfTripsInRoute(RouteId(42)) << std::endl;
+        std::cout << "Elle contient #stopEvents = " << numberOfStopEventsInRoute(RouteId(42)) << std::endl;
+        int counter = 0;
+        for (auto const& se: stopEventsOfRoute(RouteId(42))) {
+            std::cout << "\t[" << counter++ << "] " << se.departureTime << std::endl;
+        }
     }
 
     inline long long byteSize() const noexcept {
