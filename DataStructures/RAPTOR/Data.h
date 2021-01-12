@@ -395,6 +395,25 @@ public:
     inline void deserialize(const std::string& fileName) noexcept {
         IO::deserialize(fileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
         transferGraph.readBinary(fileName + ".graph");
+
+        Stop first_stop = stopData.front();
+        std::cout << "First stop : " << first_stop << std::endl;
+
+        Route first_route = routeData.front();
+        std::cout << "First route : " << first_route << std::endl;
+
+        std::cout << "Tailles : " << std::endl;
+        std::cout << "firstRouteSegmentOfStop      = " << firstRouteSegmentOfStop.size() << std::endl;
+        std::cout << "firstStopIdOfRoute           = " << firstStopIdOfRoute.size() << std::endl;
+        std::cout << "firstStopEventOfRoute        = " << firstStopEventOfRoute.size() << std::endl;
+        std::cout << "routeSegments                = " << routeSegments.size() << std::endl;
+        std::cout << "stopIds                      = " << stopIds.size() << std::endl;
+        std::cout << "stopEvents                   = " << stopEvents.size() << std::endl;
+        std::cout << "stopData                     = " << stopData.size() << std::endl;
+        std::cout << "routeData                    = " << routeData.size() << std::endl;
+        std::cout << "implicitDepartureBufferTimes = " << std::boolalpha << implicitDepartureBufferTimes << std::endl;
+        std::cout << "implicitArrivalBufferTimes   = " << std::boolalpha << implicitArrivalBufferTimes << std::endl;
+        std::cout << std::endl;
     }
 
     inline long long byteSize() const noexcept {
