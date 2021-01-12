@@ -12,44 +12,39 @@ inline void usage() noexcept {
     exit(0);
 }
 
-void dump_geojson_stops(std::ostream& out, RAPTOR::Data& data) {
-    /* for (auto const& stop: data.stopsOfRoute(RouteId(42))) { */
-    /* } */
-    /* inline SubRange<std::vector<StopId>> stopsOfRoute(const RouteId route) const noexcept { */
-    /*     AssertMsg(isRoute(route), "The id " << route << " does not represent a route!"); */
-    /*     return SubRange<std::vector<StopId>>(stopIds, firstStopIdOfRoute, route); */
-
+void dump_route_stops(std::ostream& out, RAPTOR::Data& data, RouteId route) {
     rapidjson::Document doc(rapidjson::kObjectType);
     rapidjson::Document::AllocatorType& a = doc.GetAllocator();
     doc.AddMember("type", "FeatureCollection", a);
 
     rapidjson::Value features(rapidjson::kArrayType);
 
-    for (auto const& stop : data.stopsOfRoute(RouteId(42))) {
-        /* // coordinates : */
-        /* rapidjson::Value coordinates(rapidjson::kArrayType); */
-        /* coordinates.PushBack(rapidjson::Value().SetDouble(stop.lon), a); */
-        /* coordinates.PushBack(rapidjson::Value().SetDouble(stop.lat), a); */
+    size_t stop_counter = 0;
+    for (auto const& stop_index : data.stopsOfRoute(route)) {
+        auto const& stop = data.stopData[stop_index];
 
-        /* // geometry : */
-        /* rapidjson::Value geometry(rapidjson::kObjectType); */
-        /* geometry.AddMember("coordinates", coordinates, a); */
-        /* geometry.AddMember("type", "Point", a); */
+        // coordinates :
+        rapidjson::Value coordinates(rapidjson::kArrayType);
+        coordinates.PushBack(rapidjson::Value().SetDouble(stop.coordinates.longitude), a);
+        coordinates.PushBack(rapidjson::Value().SetDouble(stop.coordinates.latitude), a);
 
-        /* // properties : */
-        /* rapidjson::Value properties(rapidjson::kObjectType); */
-        /* properties.AddMember("stop_id", rapidjson::Value().SetString(stop.id.c_str(), a), a); */
-        /* properties.AddMember("stop_name", rapidjson::Value().SetString(stop.name.c_str(), a), a); */
-        /* properties.AddMember("closest_node_id", rapidjson::Value().SetString(stop.closest_node_id.c_str(), a), a); */
-        /* properties.AddMember("closest_node_url", rapidjson::Value().SetString(stop.closest_node_url.c_str(), a), a);
-         */
+        // geometry :
+        rapidjson::Value geometry(rapidjson::kObjectType);
+        geometry.AddMember("coordinates", coordinates, a);
+        geometry.AddMember("type", "Point", a);
 
-        /* // feature : */
-        /* rapidjson::Value feature(rapidjson::kObjectType); */
-        /* feature.AddMember("type", "Feature", a); */
-        /* feature.AddMember("geometry", geometry, a); */
-        /* feature.AddMember("properties", properties, a); */
-        /* features.PushBack(feature, a); */
+        // properties :
+        rapidjson::Value properties(rapidjson::kObjectType);
+        properties.AddMember("stop_index", rapidjson::Value(stop_index), a);
+        properties.AddMember("stop_counter", rapidjson::Value(stop_counter++), a);
+        properties.AddMember("stop_name", rapidjson::Value().SetString(stop.name.c_str(), a), a);
+
+        // feature :
+        rapidjson::Value feature(rapidjson::kObjectType);
+        feature.AddMember("type", "Feature", a);
+        feature.AddMember("geometry", geometry, a);
+        feature.AddMember("properties", properties, a);
+        features.PushBack(feature, a);
     }
 
     doc.AddMember("features", features, a);
@@ -98,8 +93,10 @@ int main(int argc, char** argv) {
         std::cout << "\t[" << counter++ << "] " << se.departureTime << std::endl;
     }
 
-    // Dumping d'un geojson d'une route donnée :
-    //  - liste de stops
-    dump_geojson_stops(std::cout, data);
+    RouteId route{51};
+    std::string dump_name = std::string("/tmp/route_") + std::to_string(route.value()) + ".geojson";
+    std::ofstream geojson_dump(dump_name);
+    std::cout << "Dumping to : " << dump_name << std::endl;
+    dump_route_stops(geojson_dump, data, route);
     return 0;
 }
