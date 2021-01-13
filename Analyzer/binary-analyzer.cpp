@@ -15,6 +15,49 @@ inline void usage() noexcept {
 
 using ShortcutRAPTOR = RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>;
 
+void dump_journey(std::ostream& out, RAPTOR::Data& data, std::vector<StopId> path) {
+    rapidjson::Document doc(rapidjson::kObjectType);
+    rapidjson::Document::AllocatorType& a = doc.GetAllocator();
+    doc.AddMember("type", "FeatureCollection", a);
+
+    rapidjson::Value features(rapidjson::kArrayType);
+
+    size_t stop_counter = 0;
+    for (auto const& stop_id : path) {
+        auto const& stop = data.stopData[stop_id];
+
+        // coordinates :
+        rapidjson::Value coordinates(rapidjson::kArrayType);
+        coordinates.PushBack(rapidjson::Value().SetDouble(stop.coordinates.longitude), a);
+        coordinates.PushBack(rapidjson::Value().SetDouble(stop.coordinates.latitude), a);
+
+        // geometry :
+        rapidjson::Value geometry(rapidjson::kObjectType);
+        geometry.AddMember("coordinates", coordinates, a);
+        geometry.AddMember("type", "Point", a);
+
+        // properties :
+        rapidjson::Value properties(rapidjson::kObjectType);
+        properties.AddMember("stop_id", rapidjson::Value(stop_id), a);
+        properties.AddMember("stop_counter", rapidjson::Value(stop_counter++), a);
+        properties.AddMember("stop_name", rapidjson::Value().SetString(stop.name.c_str(), a), a);
+
+        // feature :
+        rapidjson::Value feature(rapidjson::kObjectType);
+        feature.AddMember("type", "Feature", a);
+        feature.AddMember("geometry", geometry, a);
+        feature.AddMember("properties", properties, a);
+        features.PushBack(feature, a);
+    }
+
+    doc.AddMember("features", features, a);
+
+    // dumping :
+    rapidjson::OStreamWrapper out_wrapper(out);
+    rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(out_wrapper);
+    doc.Accept(writer);
+}
+
 void dump_route_stops(std::ostream& out, RAPTOR::Data& data, RouteId route) {
     rapidjson::Document doc(rapidjson::kObjectType);
     rapidjson::Document::AllocatorType& a = doc.GetAllocator();
@@ -111,38 +154,44 @@ int main(int argc, char** argv) {
     ShortcutRAPTOR algorithm(data, bucketCH);
     const size_t numberOfVertices = data.transferGraph.numVertices();
 
-    // contenu de l'appel :
-    const Vertex source = Vertex(rand() % numberOfVertices);
-    const Vertex target = Vertex(rand() % numberOfVertices);
-    const int departureTime = ((rand() % (16 * 60 * 60))  // quelque part entre 0h et 16h
-                               + (5 * 60 * 60)            // à laquelle on ajoute 5h
-                               // donc au final = un temps aléatoire entre 5h00 et 21h00
-                               );
-    algorithm.run(source, departureTime, target);
+    /* // contenu de l'appel : */
+    /* const Vertex source = Vertex(rand() % numberOfVertices); */
+    /* const Vertex target = Vertex(rand() % numberOfVertices); */
+    /* const int departureTime = ((rand() % (16 * 60 * 60))  // quelque part entre 0h et 16h */
+    /*                            + (5 * 60 * 60)            // à laquelle on ajoute 5h */
+    /*                            // donc au final = un temps aléatoire entre 5h00 et 21h00 */
+    /*                            ); */
+    /* algorithm.run(source, departureTime, target); */
 
-    std::cout << std::setprecision(10);
+    /* std::cout << std::setprecision(10); */
 
-    int SOURCE, TARGET, DEPARTURE_TIME;
-    for (int i = 0; i < 5; ++i) {
-        std::cout << std::endl << "Please enter SOURCE stop> ";
-        std::cin >> SOURCE;
-        std::cout << std::endl << "Please enter TARGET stop> ";
-        std::cin >> TARGET;
-        std::cout << std::endl << "Please enter DEPARTURE_TIME> ";
-        std::cin >> DEPARTURE_TIME;
+    /* int SOURCE, TARGET, DEPARTURE_TIME; */
+    /* for (int i = 0; i < 5; ++i) { */
+    /*     std::cout << std::endl << "Please enter SOURCE stop> "; */
+    /*     std::cin >> SOURCE; */
+    /*     std::cout << std::endl << "Please enter TARGET stop> "; */
+    /*     std::cin >> TARGET; */
+    /*     std::cout << std::endl << "Please enter DEPARTURE_TIME> "; */
+    /*     std::cin >> DEPARTURE_TIME; */
 
-        std::cout << "\n\n" << std::endl;
-        std::cout << "SOURCE  = " << SOURCE << std::endl;
-        std::cout << "TARGET  = " << TARGET << std::endl;
-        std::cout << "DEPTIME = " << DEPARTURE_TIME << std::endl;
-        std::cout << std::endl;
+    /*     std::cout << "\n\n" << std::endl; */
+    /*     std::cout << "SOURCE  = " << SOURCE << std::endl; */
+    /*     std::cout << "TARGET  = " << TARGET << std::endl; */
+    /*     std::cout << "DEPTIME = " << DEPARTURE_TIME << std::endl; */
+    /*     std::cout << std::endl; */
 
-        std::cout << "Le stop SOURCE " << SOURCE << " a pour data = " << data.stopData[SOURCE] << std::endl;
-        std::cout << "Le stop TARGET " << TARGET << " a pour data = " << data.stopData[TARGET] << std::endl;
-        std::cout << "Running algo..." << std::endl;
-        algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET));
-        std::cout << "DONE : running algo..." << std::endl;
-    }
+    /*     std::cout << "Le stop SOURCE " << SOURCE << " a pour data = " << data.stopData[SOURCE] << std::endl; */
+    /*     std::cout << "Le stop TARGET " << TARGET << " a pour data = " << data.stopData[TARGET] << std::endl; */
+    /*     std::cout << "Running algo..." << std::endl; */
+    /*     auto path = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET)); */
+    /*     std::cout << "DONE : running algo..." << std::endl; */
+    /* } */
+
+    int SOURCE = 435;
+    int TARGET = 120;
+    int DEPARTURE_TIME = 36000;
+    auto path = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET));
+    dump_journey(std::cout, data, path);
 
     return 0;
 }

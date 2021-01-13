@@ -23,6 +23,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "InitialTransfers.h"
 
@@ -76,10 +77,51 @@ public:
         ULTRARAPTOR(data, chData.forward, chData.backward, Weight, debuggerTemplate) {
     }
 
-    inline void run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
+    inline EarliestArrivalLabel get_best_label(int stop) {
+        for (auto round_ite = rounds.rbegin(); round_ite != rounds.rend(); ++round_ite) {
+            auto& label = (*round_ite)[stop];
+            if (label.arrivalTime == never) continue;
+            return label;
+        }
+        return {};
+    }
+
+    inline void display_best_label(int stop) {
+        EarliestArrivalLabel const & label = get_best_label(stop);
+        std::cout << "LABEL OF STOP : " << stop << "   (" << data.stopData[stop] << ")" << std::endl;
+        std::cout << "\t arrivalTime = " << label.arrivalTime << std::endl;
+        std::cout << "\t parentDepartureTime = " << label.parentDepartureTime << std::endl;
+        std::cout << "\t parent = " << label.parent;
+        std::cout.flush();
+        if (label.parent.isValid()) {
+            std::cout << "   (" << data.stopData[label.parent] << ")" << std::endl;
+        }
+        else {
+            std::cout << "   (INVALID)" << std::endl;
+        }
+        std::cout << "\t usesRoute = " << label.usesRoute << std::endl;
+        if (label.usesRoute) {
+            std::cout << "\t UNION> routeId = " << label.routeId << std::endl;
+            std::cout << " ROUTE = " << data.routeData[label.routeId] << std::endl;
+        }
+        else {
+            std::cout << "\t UNION> transferId = " << label.transferId << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+
+    inline std::vector<StopId> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
         debugger.start();
         debugger.startInitialization();
         clear();
+        if (!data.isStop(source) || !data.isStop(target)) {
+            std::cout << "FOR NOW, we can only handle stop source/target" << std::endl;
+            std::cout << "SOURCE IS STOP ? " << data.isStop(source) << std::endl;
+            std::cout << "TARGET IS STOP ? " << data.isStop(target) << std::endl;
+            return {};
+        }
+
         initialize(source, departureTime, target);
         std::cout << "nostop is = " << noStop << std::endl;
         std::cout << "targetStop is stop ? " << data.isStop(targetStop) << std::endl;
@@ -121,6 +163,24 @@ public:
                 std::cout << "\t UNION> transferId = " << label.transferId << std::endl;
             }
         }
+        std::cout << std::endl;
+        std::cout << std::endl;
+
+        std::vector<StopId> path;
+        path.emplace_back(targetStop);
+
+        auto currentStop = Vertex(targetStop);
+        auto currentStopLabel = get_best_label(currentStop);
+        while(currentStopLabel.parent != source && currentStopLabel.parent != currentStop) {
+            display_best_label(currentStop);
+            currentStop = currentStopLabel.parent;
+            path.emplace_back(currentStop);
+        }
+        display_best_label(currentStop);
+        std::cout << "FIIIIIIIIIIIIIIIIIIIIN" << std::endl;
+
+        std::reverse(path.begin(), path.end());
+        return path;
     }
 
     inline const Debugger& getDebugger() const noexcept {
