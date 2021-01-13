@@ -12,7 +12,7 @@ echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
 
 echo "To build from scratch :  rm -rf '$BUILD_DIR'"
-rm -rf "$BUILD_DIR"
+# rm -rf "$BUILD_DIR"
 
 pushd "$CMAKE_ROOT_DIR"
 mkdir -p "$BUILD_DIR"

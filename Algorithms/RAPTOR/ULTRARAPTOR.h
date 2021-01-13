@@ -81,6 +81,15 @@ public:
         debugger.startInitialization();
         clear();
         initialize(source, departureTime, target);
+        std::cout << "nostop is = " << noStop << std::endl;
+        std::cout << "targetStop is stop ? " << data.isStop(targetStop) << std::endl;
+        std::cout << "isStop(25427) ? " << data.isStop(Vertex(25427)) << std::endl;
+        std::cout << "isStop(25426) ? " << data.isStop(Vertex(25426)) << std::endl;
+        std::cout << "isStop(25425) ? " << data.isStop(Vertex(25425)) << std::endl;
+        std::cout << "isStop(25424) ? " << data.isStop(Vertex(25424)) << std::endl;
+        std::cout << "Target stop is = " << targetStop << std::endl;
+        std::cout << "Target stop is = " << targetStop << std::endl;
+        std::cout << "Target stop is = " << targetStop << std::endl;
         debugger.doneInitialization();
         relaxInitialTransfers(departureTime);
         for (size_t i = 0; i < maxRounds; i++) {
@@ -91,7 +100,27 @@ public:
             if (stopsUpdatedByRoute.empty()) break;
             relaxIntermediateTransfers();
         }
+
         debugger.done();
+        std::cout << "À l'issue de l'exécution de l'algo :" << std::endl;
+        std::cout << "Il y a eu : " << rounds.size() << " rounds qui ont tourné" << std::endl;
+
+        int round_counter = 0;
+        for (auto const& round: rounds) {
+            std::cout << "=== ROUND " << round_counter++ << std::endl;
+            auto& label = round[targetStop];
+            std::cout << "\t arrivalTime = " << label.arrivalTime << std::endl;
+            std::cout << "\t parentDepartureTime = " << label.parentDepartureTime << std::endl;
+            std::cout << "\t parent = " << label.parent << std::endl;
+            std::cout << "\t usesRoute = " << label.usesRoute << std::endl;
+            if (label.usesRoute) {
+                std::cout << "\t UNION> routeId = " << label.routeId << std::endl;
+                std::cout << " ROUTE = " << data.routeData[label.routeId] << std::endl;
+            }
+            else {
+                std::cout << "\t UNION> transferId = " << label.transferId << std::endl;
+            }
+        }
     }
 
     inline const Debugger& getDebugger() const noexcept {
