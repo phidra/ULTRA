@@ -167,15 +167,18 @@ public:
         std::cout << std::endl;
 
         std::vector<StopId> path;
-        path.emplace_back(targetStop);
 
         auto currentStop = Vertex(targetStop);
+        path.emplace_back(currentStop);
+
         auto currentStopLabel = get_best_label(currentStop);
         while(currentStopLabel.parent != source && currentStopLabel.parent != currentStop) {
             display_best_label(currentStop);
             currentStop = currentStopLabel.parent;
+			currentStopLabel = get_best_label(currentStop);
             path.emplace_back(currentStop);
         }
+        path.emplace_back(currentStopLabel.parent);
         display_best_label(currentStop);
         std::cout << "FIIIIIIIIIIIIIIIIIIIIN" << std::endl;
 
