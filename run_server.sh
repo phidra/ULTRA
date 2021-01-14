@@ -6,7 +6,7 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
-BUILD_DIR="$this_script_parent/Investigations/_build_analyzer"
+BUILD_DIR="$this_script_parent/Investigations/_build_server"
 CMAKE_ROOT_DIR="$this_script_parent/Investigations"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
@@ -18,21 +18,18 @@ pushd "$CMAKE_ROOT_DIR"
 mkdir -p "$BUILD_DIR"
 conan install --install-folder="$BUILD_DIR" . --profile="${CMAKE_ROOT_DIR}/conanprofile.txt"
 cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
-make -j -C "$BUILD_DIR" ultra-binary-analyzer
+make -j -C "$BUILD_DIR" ultra-server
 popd
 
 
 # the used compiler is a "local" one (system's clang is not c++17 compliant) :
 CLANG_LIBS="/home/pdrabczuk/Logiciels/clang+llvm-9.0.1-x86_64-linux-gnu-ubuntu-16.04/lib"
 
-# download data :
-"${this_script_parent}"/download_KIT_data.sh
-DOWNLOADED_DATA="${this_script_parent}/DATA/complete"
+# this binary needs that data has been built :
 
-
-# run analyzer :
-WORKDIR="${this_script_parent}/WORKDIR_analyze_binary"
-echo "Using WORKDIR = $WORKDIR"
-mkdir -p "$WORKDIR"
-cp -R "${DOWNLOADED_DATA}/"* "${WORKDIR}"
-LD_LIBRARY_PATH="${CLANG_LIBS}" Investigations/_build_analyzer/bin/ultra-binary-analyzer "${WORKDIR}/raptor.binary"
+# run server :
+WORKDIR="${this_script_parent}/WORKDIR"
+echo "Using data from WORKDIR = $WORKDIR"
+LD_LIBRARY_PATH="${CLANG_LIBS}" Investigations/_build_server/bin/ultra-server \
+    "${WORKDIR}/COMPUTE_SHORTCUTS_OUTPUT/ultra_shortcuts.binary" \
+    "${WORKDIR}/BUILD_BUCKETCH_OUTPUT/bucketch.graph"

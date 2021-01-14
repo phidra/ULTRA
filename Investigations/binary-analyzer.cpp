@@ -9,7 +9,7 @@
 #include "../DataStructures/RAPTOR/Data.h"
 
 inline void usage() noexcept {
-    std::cout << "Usage: binary-analyzer <RAPTOR binary>" << std::endl;
+    std::cout << "Usage: ultra-binary-analyzer <RAPTOR binary>" << std::endl;
     exit(0);
 }
 
@@ -140,64 +140,15 @@ int main(int argc, char** argv) {
     std::cout << "Elle contient #trips = " << data.numberOfTripsInRoute(RouteId(42)) << std::endl;
     std::cout << "Elle contient #stopEvents = " << data.numberOfStopEventsInRoute(RouteId(42)) << std::endl;
     int counter = 0;
-    /* for (auto const& se : data.stopEventsOfRoute(RouteId(42))) { */
-    /*     std::cout << "\t[" << counter++ << "] " << se.departureTime << std::endl; */
-    /* } */
+    for (auto const& se : data.stopEventsOfRoute(RouteId(42))) {
+        std::cout << "\t[" << counter++ << "] " << se.departureTime << std::endl;
+    }
 
     RouteId route{51};
     std::string dump_name = std::string("/tmp/route_") + std::to_string(route.value()) + ".geojson";
     std::ofstream geojson_dump(dump_name);
     std::cout << "Dumping to : " << dump_name << std::endl;
     dump_route_stops(geojson_dump, data, route);
-
-    // Qu'est-ce qui est attendu :
-
-    // avec ma compréhension des choses, ce CH correspond à bucket-CH pour le trajet piéton initial/final :
-    const std::string& bucketChBasename = "WORKDIR/BUILD_BUCKETCH_OUTPUT/bucketch.graph";
-    CH::CH bucketCH(bucketChBasename);
-
-    ShortcutRAPTOR algorithm(data, bucketCH);
-    const size_t numberOfVertices = data.transferGraph.numVertices();
-
-    /* // contenu de l'appel : */
-    /* const Vertex source = Vertex(rand() % numberOfVertices); */
-    /* const Vertex target = Vertex(rand() % numberOfVertices); */
-    /* const int departureTime = ((rand() % (16 * 60 * 60))  // quelque part entre 0h et 16h */
-    /*                            + (5 * 60 * 60)            // à laquelle on ajoute 5h */
-    /*                            // donc au final = un temps aléatoire entre 5h00 et 21h00 */
-    /*                            ); */
-    /* algorithm.run(source, departureTime, target); */
-
-    /* std::cout << std::setprecision(10); */
-
-    /* int SOURCE, TARGET, DEPARTURE_TIME; */
-    /* for (int i = 0; i < 5; ++i) { */
-    /*     std::cout << std::endl << "Please enter SOURCE stop> "; */
-    /*     std::cin >> SOURCE; */
-    /*     std::cout << std::endl << "Please enter TARGET stop> "; */
-    /*     std::cin >> TARGET; */
-    /*     std::cout << std::endl << "Please enter DEPARTURE_TIME> "; */
-    /*     std::cin >> DEPARTURE_TIME; */
-
-    /*     std::cout << "\n\n" << std::endl; */
-    /*     std::cout << "SOURCE  = " << SOURCE << std::endl; */
-    /*     std::cout << "TARGET  = " << TARGET << std::endl; */
-    /*     std::cout << "DEPTIME = " << DEPARTURE_TIME << std::endl; */
-    /*     std::cout << std::endl; */
-
-    /*     std::cout << "Le stop SOURCE " << SOURCE << " a pour data = " << data.stopData[SOURCE] << std::endl; */
-    /*     std::cout << "Le stop TARGET " << TARGET << " a pour data = " << data.stopData[TARGET] << std::endl; */
-    /*     std::cout << "Running algo..." << std::endl; */
-    /*     auto path = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET)); */
-    /*     std::cout << "DONE : running algo..." << std::endl; */
-    /* } */
-
-    int SOURCE = 435;
-    int TARGET = 120;
-    int DEPARTURE_TIME = 36000;
-    auto path = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET));
-    std::ofstream path_stream("/tmp/published/path.geojson");
-    dump_journey(path_stream, data, path);
 
     return 0;
 }
