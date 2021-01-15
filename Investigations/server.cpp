@@ -120,15 +120,22 @@ int main(int argc, char** argv) {
     data.printInfo();
 
     CH::CH bucketCH(bucketChBasename);
-
     ShortcutRAPTOR algorithm(data, bucketCH);
 
-    int SOURCE = 435;
-    int TARGET = 120;
+    /* int SOURCE = 435; */
+    /* int TARGET = 120; */
+    int SOURCE = 4350;
+    int TARGET = 1200;
     int DEPARTURE_TIME = 36000;
-    auto path = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET));
-    std::ofstream path_stream("/tmp/published/path.geojson");
-    dump_journey(path_stream, data, path);
+    auto legs = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET));
+    std::cout << std::endl;
+    std::cout << "LEGS" << std::endl;
+    for (auto leg : legs) {
+        std::cout << leg.as_string() << std::endl;
+    }
+    std::cout << std::endl;
+    /* std::ofstream path_stream("/tmp/published/path.geojson"); */
+    /* dump_journey(path_stream, data, path); */
 
     return 0;
 }

@@ -33,6 +33,118 @@
 
 #include "Debugger.h"
 
+
+#include <sstream>
+
+struct InconsistentLegDurations : public std::exception {
+    InconsistentLegDurations(
+    int start_time_,
+    int departure_time_,
+    int arrival_time_,
+    int full_duration_,
+    int waiting_duration_,
+    int traveling_duration_
+            ) :
+        start_time{start_time_},
+        departure_time{departure_time_},
+        arrival_time{arrival_time_},
+        full_duration{full_duration_},
+        waiting_duration{waiting_duration_},
+        traveling_duration{traveling_duration_}
+    {
+        std::ostringstream oss;
+        oss << "Inconsistent leg durations/times : [";
+        oss << "start_time=" << start_time << "|";
+        oss << "departure_time=" << departure_time << "|";
+        oss << "arrival_time=" << arrival_time << "|";
+        oss << "full_duration=" << full_duration << "|";
+        oss << "waiting_duration=" << waiting_duration << "|";
+        oss << "traveling_duration=" << traveling_duration;
+        oss << "]";
+        error_msg = oss.str();
+    }
+
+    inline const char* what() const throw() {
+        return error_msg.c_str();
+    }
+
+    int start_time;
+    int departure_time;
+    int arrival_time;
+    int full_duration;
+    int waiting_duration;
+    int traveling_duration;
+    std::string error_msg;
+};
+
+
+struct Leg {
+    Leg(bool is_walk_,
+        std::string departure_id_,
+        std::string arrival_id_,
+        int start_time_,
+        int departure_time_,
+        int arrival_time_,
+        std::vector<std::string> stops_) :
+        is_walk{is_walk_},
+        departure_id{departure_id_},
+        arrival_id{arrival_id_},
+        start_time{start_time_},
+        departure_time{departure_time_},
+        arrival_time{arrival_time_},
+        stops{stops_}
+    {
+    }
+
+    bool is_walk;
+    std::string departure_id;
+
+    // leg has several times / durations, because it may include some waiting before the traveling :
+    int start_time;  // leg's start_time is either the full journey's departure_time, or the arrival_time of the previous leg
+    int departure_time;  // time at which we really begin to travel (= start_time + waiting_duration)
+    // for walk, waiting_duration=0, and thus full_duration == traveling_duration
+    // for PT, full_duration = waiting_duration + traveling_duration
+    std::string arrival_id;
+    int arrival_time;
+    std::vector<std::string> stops;
+
+    inline int get_full_duration() const { return arrival_time - start_time; }
+    inline int get_waiting_duration() const { return departure_time - start_time; }
+    inline int get_traveling_duration() const { return arrival_time - departure_time; }
+
+    inline void sanity_check() {
+        bool expected = (
+            get_full_duration() == get_waiting_duration() + get_traveling_duration() &&
+            start_time >= 0 &&
+            departure_time >= 0 &&
+            arrival_time >= 0 &&
+            get_full_duration() >= 0 &&
+            get_waiting_duration() >= 0 &&
+            get_traveling_duration() >= 0
+        );
+        if (!expected) {
+            throw InconsistentLegDurations(
+                start_time,
+                departure_time,
+                arrival_time,
+                get_full_duration(),
+                get_waiting_duration(),
+                get_traveling_duration()
+            );
+        }
+    }
+
+    inline std::string as_string() const {
+        std::ostringstream oss;
+        oss << "[" << (is_walk ? "walk" : " tc ") << "]";
+        oss << "  FROM=" << departure_id << "  ->  TO=" << arrival_id;
+        oss << "  (start at " << start_time << ", begins travel at " << departure_time << "  ....  arrival at " << arrival_time << ")";
+        return oss.str();
+    }
+
+};
+
+
 namespace RAPTOR {
 
 template<typename DEBUGGER = NoDebugger>
@@ -91,13 +203,14 @@ public:
         std::cout << "LABEL OF STOP : " << stop << "   (" << data.stopData[stop] << ")" << std::endl;
         std::cout << "\t arrivalTime = " << label.arrivalTime << std::endl;
         std::cout << "\t parentDepartureTime = " << label.parentDepartureTime << std::endl;
+        std::cout << "\t TEMPS DE TRAJET = " << (label.arrivalTime - label.parentDepartureTime) << std::endl;
         std::cout << "\t parent = " << label.parent;
         std::cout.flush();
-        if (label.parent.isValid()) {
+        if (label.parent.isValid() && data.isStop(label.parent)) {
             std::cout << "   (" << data.stopData[label.parent] << ")" << std::endl;
         }
         else {
-            std::cout << "   (INVALID)" << std::endl;
+            std::cout << "   (INVALID OR NOT A STOP)" << std::endl;
         }
         std::cout << "\t usesRoute = " << label.usesRoute << std::endl;
         if (label.usesRoute) {
@@ -111,7 +224,7 @@ public:
     }
 
 
-    inline std::vector<StopId> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
+    inline std::vector<Leg> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
         debugger.start();
         debugger.startInitialization();
         clear();
@@ -121,6 +234,7 @@ public:
             std::cout << "TARGET IS STOP ? " << data.isStop(target) << std::endl;
             return {};
         }
+
 
         initialize(source, departureTime, target);
         std::cout << "nostop is = " << noStop << std::endl;
@@ -144,46 +258,90 @@ public:
         }
 
         debugger.done();
-        std::cout << "À l'issue de l'exécution de l'algo :" << std::endl;
-        std::cout << "Il y a eu : " << rounds.size() << " rounds qui ont tourné" << std::endl;
 
-        int round_counter = 0;
-        for (auto const& round: rounds) {
-            std::cout << "=== ROUND " << round_counter++ << std::endl;
-            auto& label = round[targetStop];
-            std::cout << "\t arrivalTime = " << label.arrivalTime << std::endl;
-            std::cout << "\t parentDepartureTime = " << label.parentDepartureTime << std::endl;
-            std::cout << "\t parent = " << label.parent << std::endl;
-            std::cout << "\t usesRoute = " << label.usesRoute << std::endl;
-            if (label.usesRoute) {
-                std::cout << "\t UNION> routeId = " << label.routeId << std::endl;
-                std::cout << " ROUTE = " << data.routeData[label.routeId] << std::endl;
-            }
-            else {
-                std::cout << "\t UNION> transferId = " << label.transferId << std::endl;
+
+        int best_stop = 0;
+        int min_distance = INFTY;
+        EarliestArrivalLabel min_label = {};
+        for (int candidate_stop = 0; candidate_stop < data.numberOfStops(); ++candidate_stop) {
+            auto from_stop_to_target = initialTransfers.getBackwardDistance(Vertex(candidate_stop));
+            auto best_label = get_best_label(candidate_stop);
+            if (best_label.arrivalTime == never) continue;
+            auto candidate_distance = from_stop_to_target + best_label.arrivalTime;
+            if (candidate_distance < min_distance) {
+                min_distance = candidate_distance;
+                min_label = best_label;
+                best_stop = candidate_stop;
             }
         }
-        std::cout << std::endl;
-        std::cout << std::endl;
 
-        std::vector<StopId> path;
+        std::cout << "Le meilleur stop pour la target est : " << best_stop << std::endl;
 
-        auto currentStop = Vertex(targetStop);
-        path.emplace_back(currentStop);
+
+        Leg mysuperleg(
+            false, // is_walk
+            "my super departure",  // departure_id
+            "my super arrival",  // arrival_id
+            42,  // start_time
+            42,  // departure_time (for simplicity, start_time == departure_time)
+            52,  // arrival_time
+            {"coucou", "pouet"} // stops
+        );
+
+        std::cout << mysuperleg.as_string() << std::endl;
+
+
+        /* EarliestArrivalLabel() : arrivalTime(never), parentDepartureTime(never), parent(noVertex), usesRoute(false), routeId(noRouteId) {} */
+        /* int arrivalTime; */
+        /* int parentDepartureTime; */
+        /* Vertex parent; */
+        /* bool usesRoute; */
+        /* union { */
+        /*     RouteId routeId; */
+        /*     Edge transferId; */
+        /* }; */
+
+
+        std::vector<Leg> legs;
+
+        auto currentStop = Vertex(best_stop);
 
         auto currentStopLabel = get_best_label(currentStop);
+
+        auto to_leg = [](EarliestArrivalLabel const& label, int stop) -> Leg {
+            bool is_walk = !label.usesRoute;
+            std::string departure_id = std::to_string(label.parent);
+            std::string arrival_id = std::to_string(stop);
+            int start_time = label.parentDepartureTime;
+            int departure_time = label.parentDepartureTime;
+            int arrival_time = label.arrivalTime;
+
+            // pour le moment, je ne mets que les ids source et target
+            std::vector<std::string> stops{departure_id, arrival_id};
+            return {
+                is_walk,
+                departure_id,
+                arrival_id,
+                start_time,
+                departure_time,
+                arrival_time,
+                stops
+            };
+        };
+
+        legs.push_back(to_leg(currentStopLabel, currentStop.value()));
+
         while(currentStopLabel.parent != source && currentStopLabel.parent != currentStop) {
             display_best_label(currentStop);
             currentStop = currentStopLabel.parent;
-			currentStopLabel = get_best_label(currentStop);
-            path.emplace_back(currentStop);
+            currentStopLabel = get_best_label(currentStop);
+            legs.push_back(to_leg(currentStopLabel, currentStop.value()));
         }
-        path.emplace_back(currentStopLabel.parent);
         display_best_label(currentStop);
         std::cout << "FIIIIIIIIIIIIIIIIIIIIN" << std::endl;
 
-        std::reverse(path.begin(), path.end());
-        return path;
+        std::reverse(legs.begin(), legs.end());
+        return legs;
     }
 
     inline const Debugger& getDebugger() const noexcept {
