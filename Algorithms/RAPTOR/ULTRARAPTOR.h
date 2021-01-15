@@ -35,6 +35,7 @@
 
 
 #include <sstream>
+#include <cassert>
 
 struct InconsistentLegDurations : public std::exception {
     InconsistentLegDurations(
@@ -224,90 +225,46 @@ public:
     }
 
 
-    inline std::vector<Leg> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
-        debugger.start();
-        debugger.startInitialization();
-        clear();
-        if (!data.isStop(source) || !data.isStop(target)) {
-            std::cout << "FOR NOW, we can only handle stop source/target" << std::endl;
-            std::cout << "SOURCE IS STOP ? " << data.isStop(source) << std::endl;
-            std::cout << "TARGET IS STOP ? " << data.isStop(target) << std::endl;
-            return {};
-        }
-
-
-        initialize(source, departureTime, target);
-        std::cout << "nostop is = " << noStop << std::endl;
-        std::cout << "targetStop is stop ? " << data.isStop(targetStop) << std::endl;
-        std::cout << "isStop(25427) ? " << data.isStop(Vertex(25427)) << std::endl;
-        std::cout << "isStop(25426) ? " << data.isStop(Vertex(25426)) << std::endl;
-        std::cout << "isStop(25425) ? " << data.isStop(Vertex(25425)) << std::endl;
-        std::cout << "isStop(25424) ? " << data.isStop(Vertex(25424)) << std::endl;
-        std::cout << "Target stop is = " << targetStop << std::endl;
-        std::cout << "Target stop is = " << targetStop << std::endl;
-        std::cout << "Target stop is = " << targetStop << std::endl;
-        debugger.doneInitialization();
-        relaxInitialTransfers(departureTime);
-        for (size_t i = 0; i < maxRounds; i++) {
-            debugger.newRound();
-            startNewRound();
-            collectRoutesServingUpdatedStops();
-            scanRoutes();
-            if (stopsUpdatedByRoute.empty()) break;
-            relaxIntermediateTransfers();
-        }
-
-        debugger.done();
-
+    inline std::tuple<StopId, int, EarliestArrivalLabel> find_optimal_last_stop() {
+        // finds the last stop of the optimal journey
 
         int best_stop = 0;
-        int min_distance = INFTY;
-        EarliestArrivalLabel min_label = {};
+        int best_distance = INFTY;
+        EarliestArrivalLabel best_label = {};
+
+        // optimal last stop is the one that minimizes EAT(laststop) + distance(laststop -> targetVertex)
         for (int candidate_stop = 0; candidate_stop < data.numberOfStops(); ++candidate_stop) {
             auto from_stop_to_target = initialTransfers.getBackwardDistance(Vertex(candidate_stop));
-            auto best_label = get_best_label(candidate_stop);
-            if (best_label.arrivalTime == never) continue;
-            auto candidate_distance = from_stop_to_target + best_label.arrivalTime;
-            if (candidate_distance < min_distance) {
-                min_distance = candidate_distance;
-                min_label = best_label;
+            auto candidate_label = get_best_label(candidate_stop);
+            if (candidate_label.arrivalTime == never) continue;
+            auto candidate_distance = from_stop_to_target + candidate_label.arrivalTime;
+            if (candidate_distance < best_distance) {
+                best_distance = candidate_distance;
+                best_label = candidate_label;
                 best_stop = candidate_stop;
             }
         }
 
-        std::cout << "Le meilleur stop pour la target est : " << best_stop << std::endl;
+        // FIXME = handle errors
+        return {StopId(best_stop), best_distance, best_label};
+    }
 
 
-        Leg mysuperleg(
-            false, // is_walk
-            "my super departure",  // departure_id
-            "my super arrival",  // arrival_id
-            42,  // start_time
-            42,  // departure_time (for simplicity, start_time == departure_time)
-            52,  // arrival_time
-            {"coucou", "pouet"} // stops
-        );
+    inline std::vector<Leg> build_legs(Vertex source) {
+        // journey is rebuilt backward : we recursively get parents, beginning with last_stop
 
-        std::cout << mysuperleg.as_string() << std::endl;
+        auto [last_stop, last_walk_distance, last_stop_label] = find_optimal_last_stop();
 
-
-        /* EarliestArrivalLabel() : arrivalTime(never), parentDepartureTime(never), parent(noVertex), usesRoute(false), routeId(noRouteId) {} */
-        /* int arrivalTime; */
-        /* int parentDepartureTime; */
-        /* Vertex parent; */
-        /* bool usesRoute; */
-        /* union { */
-        /*     RouteId routeId; */
-        /*     Edge transferId; */
-        /* }; */
-
+        // for now, we only allow journeys from/to as top -> targetVertex is necessary a stop, and last_walk_distance is necessary 0 :
+        assert(last_walk_distance == 0);
+        assert(last_stop == targetStop);
 
         std::vector<Leg> legs;
 
-        auto currentStop = Vertex(best_stop);
-
+        auto currentStop = Vertex(last_stop);
         auto currentStopLabel = get_best_label(currentStop);
 
+        // conversion from stop (and its label) to a Leg :
         auto to_leg = [](EarliestArrivalLabel const& label, int stop) -> Leg {
             bool is_walk = !label.usesRoute;
             std::string departure_id = std::to_string(label.parent);
@@ -315,8 +272,6 @@ public:
             int start_time = label.parentDepartureTime;
             int departure_time = label.parentDepartureTime;
             int arrival_time = label.arrivalTime;
-
-            // pour le moment, je ne mets que les ids source et target
             std::vector<std::string> stops{departure_id, arrival_id};
             return {
                 is_walk,
@@ -332,16 +287,42 @@ public:
         legs.push_back(to_leg(currentStopLabel, currentStop.value()));
 
         while(currentStopLabel.parent != source && currentStopLabel.parent != currentStop) {
-            display_best_label(currentStop);
             currentStop = currentStopLabel.parent;
             currentStopLabel = get_best_label(currentStop);
             legs.push_back(to_leg(currentStopLabel, currentStop.value()));
         }
-        display_best_label(currentStop);
-        std::cout << "FIIIIIIIIIIIIIIIIIIIIN" << std::endl;
 
+        // as journey was rebuilt backward, we put it back in proper order :
         std::reverse(legs.begin(), legs.end());
         return legs;
+    }
+
+
+    inline std::vector<Leg> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
+        debugger.start();
+        debugger.startInitialization();
+        clear();
+        if (!data.isStop(source) || !data.isStop(target)) {
+            std::cout << "For now, we can only handle journeys between stops :" << std::endl;
+            std::cout << "Is SOURCE a stop ? " << data.isStop(source) << std::endl;
+            std::cout << "Is TARGET a stop ? " << data.isStop(target) << std::endl;
+            return {};
+        }
+        initialize(source, departureTime, target);
+        debugger.doneInitialization();
+        relaxInitialTransfers(departureTime);
+        for (size_t i = 0; i < maxRounds; i++) {
+            debugger.newRound();
+            startNewRound();
+            collectRoutesServingUpdatedStops();
+            scanRoutes();
+            if (stopsUpdatedByRoute.empty()) break;
+            relaxIntermediateTransfers();
+        }
+
+        debugger.done();
+        auto journey = build_legs(source);
+        return journey;
     }
 
     inline const Debugger& getDebugger() const noexcept {
