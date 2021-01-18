@@ -36,13 +36,12 @@ int main(int argc, char** argv) {
     int DEPARTURE_TIME = 36000;
     auto legs = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET));
     std::cout << std::endl;
+    std::cout << "JOURNEY = " << SOURCE << "   -->   " << TARGET << std::endl;
     std::cout << "LEGS" << std::endl;
     for (auto leg : legs) {
         std::cout << leg.as_string() << std::endl;
     }
     std::cout << std::endl;
-    /* std::ofstream path_stream("/tmp/published/path.geojson"); */
-    /* dump_journey(path_stream, data, path); */
 
     return 0;
 }

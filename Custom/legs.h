@@ -9,15 +9,13 @@ struct Leg {
         std::string arrival_id_,
         int start_time_,
         int departure_time_,
-        int arrival_time_,
-        std::vector<std::string> stops_)
+        int arrival_time_)
         : is_walk{is_walk_},
           departure_id{departure_id_},
           arrival_id{arrival_id_},
           start_time{start_time_},
           departure_time{departure_time_},
-          arrival_time{arrival_time_},
-          stops{stops_} {}
+          arrival_time{arrival_time_} {}
 
     bool is_walk;
     std::string departure_id;
@@ -30,7 +28,6 @@ struct Leg {
     // for PT, full_duration = waiting_duration + traveling_duration
     std::string arrival_id;
     int arrival_time;
-    std::vector<std::string> stops;
 
     inline int get_full_duration() const { return arrival_time - start_time; }
     inline int get_waiting_duration() const { return departure_time - start_time; }

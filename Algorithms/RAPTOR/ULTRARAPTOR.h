@@ -157,22 +157,23 @@ public:
         auto currentStopLabel = get_best_label(currentStop);
 
         // conversion from stop (and its label) to a Leg :
-        auto to_leg = [](EarliestArrivalLabel const& label, int stop) -> Leg {
+        auto const& raptorData = this->data;
+        auto to_leg = [&raptorData](EarliestArrivalLabel const& label, int stop) -> Leg {
             bool is_walk = !label.usesRoute;
             std::string departure_id = std::to_string(label.parent);
             std::string arrival_id = std::to_string(stop);
             int start_time = label.parentDepartureTime;
             int departure_time = label.parentDepartureTime;
             int arrival_time = label.arrivalTime;
-            std::vector<std::string> stops{departure_id, arrival_id};
+            std::cout << "DEPARTURE = " << label.parent << "   " << raptorData.stopData[label.parent] << std::endl;
+            std::cout << "ARRIVAL   = " << stop << "   " << raptorData.stopData[stop] << std::endl;
             return {
                 is_walk,
                 departure_id,
                 arrival_id,
                 start_time,
                 departure_time,
-                arrival_time,
-                stops
+                arrival_time
             };
         };
 
