@@ -8,6 +8,8 @@
 
 #include "../DataStructures/RAPTOR/Data.h"
 
+using namespace std;
+
 inline void usage() noexcept {
     std::cout << "Usage: ultra-binary-analyzer <RAPTOR binary>" << std::endl;
     exit(0);
@@ -149,6 +151,31 @@ int main(int argc, char** argv) {
     std::ofstream geojson_dump(dump_name);
     std::cout << "Dumping to : " << dump_name << std::endl;
     dump_route_stops(geojson_dump, data, route);
+
+    // L'objectif de ce snippet est de vérifier que les routeSegments sont simplement une structure associant un stop
+    // aux routes qui l'utilisent.
+    // D'abord, pour chaque stop, on itère sur la liste de ses routes.
+    // Et de façon indépendante, on va regarder le Nième stop de ladite route.
+    // On vérifie alors que le Nième stop de la route est bien notre stop initial.
+    auto begin_segments_for_this_stop = data.firstRouteSegmentOfStop.begin();
+    auto end_segments_for_this_stop = ++data.firstRouteSegmentOfStop.begin();
+    int stop_id = 0;
+    while (end_segments_for_this_stop != data.firstRouteSegmentOfStop.end()) {
+        for (int segment_index = *begin_segments_for_this_stop; segment_index != *end_segments_for_this_stop;
+             ++segment_index) {
+            RAPTOR::RouteSegment& seg = data.routeSegments[segment_index];
+            const StopId* routeStopsArray = data.stopArrayOfRoute(seg.routeId);
+            StopId matching_stop = routeStopsArray[seg.stopIndex];
+            if (matching_stop != stop_id) {
+                throw "ERROR";
+            }
+        }
+
+        ++stop_id;
+        ++begin_segments_for_this_stop;
+        ++end_segments_for_this_stop;
+    }
+    cout << "On est passé " << stop_id << " fois dans la boucle." << endl;
 
     return 0;
 }
