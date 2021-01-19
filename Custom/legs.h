@@ -12,9 +12,9 @@ struct Leg {
         int arrival_time_)
         : is_walk{is_walk_},
           departure_id{departure_id_},
-          arrival_id{arrival_id_},
           start_time{start_time_},
           departure_time{departure_time_},
+          arrival_id{arrival_id_},
           arrival_time{arrival_time_} {}
 
     bool is_walk;

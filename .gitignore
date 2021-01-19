@@ -11,5 +11,7 @@ Runnables/RunRAPTORQueries
 
 Investigations/_build*
 
+libs/
+
 DATA
 WORKDIR*
