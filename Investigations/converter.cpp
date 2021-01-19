@@ -2,6 +2,9 @@
 #include <string>
 #include "ad/cppgtfs/Parser.h"
 
+#include "../DataStructures/RAPTOR/Entities/Stop.h"
+#include "../DataStructures/RAPTOR/Entities/Route.h"
+
 using namespace std;
 
 inline void usage() noexcept {
@@ -45,13 +48,22 @@ int main(int argc, char** argv) {
 
     // ROUTE :
     string route_id = "STBA";
-    cout << "La route '" << route_id << "' a pour longname : " << feed.getRoutes().get(route_id)->getLongName() << endl;
+    auto& route = *(feed.getRoutes().get(route_id));
+    cout << "La route '" << route_id << "' a pour longname : " << route.getLongName() << endl;
+    RAPTOR::Route parsedRoute{route.getLongName(), route.getType()};
+    cout << "PARSED ROUTE = " << parsedRoute << endl;
 
     // STOP
     string stop_id = "BEATTY_AIRPORT";
     auto& stop = *(feed.getStops().get(stop_id));
     cout << "Le stop '" << stop_id << "' a pour nom : " << stop.getName();
     cout << " et pour coordonées (" << stop.getLat() << ";" << stop.getLng() << ")" << endl;
+
+    RAPTOR::Stop parsedStop{
+        stop.getName(), Geometry::Point{Construct::LatLongTag{}, stop.getLat(), stop.getLng()},
+        0  // no min_transfer_time in GTFS
+    };
+    cout << "PARSED STOP = " << parsedStop << endl;
 
     // TRIP :
     string trip_id = "BFC1";
