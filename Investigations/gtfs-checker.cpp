@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+#include <numeric>
+#include <unordered_set>
+
 #include "ad/cppgtfs/Parser.h"
 
 #include <rapidjson/document.h>
@@ -166,16 +169,16 @@ void check_if_all_trips_of_the_same_route_have_similar_stops(ad::cppgtfs::gtfs::
         auto route_id = route.getId();
 
         // on construit un vector avec les stop du trip :
-        vector<string> this_trip_s_stops(trip.getStopTimes().size());
+        vector<string> this_trip_stops(trip.getStopTimes().size());
         for (auto const& stoptime : trip.getStopTimes()) {
             cout << "StopTime n°" << stoptime.getSeq() << endl;
             auto stop = *(stoptime.getStop());
-            this_trip_s_stops[stoptime.getSeq() - 1] = stop.getId();
+            this_trip_stops[stoptime.getSeq() - 1] = stop.getId();
         }
 
         // si la route n'a encore jamais été rencontrée, ce vector de stops est sa référence :
         if (routeToStops.find(route_id) == routeToStops.end()) {
-            routeToStops[route_id] = {trip_id, this_trip_s_stops};
+            routeToStops[route_id] = {trip_id, this_trip_stops};
         }
 
         // sinon, on compare ce vector de stops avec celui de la route associée au trip :
@@ -186,16 +189,16 @@ void check_if_all_trips_of_the_same_route_have_similar_stops(ad::cppgtfs::gtfs::
             cout << endl;
             cout << endl;
             cout << "CEUX DE CE TRIP :" << endl;
-            dump_trip_stops(cout, feed, this_trip_s_stops);
+            dump_trip_stops(cout, feed, this_trip_stops);
             cout << endl;
             cout << endl;
-            if (reference_vector != this_trip_s_stops) {
+            if (reference_vector != this_trip_stops) {
                 cout << "ERROR : vectors différents !" << endl;
                 cout << "route_id = " << route_id << endl;
                 cout << "reference trip of route = " << reference_trip << endl;
                 cout << "trip_id = " << trip_id << endl;
                 cout << "Le vector de référence a " << reference_vector.size() << " stops" << endl;
-                cout << "Le vector du trip a " << this_trip_s_stops.size() << " stops" << endl;
+                cout << "Le vector du trip a " << this_trip_stops.size() << " stops" << endl;
                 /* cout << "REFERENCE :" << endl; */
                 /* cout << setprecision(10); */
                 /* for (auto stop_id_str: reference_vector) { */
@@ -206,7 +209,7 @@ void check_if_all_trips_of_the_same_route_have_similar_stops(ad::cppgtfs::gtfs::
                 /* } */
                 /* cout << endl; */
                 /* cout << "CEUX DE CE TRIP :" << endl; */
-                /* for (auto stop_id_str: this_trip_s_stops) { */
+                /* for (auto stop_id_str: this_trip_stops) { */
                 /*     auto stop_ptr = feed.getStops().get(stop_id_str); */
                 /*     if (stop_ptr == 0) { cout << "ERROR : stop_ptr is 0" << endl; exit(1); } */
                 /*     auto& stop = *stop_ptr; */
@@ -217,6 +220,84 @@ void check_if_all_trips_of_the_same_route_have_similar_stops(ad::cppgtfs::gtfs::
             }
         }
     }
+}
+
+string get_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
+    if (trip.getStopTimes().size() < 2) {
+        cout << "ERROR : stopset is too small (" << trip.getStopTimes().size() << ")" << endl;
+        exit(3);
+    }
+
+    string stopset_id{};
+
+    for (auto const& stoptime : trip.getStopTimes()) {
+        auto stop = *(stoptime.getStop());
+        stopset_id.append(stop.getId());
+        stopset_id.append("+");
+    }
+
+    // remove final '+' :
+    return stopset_id.substr(0, stopset_id.size() - 1);
+}
+
+void partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
+    // cette fonction partitionne les trips en différentes routes "virtuelles"
+    // cette partition est basée sur les stops : deux trips auront la même route virtuelle s'ils ont exactement les
+    // mêmes stops
+    // les routes sont dites virtuelles car elles sont différentes des routes définies dans le GTFS
+    // (en effet, dans le GTFS, les différents trips d'une même route n'ont pas nécessairement les mêmes stops)
+
+    // ce que je veux faire :
+    //      itérer sur les trips
+    //      éventuellement, créer une clé à partir d'un set de stops (e.g. la concaténation des stop_ids)
+    //      regrouper les trips par cette clé (et ne pas oublier d'associer également la route originale)
+    //      in fine, lister :
+    //          - vérifier que toutes les routes "réelles" au sein d'une même route virtuelle sont identiques
+    //          - lister le nombre de routes virtuelles (au total, et par route réelle)
+    //          - lister le nombre de trips par route virtuelle
+
+    cout << endl;
+    cout << "There are : " << feed.getTrips().size() << " trips" << endl;
+
+    // stocke pour chaque set de stops les trips associés :
+    map<string, unordered_set<string>> stopsetToTrips;
+
+    for (auto& trip_pair : feed.getTrips()) {
+        auto[trip_id, trip_ptr] = trip_pair;  // yummy, structured-bindings
+        auto& trip = *(trip_ptr);
+        auto real_route = *(trip.getRoute());
+        // cout << "Trip [" << trip_id << "] is an instance of real_route : " << real_route.getLongName() << endl;
+        auto route_id = real_route.getId();
+
+        string stopset_id = get_stopset_id(trip);
+
+        // si le stopset n'a encore jamais été rencontré, on créé un nouveau set :
+        if (stopsetToTrips.find(stopset_id) == stopsetToTrips.end()) {
+            stopsetToTrips[stopset_id] = {trip_id};
+        }
+        // sinon, on ajoute au set le trip :
+        else {
+            auto& stopset_trips = stopsetToTrips[stopset_id];
+            stopset_trips.emplace(trip_id);
+        }
+    }
+
+    // à ce stade, quels sont les stopset et les trips :
+    cout << endl;
+    for (auto[stopset_id, trips] : stopsetToTrips) {
+        cout << "STOPSET = " << stopset_id << endl;
+        for (auto trip : trips) {
+            cout << "\t TRIP = " << trip << endl;
+        }
+    }
+    cout << endl;
+
+    cout << "Nombre de stopset_id = " << stopsetToTrips.size() << endl;
+    cout << "Nombre de trips par stopset :" << endl;
+    for (auto[stopset_id, trips] : stopsetToTrips) {
+        cout << "STOPSET = " << stopset_id << "       -> " << trips.size() << endl;
+    }
+    cout << endl;
 }
 
 int main(int argc, char** argv) {
@@ -232,7 +313,8 @@ int main(int argc, char** argv) {
     parser.parse(&feed, gtfs_folder);
 
     // use_parsed_sample(feed);
-    check_if_all_trips_of_the_same_route_have_similar_stops(feed);
+    // check_if_all_trips_of_the_same_route_have_similar_stops(feed);
+    partition_trips_in_routes(feed);
 
     return 0;
 }
