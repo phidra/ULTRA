@@ -313,8 +313,8 @@ void partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
             auto real_route_id = real_route.getId();
             route_ids.emplace(real_route_id);
         }
-        cout << "STOPSET = " << stopset_id << "      has " << route_ids.size()
-             << " routes, first one is : " << *(route_ids.begin()) << endl;
+        /* cout << "STOPSET = " << stopset_id << "      has " << route_ids.size() */
+        /*      << " routes, first one is : " << *(route_ids.begin()) << endl; */
         if (route_ids.size() != 1) {
             cout << "ERROR : last stopset has more/less than 1 real route !" << endl;
             exit(4);
