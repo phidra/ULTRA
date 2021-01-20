@@ -2,6 +2,10 @@
 #include <string>
 #include "ad/cppgtfs/Parser.h"
 
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/ostreamwrapper.h>
+
 #include "../DataStructures/RAPTOR/Entities/Stop.h"
 #include "../DataStructures/RAPTOR/Entities/Route.h"
 
@@ -24,61 +28,9 @@ int main(int argc, char** argv) {
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfs_folder);
 
-    // STEP 1 = connaître le nombre d'éléments :
     cout << "Le feed contient " << feed.getRoutes().size() << " routes" << endl;
     cout << "Le feed contient " << feed.getStops().size() << " stops" << endl;
     cout << "Le feed contient " << feed.getTrips().size() << " trips" << endl;
-
-    // STEP 2 = itérer sur les routes :
-    int counter = 0;
-    for (auto const& route : feed.getRoutes()) {
-        // en itérant sur un container, on récupère une paire [id->object*]
-        cout << "Route #" << counter++ << " : " << endl;
-        cout << "\t id (from pair.first)  = " << route.first << endl;
-        cout << "\t id (from route.getId) = " << route.second->getId() << endl;
-        cout << "\t shortname = " << route.second->getShortName() << endl;
-        cout << "\t longname = " << route.second->getLongName() << endl;
-    }
-
-    // STEP 3 = itérer sur les trips d'une route :
-    // En fait, dans le format GTFS, il n'y a pas directement de notion de "trip d'une route"
-    // Il faut reconstruire la notion, en filtrant les tips associés à une même route.
-
-    // STEP 4 = récupérer un trip/route/stop en particulier :
-
-    // ROUTE :
-    string route_id = "STBA";
-    auto& route = *(feed.getRoutes().get(route_id));
-    cout << "La route '" << route_id << "' a pour longname : " << route.getLongName() << endl;
-    RAPTOR::Route parsedRoute{route.getLongName(), route.getType()};
-    cout << "PARSED ROUTE = " << parsedRoute << endl;
-
-    // STOP
-    string stop_id = "BEATTY_AIRPORT";
-    auto& stop = *(feed.getStops().get(stop_id));
-    cout << "Le stop '" << stop_id << "' a pour nom : " << stop.getName();
-    cout << " et pour coordonées (" << stop.getLat() << ";" << stop.getLng() << ")" << endl;
-
-    RAPTOR::Stop parsedStop{
-        stop.getName(), Geometry::Point{Construct::LatLongTag{}, stop.getLat(), stop.getLng()},
-        0  // no min_transfer_time in GTFS
-    };
-    cout << "PARSED STOP = " << parsedStop << endl;
-
-    // TRIP :
-    string trip_id = "BFC1";
-    auto& trip = *(feed.getTrips().get(trip_id));
-    cout << "Le trip '" << trip_id << "' a pour headsign : " << trip.getHeadsign() << endl;
-    cout << "Ce trip a pour stoptimes : " << endl;
-
-    // itérer sur les stops d'un trip se fait en itérant sur ses stoptimes (qui disposent d'une référence sur le stop) :
-    for (auto const& stoptime : trip.getStopTimes()) {
-        cout << "StopTime n°" << stoptime.getSeq() << endl;
-        cout << "\t DEPARTURE = " << stoptime.getDepartureTime().toString() << endl;
-        cout << "\t ARRIVAL = " << stoptime.getArrivalTime().toString() << endl;
-        cout << "\t HEADSIGN = " << stoptime.getHeadsign() << endl;
-        cout << "\t STOP = " << stoptime.getStop()->getName() << endl;
-    }
 
     return 0;
 }

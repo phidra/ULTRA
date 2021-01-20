@@ -6,7 +6,7 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
-BUILD_DIR="$this_script_parent/Investigations/_build_converter"
+BUILD_DIR="$this_script_parent/Investigations/_build_checker"
 CMAKE_ROOT_DIR="$this_script_parent/Investigations"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
@@ -49,7 +49,7 @@ pushd "$CMAKE_ROOT_DIR"
 mkdir -p "$BUILD_DIR"
 conan install --install-folder="$BUILD_DIR" . --profile="${CMAKE_ROOT_DIR}/conanprofile.txt"
 cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
-make -j -C "$BUILD_DIR" ultra-converter
+make -j -C "$BUILD_DIR" gtfs-checker
 popd
 
 
@@ -72,9 +72,10 @@ else
 fi
 
 
-# run converter :
-WORKDIR="${this_script_parent}/WORKDIR_converter"
+# run checker :
+WORKDIR="${this_script_parent}/WORKDIR_checker"
 echo "Using WORKDIR = $WORKDIR"
 mkdir -p "$WORKDIR"
 cp -R "${SAMPLE_GTFS_DIR}"/*.txt "${WORKDIR}"
-LD_LIBRARY_PATH="${CLANG_LIBS}" Investigations/_build_converter/bin/ultra-converter "${WORKDIR}"
+# LD_LIBRARY_PATH="${CLANG_LIBS}" Investigations/_build_checker/bin/gtfs-checker "${WORKDIR}"
+LD_LIBRARY_PATH="${CLANG_LIBS}" Investigations/_build_checker/bin/gtfs-checker /tmp/bordeaux

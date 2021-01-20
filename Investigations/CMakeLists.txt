@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-infinite-recu
 
 set(ANALYZER ultra-binary-analyzer)
 set(CONVERTER ultra-converter)
+set(GTFSCHECKER gtfs-checker)
 set(SERVER ultra-server)
 project(ultra-comprehension)
 set(CMAKE_BUILD_TYPE Release)
@@ -69,6 +70,12 @@ add_executable(${CONVERTER} converter.cpp)
 target_link_libraries(${CONVERTER} ad_cppgtfs)
 target_include_directories(${CONVERTER} PUBLIC "${CPPGTFS_PATH}")
 target_include_directories(${CONVERTER} PUBLIC ${CMAKE_SOURCE_DIR})
+
+# gtfs-checker :
+add_executable(${GTFSCHECKER} gtfs-checker.cpp)
+target_link_libraries(${GTFSCHECKER} ad_cppgtfs)
+target_include_directories(${GTFSCHECKER} PUBLIC "${CPPGTFS_PATH}")
+target_include_directories(${GTFSCHECKER} PUBLIC ${CMAKE_SOURCE_DIR})
 
 
 # server :
