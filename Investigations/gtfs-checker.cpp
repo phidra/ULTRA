@@ -241,7 +241,7 @@ string get_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
 }
 
 void partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
-    // cette fonction partitionne les trips en différentes routes "virtuelles"
+    // cette fonction partitionne les trips en différentes routes "virtuelles" (appelées "stopset" ci-dessous)
     // cette partition est basée sur les stops : deux trips auront la même route virtuelle s'ils ont exactement les
     // mêmes stops
     // les routes sont dites virtuelles car elles sont différentes des routes définies dans le GTFS
@@ -297,6 +297,30 @@ void partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
     for (auto[stopset_id, trips] : stopsetToTrips) {
         cout << "STOPSET = " << stopset_id << "       -> " << trips.size() << endl;
     }
+    cout << endl;
+
+    // vérification que tous les trips d'un stopset donné ont bien la même route (réelle) :
+    for (auto[stopset_id, trips] : stopsetToTrips) {
+        unordered_set<string> route_ids;
+        for (auto trip_id : trips) {
+            auto trip_ptr = feed.getTrips().get(trip_id);
+            if (trip_ptr == 0) {
+                cout << "ERROR : trip_ptr is 0" << endl;
+                exit(1);
+            }
+            auto& trip = *(trip_ptr);
+            auto real_route = *(trip.getRoute());
+            auto real_route_id = real_route.getId();
+            route_ids.emplace(real_route_id);
+        }
+        cout << "STOPSET = " << stopset_id << "      has " << route_ids.size()
+             << " routes, first one is : " << *(route_ids.begin()) << endl;
+        if (route_ids.size() != 1) {
+            cout << "ERROR : last stopset has more/less than 1 real route !" << endl;
+            exit(4);
+        }
+    }
+    cout << "OK" << endl;
     cout << endl;
 }
 
