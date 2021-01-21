@@ -9,6 +9,7 @@ namespace my {
 
 using StopSetId = std::string;
 using TripId = std::string;
+using RouteId = std::string;
 
 StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     if (trip.getStopTimes().size() < 2) {
@@ -30,7 +31,7 @@ StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     return stopset_id.substr(0, stopset_id.size() - 1);
 }
 
-std::string route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId const& trip_id) {
+RouteId route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId const& trip_id) {
     auto trip_ptr = feed.getTrips().get(trip_id);
     if (trip_ptr == 0) {
         std::ostringstream oss;
@@ -42,7 +43,8 @@ std::string route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId co
     return real_route.getId();
 }
 
-std::pair<std::unordered_map<StopSetId, std::unordered_set<TripId>>, std::unordered_map<TripId, StopSetId>>
+std::pair<std::unordered_map<StopSetId, std::unordered_set<TripId>>,
+          std::unordered_map<RouteId, std::unordered_set<StopSetId>>>
 partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
     // cette fonction partitionne les trips selon leur stopset
     // deux trips auront le même stopset s'ils ont exactement les mêmes stops
@@ -50,45 +52,26 @@ partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
     // mais dans le format GTFS, rien n'impose aux trips d'une même route d'avoir les mêmes stops
     // (ça n'est d'ailleur pas le cas pour le GTFS de Bordeaux)
 
-    // ce que je veux faire :
-    //      itérer sur les trips
-    //      éventuellement, créer une clé à partir d'un set de stops (e.g. la concaténation des stop_ids)
-    //      regrouper les trips par cette clé (et ne pas oublier d'associer également la route originale)
-    //      in fine, lister :
-    //          - vérifier que toutes les routes "réelles" au sein d'une même route virtuelle sont identiques
-    //          - lister le nombre de routes virtuelles (au total, et par route réelle)
-    //          - lister le nombre de trips par route virtuelle
-
-    // stocke pour chaque set de stops les trips associés :
     std::unordered_map<StopSetId, std::unordered_set<TripId>> stopsetToTrips;
-    std::unordered_map<TripId, StopSetId> tripsToStopset;
+    std::unordered_map<RouteId, std::unordered_set<StopSetId>> routesToStopsets;
 
     for (auto const & [ trip_id, trip_ptr ] : feed.getTrips()) {
         auto& trip = *(trip_ptr);
         StopSetId this_stopset_id = build_stopset_id(trip);
+        RouteId this_route_id = trip.getRoute()->getId();
 
-        // si le stopset n'a encore jamais été rencontré, on créé un nouveau set :
-        if (stopsetToTrips.find(this_stopset_id) == stopsetToTrips.end()) {
-            stopsetToTrips[this_stopset_id] = {trip_id};
-        }
-        // sinon, on ajoute au set le trip :
-        else {
-            auto& stopset_trips = stopsetToTrips[this_stopset_id];
-            stopset_trips.emplace(trip_id);
-        }
-
-        // dans tous les cas, on associe ce trip à son stopset :
-        tripsToStopset[trip_id] = this_stopset_id;
+        stopsetToTrips[this_stopset_id].emplace(trip_id);
+        routesToStopsets[this_route_id].emplace(this_stopset_id);
     }
 
-    return {stopsetToTrips, tripsToStopset};
+    return {stopsetToTrips, routesToStopsets};
 }
 
 // vérifie que tous les trips d'un stopset donné ont bien la même route :
 void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed,
                                      std::unordered_map<StopSetId, std::unordered_set<TripId>> const& stopsetToTrips) {
     for (auto[stopset_id, trips] : stopsetToTrips) {
-        std::string reference_route_id = route_id_from_trip_id(feed, *trips.begin());
+        RouteId reference_route_id = route_id_from_trip_id(feed, *trips.begin());
 
         auto is_mismatch = [&reference_route_id, &feed](auto trip_id) {
             return route_id_from_trip_id(feed, trip_id) != reference_route_id;
@@ -105,4 +88,5 @@ void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed,
         }
     }
 }
-}
+
+}  // namespace my
