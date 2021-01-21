@@ -240,6 +240,17 @@ string get_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     return stopset_id.substr(0, stopset_id.size() - 1);
 }
 
+string route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, string const& trip_id) {
+    auto trip_ptr = feed.getTrips().get(trip_id);
+    if (trip_ptr == 0) {
+        cout << "ERROR : trip_ptr is 0" << endl;
+        exit(1);
+    }
+    auto& trip = *(trip_ptr);
+    auto real_route = *(trip.getRoute());
+    return real_route.getId();
+}
+
 void partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
     // cette fonction partitionne les trips en différentes routes "virtuelles" (appelées "stopset" ci-dessous)
     // cette partition est basée sur les stops : deux trips auront la même route virtuelle s'ils ont exactement les
@@ -301,22 +312,18 @@ void partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
 
     // vérification que tous les trips d'un stopset donné ont bien la même route (réelle) :
     for (auto[stopset_id, trips] : stopsetToTrips) {
-        unordered_set<string> route_ids;
-        for (auto trip_id : trips) {
-            auto trip_ptr = feed.getTrips().get(trip_id);
-            if (trip_ptr == 0) {
-                cout << "ERROR : trip_ptr is 0" << endl;
-                exit(1);
-            }
-            auto& trip = *(trip_ptr);
-            auto real_route = *(trip.getRoute());
-            auto real_route_id = real_route.getId();
-            route_ids.emplace(real_route_id);
-        }
-        /* cout << "STOPSET = " << stopset_id << "      has " << route_ids.size() */
-        /*      << " routes, first one is : " << *(route_ids.begin()) << endl; */
-        if (route_ids.size() != 1) {
-            cout << "ERROR : last stopset has more/less than 1 real route !" << endl;
+        string reference_route_id = route_id_from_trip_id(feed, *trips.begin());
+
+        auto is_mismatch = [&reference_route_id, &feed](auto trip_id) {
+            return route_id_from_trip_id(feed, trip_id) != reference_route_id;
+        };
+
+        auto mismatching_trip = find_if(trips.cbegin(), trips.cend(), is_mismatch);
+        if (mismatching_trip != trips.cend()) {
+            cout << "This stopset has more than 1 real route : " << stopset_id << endl;
+            cout << "Reference route_id = " << reference_route_id << endl;
+            cout << "Mismatching trip = " << *mismatching_trip << endl;
+            cout << "Mismatching trip's route id = " << route_id_from_trip_id(feed, *mismatching_trip) << endl;
             exit(4);
         }
     }
