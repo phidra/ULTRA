@@ -6,7 +6,7 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
-BUILD_DIR="$this_script_parent/Investigations/_build_converter"
+BUILD_DIR="$this_script_parent/_build/converter"
 CMAKE_ROOT_DIR="$this_script_parent/Investigations"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
@@ -77,4 +77,4 @@ WORKDIR="${this_script_parent}/WORKDIR_converter"
 echo "Using WORKDIR = $WORKDIR"
 mkdir -p "$WORKDIR"
 cp -R "${SAMPLE_GTFS_DIR}"/*.txt "${WORKDIR}"
-LD_LIBRARY_PATH="${CLANG_LIBS}" Investigations/_build_converter/bin/ultra-converter "${WORKDIR}"
+LD_LIBRARY_PATH="${CLANG_LIBS}" "${BUILD_DIR}/bin/ultra-converter" "${WORKDIR}"

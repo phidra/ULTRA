@@ -6,7 +6,7 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
-BUILD_DIR="$this_script_parent/Investigations/_build_checker"
+BUILD_DIR="$this_script_parent/_build/checker"
 CMAKE_ROOT_DIR="$this_script_parent/Investigations"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
@@ -72,4 +72,4 @@ fi
 
 
 # run checker :
-LD_LIBRARY_PATH="${CLANG_LIBS}" Investigations/_build_checker/bin/gtfs-checker "DATA/gtfs_bordeaux"
+LD_LIBRARY_PATH="${CLANG_LIBS}" "${BUILD_DIR}/bin/gtfs-checker" "DATA/gtfs_bordeaux"

@@ -10,6 +10,7 @@ Runnables/RunCSAQueries
 Runnables/RunRAPTORQueries
 
 Investigations/_build*
+_build
 
 libs/
 

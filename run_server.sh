@@ -6,7 +6,7 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
-BUILD_DIR="$this_script_parent/Investigations/_build_server"
+BUILD_DIR="$this_script_parent/_build/server"
 CMAKE_ROOT_DIR="$this_script_parent/Investigations"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
@@ -30,6 +30,6 @@ CLANG_LIBS="/home/pdrabczuk/Logiciels/clang+llvm-9.0.1-x86_64-linux-gnu-ubuntu-1
 # run server :
 WORKDIR="${this_script_parent}/WORKDIR"
 echo "Using data from WORKDIR = $WORKDIR"
-LD_LIBRARY_PATH="${CLANG_LIBS}" Investigations/_build_server/bin/ultra-server \
+LD_LIBRARY_PATH="${CLANG_LIBS}" "${BUILD_DIR}/bin/ultra-server" \
     "${WORKDIR}/COMPUTE_SHORTCUTS_OUTPUT/ultra_shortcuts.binary" \
     "${WORKDIR}/BUILD_BUCKETCH_OUTPUT/bucketch.graph"
