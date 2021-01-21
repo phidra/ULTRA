@@ -109,3 +109,4 @@ ExternalProject_Add(
     )
 
 add_dependencies(${GTFSCHECKER} gtfs_bordeaux)
+add_dependencies(${CONVERTER} gtfs_bordeaux)

@@ -77,4 +77,5 @@ WORKDIR="${this_script_parent}/WORKDIR_converter"
 echo "Using WORKDIR = $WORKDIR"
 mkdir -p "$WORKDIR"
 cp -R "${SAMPLE_GTFS_DIR}"/*.txt "${WORKDIR}"
-LD_LIBRARY_PATH="${CLANG_LIBS}" "${BUILD_DIR}/bin/ultra-converter" "${WORKDIR}"
+#LD_LIBRARY_PATH="${CLANG_LIBS}" "${BUILD_DIR}/bin/ultra-converter" "${WORKDIR}"   # <-- sample
+LD_LIBRARY_PATH="${CLANG_LIBS}" "${BUILD_DIR}/bin/ultra-converter" "DATA/gtfs_bordeaux"
