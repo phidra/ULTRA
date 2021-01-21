@@ -11,6 +11,7 @@
 
 #include "../DataStructures/RAPTOR/Entities/Stop.h"
 #include "../DataStructures/RAPTOR/Entities/Route.h"
+#include "../Custom/gtfs.h"
 
 using namespace std;
 
@@ -222,115 +223,6 @@ void check_if_all_trips_of_the_same_route_have_similar_stops(ad::cppgtfs::gtfs::
     }
 }
 
-string get_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
-    if (trip.getStopTimes().size() < 2) {
-        cout << "ERROR : stopset is too small (" << trip.getStopTimes().size() << ")" << endl;
-        exit(3);
-    }
-
-    string stopset_id{};
-
-    for (auto const& stoptime : trip.getStopTimes()) {
-        auto stop = *(stoptime.getStop());
-        stopset_id.append(stop.getId());
-        stopset_id.append("+");
-    }
-
-    // remove final '+' :
-    return stopset_id.substr(0, stopset_id.size() - 1);
-}
-
-string route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, string const& trip_id) {
-    auto trip_ptr = feed.getTrips().get(trip_id);
-    if (trip_ptr == 0) {
-        cout << "ERROR : trip_ptr is 0" << endl;
-        exit(1);
-    }
-    auto& trip = *(trip_ptr);
-    auto real_route = *(trip.getRoute());
-    return real_route.getId();
-}
-
-void partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
-    // cette fonction partitionne les trips en différentes routes "virtuelles" (appelées "stopset" ci-dessous)
-    // cette partition est basée sur les stops : deux trips auront la même route virtuelle s'ils ont exactement les
-    // mêmes stops
-    // les routes sont dites virtuelles car elles sont différentes des routes définies dans le GTFS
-    // (en effet, dans le GTFS, les différents trips d'une même route n'ont pas nécessairement les mêmes stops)
-
-    // ce que je veux faire :
-    //      itérer sur les trips
-    //      éventuellement, créer une clé à partir d'un set de stops (e.g. la concaténation des stop_ids)
-    //      regrouper les trips par cette clé (et ne pas oublier d'associer également la route originale)
-    //      in fine, lister :
-    //          - vérifier que toutes les routes "réelles" au sein d'une même route virtuelle sont identiques
-    //          - lister le nombre de routes virtuelles (au total, et par route réelle)
-    //          - lister le nombre de trips par route virtuelle
-
-    cout << endl;
-    cout << "There are : " << feed.getTrips().size() << " trips" << endl;
-
-    // stocke pour chaque set de stops les trips associés :
-    map<string, unordered_set<string>> stopsetToTrips;
-
-    for (auto& trip_pair : feed.getTrips()) {
-        auto[trip_id, trip_ptr] = trip_pair;  // yummy, structured-bindings
-        auto& trip = *(trip_ptr);
-        auto real_route = *(trip.getRoute());
-        // cout << "Trip [" << trip_id << "] is an instance of real_route : " << real_route.getLongName() << endl;
-        auto route_id = real_route.getId();
-
-        string stopset_id = get_stopset_id(trip);
-
-        // si le stopset n'a encore jamais été rencontré, on créé un nouveau set :
-        if (stopsetToTrips.find(stopset_id) == stopsetToTrips.end()) {
-            stopsetToTrips[stopset_id] = {trip_id};
-        }
-        // sinon, on ajoute au set le trip :
-        else {
-            auto& stopset_trips = stopsetToTrips[stopset_id];
-            stopset_trips.emplace(trip_id);
-        }
-    }
-
-    // à ce stade, quels sont les stopset et les trips :
-    cout << endl;
-    for (auto[stopset_id, trips] : stopsetToTrips) {
-        cout << "STOPSET = " << stopset_id << endl;
-        for (auto trip : trips) {
-            cout << "\t TRIP = " << trip << endl;
-        }
-    }
-    cout << endl;
-
-    cout << "Nombre de stopset_id = " << stopsetToTrips.size() << endl;
-    cout << "Nombre de trips par stopset :" << endl;
-    for (auto[stopset_id, trips] : stopsetToTrips) {
-        cout << "STOPSET = " << stopset_id << "       -> " << trips.size() << endl;
-    }
-    cout << endl;
-
-    // vérification que tous les trips d'un stopset donné ont bien la même route (réelle) :
-    for (auto[stopset_id, trips] : stopsetToTrips) {
-        string reference_route_id = route_id_from_trip_id(feed, *trips.begin());
-
-        auto is_mismatch = [&reference_route_id, &feed](auto trip_id) {
-            return route_id_from_trip_id(feed, trip_id) != reference_route_id;
-        };
-
-        auto mismatching_trip = find_if(trips.cbegin(), trips.cend(), is_mismatch);
-        if (mismatching_trip != trips.cend()) {
-            cout << "This stopset has more than 1 real route : " << stopset_id << endl;
-            cout << "Reference route_id = " << reference_route_id << endl;
-            cout << "Mismatching trip = " << *mismatching_trip << endl;
-            cout << "Mismatching trip's route id = " << route_id_from_trip_id(feed, *mismatching_trip) << endl;
-            exit(4);
-        }
-    }
-    cout << "OK" << endl;
-    cout << endl;
-}
-
 int main(int argc, char** argv) {
     if (argc < 2)
         usage();
@@ -345,7 +237,8 @@ int main(int argc, char** argv) {
 
     // use_parsed_sample(feed);
     // check_if_all_trips_of_the_same_route_have_similar_stops(feed);
-    partition_trips_in_routes(feed);
+    auto[stopsetToTrips, tripsToStopset] = my::partition_trips_in_stopsets(feed);
+    my::assert_identical_stopset_routes(feed, stopsetToTrips);
 
     return 0;
 }
