@@ -13,7 +13,7 @@
 using namespace std;
 
 inline void usage() noexcept {
-    std::cout << "Usage: converter <GTFS folder>" << std::endl;
+    cout << "Usage: converter <GTFS folder>" << endl;
     exit(1);
 }
 
@@ -31,8 +31,7 @@ vector<RAPTOR::Stop> convert_stopData(ad::cppgtfs::gtfs::Feed const& feed) {
     return stopData;
 }
 
-vector<RAPTOR::Route> convert_routeData(
-    std::map<my::StopSetId, std::unordered_set<my::TripId> > const& stopsetToTrips) {
+vector<RAPTOR::Route> convert_routeData(map<my::StopSetId, set<my::TripId> > const& stopsetToTrips) {
     vector<RAPTOR::Route> routeData;
     routeData.reserve(stopsetToTrips.size());
     transform(stopsetToTrips.begin(), stopsetToTrips.end(), back_inserter(routeData),

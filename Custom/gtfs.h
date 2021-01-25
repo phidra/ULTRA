@@ -43,7 +43,7 @@ RouteId route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId const&
     return real_route.getId();
 }
 
-std::pair<std::map<StopSetId, std::unordered_set<TripId>>, std::unordered_map<RouteId, std::unordered_set<StopSetId>>>
+std::pair<std::map<StopSetId, std::set<TripId>>, std::unordered_map<RouteId, std::unordered_set<StopSetId>>>
 partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
     // cette fonction partitionne les trips selon leur stopset
     // deux trips auront le même stopset s'ils ont exactement les mêmes stops
@@ -51,7 +51,7 @@ partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
     // mais dans le format GTFS, rien n'impose aux trips d'une même route d'avoir les mêmes stops
     // (ça n'est d'ailleur pas le cas pour le GTFS de Bordeaux)
 
-    std::map<StopSetId, std::unordered_set<TripId>> stopsetToTrips;
+    std::map<StopSetId, std::set<TripId>> stopsetToTrips;
     std::unordered_map<RouteId, std::unordered_set<StopSetId>> routesToStopsets;
 
     for (auto const & [ trip_id, trip_ptr ] : feed.getTrips()) {
@@ -68,7 +68,7 @@ partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
 
 // vérifie que tous les trips d'un stopset donné ont bien la même route :
 void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed,
-                                     std::map<StopSetId, std::unordered_set<TripId>> const& stopsetToTrips) {
+                                     std::map<StopSetId, std::set<TripId>> const& stopsetToTrips) {
     for (auto[stopset_id, trips] : stopsetToTrips) {
         RouteId reference_route_id = route_id_from_trip_id(feed, *trips.begin());
 
