@@ -32,12 +32,12 @@ StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     return stopset_id.substr(0, stopset_id.size() - 1);
 }
 
-std::vector<StopId> stopset_id_to_stops(StopSetId const& stopset) {
-    std::vector<StopId> stops;
-    StopId token;
+std::vector<int> stopset_id_to_stops(StopSetId const& stopset) {
+    std::vector<int> stops;
+    std::string token;
     std::istringstream iss(stopset);
     while (std::getline(iss, token, '+')) {
-        stops.push_back(token);
+        stops.push_back(stoi(token));
     }
     return stops;
 }
@@ -97,6 +97,16 @@ void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed,
             throw std::runtime_error("failed to assert_identical_stopset_routes");
         }
     }
+}
+
+ad::cppgtfs::gtfs::Trip const& get_trip(ad::cppgtfs::gtfs::Feed const& feed, TripId const& trip_id) {
+    auto trip_ptr = feed.getTrips().get(trip_id);
+    if (trip_ptr == 0) {
+        std::ostringstream oss;
+        oss << "ERROR : unable to get trip with id '" << trip_id << "' (trip_ptr is 0)";
+        throw std::runtime_error(oss.str());
+    }
+    return *trip_ptr;
 }
 
 }  // namespace my

@@ -8,7 +8,9 @@
 
 #include "../DataStructures/RAPTOR/Entities/Stop.h"
 #include "../DataStructures/RAPTOR/Entities/Route.h"
+#include "../DataStructures/RAPTOR/Entities/StopEvent.h"
 #include "../Custom/gtfs.h"
+#include "../Helpers/Types.h"
 
 using namespace std;
 
@@ -39,20 +41,19 @@ vector<RAPTOR::Route> convert_routeData(map<my::StopSetId, set<my::TripId> > con
     return routeData;
 }
 
-pair<vector<my::StopId>, vector<size_t> > convert_stopIdsRelated(vector<RAPTOR::Route> const& routeData) {
-    vector<my::StopId> stopIds;
+pair<vector<StopId>, vector<size_t> > convert_stopIdsRelated(vector<RAPTOR::Route> const& routeData) {
+    vector<StopId> stopIds;
     vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
 
     size_t current_route_first_stop = 0;
     int route_index = 0;
     for (auto& route : routeData) {
         my::StopSetId routeName = route.name;  // a "route" name is its stopset
-        vector<my::StopId> this_route_stops = my::stopset_id_to_stops(routeName);
-        int this_route_nb_stops = this_route_stops.size();
-
+        vector<int> this_route_stops = my::stopset_id_to_stops(routeName);
         firstStopIdOfRoute[route_index++] = current_route_first_stop;
-        move(this_route_stops.begin(), this_route_stops.end(), back_inserter(stopIds));
-        current_route_first_stop += this_route_nb_stops;
+        transform(this_route_stops.cbegin(), this_route_stops.cend(), back_inserter(stopIds),
+                  [](int stop) { return StopId{stop}; });
+        current_route_first_stop += this_route_stops.size();
     }
 
     // À ce stade :
@@ -62,6 +63,53 @@ pair<vector<my::StopId>, vector<size_t> > convert_stopIdsRelated(vector<RAPTOR::
     firstStopIdOfRoute[route_index] = current_route_first_stop;
 
     return {stopIds, firstStopIdOfRoute};
+}
+
+pair<vector<RAPTOR::StopEvent>, vector<size_t> > convert_stopEventsRelated(
+    ad::cppgtfs::gtfs::Feed const& feed,
+    vector<RAPTOR::Route> const& routeData,
+    map<my::StopSetId, set<my::TripId> > const& stopsetToTrips) {
+    vector<RAPTOR::StopEvent> stopEvents;
+    vector<size_t> firstStopEventOfRoute(routeData.size() + 1);
+
+    size_t current_route_first_stopevent = 0;
+    int route_index = 0;
+
+    for (auto& route : routeData) {
+        my::StopSetId routeName = route.name;  // a "route" name is its stopset
+
+        int nb_stopevents_in_this_route = 0;
+
+        // chaque route (=stopset) est associé à plusieurs trips :
+        auto const& trips = stopsetToTrips.at(routeName);
+        for (auto& trip_id : trips) {
+            // récupération du trip courant :
+            auto& trip = my::get_trip(feed, trip_id);
+
+            // chaque trip a un range de stopEvents
+            // un RAPTOR::StopEvent = {departureTime,arrivalTime}
+            // un cppgtfs::StopTime = {_at,_dt}
+            for (auto const& stoptime : trip.getStopTimes()) {
+                int departure_time = stoptime.getDepartureTime().seconds();
+                int arrival_time = stoptime.getArrivalTime().seconds();
+                stopEvents.emplace_back(arrival_time, departure_time);
+            }
+
+            int nb_stopevents_in_this_trip = trip.getStopTimes().size();
+            nb_stopevents_in_this_route += nb_stopevents_in_this_trip;
+        }
+
+        firstStopEventOfRoute[route_index++] = current_route_first_stopevent;
+        current_route_first_stopevent += nb_stopevents_in_this_route;
+    }
+
+    // À ce stade :
+    //      route_index = nombre de routes
+    //      current_route_first_stopevent = nombre de stopevents
+    // On sette l'index "past-the-end" de stopIds :
+    firstStopEventOfRoute[route_index] = current_route_first_stopevent;
+
+    return {stopEvents, firstStopEventOfRoute};
 }
 
 int main(int argc, char** argv) {
@@ -112,6 +160,18 @@ int main(int argc, char** argv) {
         }
     }
     cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl;
+
+    // stopEvents + firstStopEventOfRoute :
+    auto[stopEvents, firstStopEventOfRoute] = convert_stopEventsRelated(feed, routeData, stopsetToTrips);
+    cout << "À ce stade, stopEvents contient : " << stopEvents.size() << " items." << endl;
+    cout << "À ce stade, firstStopEventOfRoute contient : " << firstStopEventOfRoute.size() << " items." << endl;
+    counter = 0;
+    for (auto idx : firstStopEventOfRoute) {
+        if (counter++ <= 8) {
+            cout << "First stop event of this = " << idx << endl;
+        }
+    }
+    cout << "Le dernier élément de firstStopEventOfRoute est " << firstStopEventOfRoute.back() << endl;
 
     return 0;
 }
