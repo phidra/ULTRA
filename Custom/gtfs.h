@@ -10,6 +10,7 @@ namespace my {
 using StopSetId = std::string;
 using TripId = std::string;
 using RouteId = std::string;
+using StopId = std::string;
 
 StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     if (trip.getStopTimes().size() < 2) {
@@ -29,6 +30,16 @@ StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
 
     // remove final '+' :
     return stopset_id.substr(0, stopset_id.size() - 1);
+}
+
+std::vector<StopId> stopset_id_to_stops(StopSetId const& stopset) {
+    std::vector<StopId> stops;
+    StopId token;
+    std::istringstream iss(stopset);
+    while (std::getline(iss, token, '+')) {
+        stops.push_back(token);
+    }
+    return stops;
 }
 
 RouteId route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId const& trip_id) {

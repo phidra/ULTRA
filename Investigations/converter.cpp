@@ -39,6 +39,31 @@ vector<RAPTOR::Route> convert_routeData(map<my::StopSetId, set<my::TripId> > con
     return routeData;
 }
 
+pair<vector<my::StopId>, vector<size_t> > convert_stopIdsRelated(vector<RAPTOR::Route> const& routeData) {
+    vector<my::StopId> stopIds;
+    vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
+
+    size_t current_route_first_stop = 0;
+    int route_index = 0;
+    for (auto& route : routeData) {
+        my::StopSetId routeName = route.name;  // a "route" name is its stopset
+        vector<my::StopId> this_route_stops = my::stopset_id_to_stops(routeName);
+        int this_route_nb_stops = this_route_stops.size();
+
+        firstStopIdOfRoute[route_index++] = current_route_first_stop;
+        move(this_route_stops.begin(), this_route_stops.end(), back_inserter(stopIds));
+        current_route_first_stop += this_route_nb_stops;
+    }
+
+    // À ce stade :
+    //      route_index = nombre de routes
+    //      current_route_first_stop = nombre de stops
+    // On sette l'index "past-the-end" de stopIds :
+    firstStopIdOfRoute[route_index] = current_route_first_stop;
+
+    return {stopIds, firstStopIdOfRoute};
+}
+
 int main(int argc, char** argv) {
     if (argc < 2)
         usage();
@@ -75,6 +100,18 @@ int main(int argc, char** argv) {
             cout << "ROUTE = " << route << endl;
         }
     }
+
+    // stopIds + firstStopIdOfRoute :
+    auto[stopIds, firstStopIdOfRoute] = convert_stopIdsRelated(routeData);
+    cout << "À ce stade, stopIds contient : " << stopIds.size() << " items." << endl;
+    cout << "À ce stade, firstStopIdOfRoute contient : " << firstStopIdOfRoute.size() << " items." << endl;
+    counter = 0;
+    for (auto idx : firstStopIdOfRoute) {
+        if (counter++ <= 8) {
+            cout << "First stop id of this = " << idx << endl;
+        }
+    }
+    cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl;
 
     return 0;
 }
