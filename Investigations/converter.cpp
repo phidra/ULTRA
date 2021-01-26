@@ -206,38 +206,27 @@ int main(int argc, char** argv) {
 
     // TODO = vérifier que chaque route n'apparaît qu'une fois pour un stop donné
 
+    auto[ranked_routes, routeidToRank] = my::rank_routes(stopsetToTrips);
+
     vector<size_t> firstRouteSegmentOfStop(stopData.size() + 1);
     vector<RAPTOR::RouteSegment> routeSegments;
 
     size_t current_stop_first_routesegment = 0;
 
-    for (size_t rank = 0; rank < routesOfAStop.size(); ++rank) {
-        auto& routes_of_this_stop = routesOfAStop[rank];
+    for (size_t stop_rank = 0; stop_rank < routesOfAStop.size(); ++stop_rank) {
+        auto& routes_of_this_stop = routesOfAStop[stop_rank];
+
+        for (auto & [ route_stopset_id, stop_index_in_this_route ] : routes_of_this_stop) {
+            auto route_rank = routeidToRank.at(route_stopset_id);
+            routeSegments.emplace_back(RouteId{route_rank}, StopIndex{stop_index_in_this_route});
+        }
+
+        firstRouteSegmentOfStop[stop_rank] = current_stop_first_routesegment;
+        current_stop_first_routesegment += routes_of_this_stop.size();
     }
-    /* vector<vector<pair<my::StopSetId, int>>> routesOfAStop(stopData.size()); */
-    // RAPTOR::RouteSegment(const RouteId routeId = noRouteId, const StopIndex stopIndex = noStopIndex) :
 
-    // On dirait qu'il me faut quelque chose pour faire l'association enter une routeRank et une routeId ?
-
-    auto[ranked_routes, routeidToRank] = my::rank_routes(stopsetToTrips);
+    // On sette l'index "past-the-end" de routeSegments :
+    firstRouteSegmentOfStop[routesOfAStop.size()] = current_stop_first_routesegment;
 
     return 0;
 }
-
-/* size_t current_route_first_stop = 0; */
-/* int route_index = 0; */
-/* for (auto& route : routeData) { */
-/*     my::StopSetId routeName = route.name;  // a (scientific) route's name is its stopset */
-/*     vector<my::ParsedStopId> stops_of_this_route = my::stopset_id_to_stops(routeName); */
-
-/*     firstStopIdOfRoute[route_index++] = current_route_first_stop; */
-/*     transform(stops_of_this_route.cbegin(), stops_of_this_route.cend(), back_inserter(stopIds), */
-/*               [&stopidToRank](my::ParsedStopId const& stopid) { return StopId{stopidToRank.at(stopid)}; }); */
-/*     current_route_first_stop += stops_of_this_route.size(); */
-/* } */
-
-/* // À ce stade : */
-/* //      route_index = nombre de routes */
-/* //      current_route_first_stop = nombre de stops */
-/* // On sette l'index "past-the-end" de stopIds : */
-/* firstStopIdOfRoute[route_index] = current_route_first_stop; */
