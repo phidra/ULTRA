@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
     counter = 0;
     for (auto idx : firstStopIdOfRoute) {
         if (counter++ <= 8) {
-            cout << "First stop id of this = " << idx << endl;
+            cout << "First stop id of this route = " << idx << endl;
         }
     }
     cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl;
@@ -228,7 +228,7 @@ int main(int argc, char** argv) {
     counter = 0;
     for (auto idx : firstStopEventOfRoute) {
         if (counter++ <= 8) {
-            cout << "First stop event of this = " << idx << endl;
+            cout << "First stop event of this route = " << idx << endl;
         }
     }
     cout << "Le dernier élément de firstStopEventOfRoute est " << firstStopEventOfRoute.back() << endl;
@@ -236,6 +236,15 @@ int main(int argc, char** argv) {
     // routeSegments + firstRouteSegmentOfStop
     auto[routeSegments, firstRouteSegmentOfStop] =
         convert_routeSegmentsRelated(routeData, stopidToRank, stopsetToTrips);
+    cout << "À ce stade, routeSegments contient : " << routeSegments.size() << " items." << endl;
+    cout << "À ce stade, firstRouteSegmentOfStop contient : " << firstRouteSegmentOfStop.size() << " items." << endl;
+    counter = 0;
+    for (auto idx : firstRouteSegmentOfStop) {
+        if (counter++ <= 8) {
+            cout << "First route segment of this stop = " << idx << endl;
+        }
+    }
+    cout << "Le dernier élément de firstRouteSegmentOfStop est " << firstRouteSegmentOfStop.back() << endl;
 
     return 0;
 }
