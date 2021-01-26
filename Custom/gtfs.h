@@ -32,12 +32,12 @@ StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     return stopset_id.substr(0, stopset_id.size() - 1);
 }
 
-std::vector<int> stopset_id_to_stops(StopSetId const& stopset) {
-    std::vector<int> stops;
+std::vector<StopId> stopset_id_to_stops(StopSetId const& stopset) {
+    std::vector<StopId> stops;
     std::string token;
     std::istringstream iss(stopset);
     while (std::getline(iss, token, '+')) {
-        stops.push_back(stoi(token));
+        stops.push_back(token);
     }
     return stops;
 }
@@ -56,14 +56,22 @@ RouteId route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId const&
 
 std::pair<std::map<StopSetId, std::set<TripId>>, std::unordered_map<RouteId, std::unordered_set<StopSetId>>>
 partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
-    // cette fonction partitionne les trips selon leur stopset
+    // Cette fonction partitionne les trips selon leur stopset
     // deux trips auront le même stopset s'ils ont exactement les mêmes stops
-    // dans la littérature scientifique, ce stopset est appelé "route"
-    // mais dans le format GTFS, rien n'impose aux trips d'une même route d'avoir les mêmes stops
-    // (ça n'est d'ailleur pas le cas pour le GTFS de Bordeaux)
+    //
+    // Au sujet des deux sens du terme "route" :
+    //  - la littérature scientifique appelle "route" un set de stops
+    //    en particulier, si deux trips s'arrêtent aux mêmes stops, ils ont la même route
+    //  - le format GTFS impose d'associer un trip à une "route"
+    //    mais cette association est arbitraire, et rien n'oblige à suivre la convention "scientifique"
+    //    (elle n'est d'ailleurs pas suivie pour le GTFS de Bordeaux)
+    //
+    // Comme ULTRA nécessite des "routes" au sens scientifique, il est nécessaire de partitionner les trips.
 
-    std::map<StopSetId, std::set<TripId>> stopsetToTrips;
-    std::unordered_map<RouteId, std::unordered_set<StopSetId>> routesToStopsets;
+    std::map<StopSetId, std::set<TripId>>
+        stopsetToTrips;  // associe un stopset (donc une route au sens scientifique) à ses trips
+    std::unordered_map<RouteId, std::unordered_set<StopSetId>>
+        routesToStopsets;  // à partir d'une route GTFS, retrouve ses routes "scientifiques"
 
     for (auto const & [ trip_id, trip_ptr ] : feed.getTrips()) {
         auto& trip = *(trip_ptr);
@@ -75,6 +83,32 @@ partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
     }
 
     return {stopsetToTrips, routesToStopsets};
+}
+
+std::pair<std::vector<StopId>, std::unordered_map<StopId, size_t>> rank_stops(
+    std::map<StopSetId, std::set<TripId>> const& stopsetToTrips) {
+    // à partir des stops partitionnés en stopsets (i.e. en routes au sens scientifique du terme),
+    // cette fonction attribue à chaque stop un rank donné.
+
+    std::set<StopId> stops;
+    for (auto & [ stopset_id, _ ] : stopsetToTrips) {
+        std::vector<StopId> this_route_stops = my::stopset_id_to_stops(stopset_id);
+        stops.insert(this_route_stops.begin(), this_route_stops.end());
+    }
+
+    // À ce stade, le set contient tous les stops.
+
+    std::vector<StopId> ranked_stops(stops.begin(), stops.end());
+    std::unordered_map<StopId, size_t> stopidToRank;
+    for (size_t rank = 0; rank < ranked_stops.size(); ++rank) {
+        StopId stopid = ranked_stops[rank];
+        stopidToRank.insert({stopid, rank});
+    }
+
+    // à ce stade :
+    //  - ranked_stops permet de retrouver l'id d'un stop à partir de son rank
+    //  - stopidToRank permet de retrouver le rank d'un stop à partir de son id
+    return {ranked_stops, stopidToRank};
 }
 
 // vérifie que tous les trips d'un stopset donné ont bien la même route :
