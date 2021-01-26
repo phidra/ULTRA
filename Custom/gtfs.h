@@ -10,7 +10,7 @@ namespace my {
 using StopSetId = std::string;
 using TripId = std::string;
 using RouteId = std::string;
-using StopId = std::string;
+using ParsedStopId = std::string;
 
 StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     if (trip.getStopTimes().size() < 2) {
@@ -32,8 +32,8 @@ StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     return stopset_id.substr(0, stopset_id.size() - 1);
 }
 
-std::vector<StopId> stopset_id_to_stops(StopSetId const& stopset) {
-    std::vector<StopId> stops;
+std::vector<ParsedStopId> stopset_id_to_stops(StopSetId const& stopset) {
+    std::vector<ParsedStopId> stops;
     std::string token;
     std::istringstream iss(stopset);
     while (std::getline(iss, token, '+')) {
@@ -68,8 +68,8 @@ partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
     //
     // Comme ULTRA nécessite des "routes" au sens scientifique, il est nécessaire de partitionner les trips.
 
-    std::map<StopSetId, std::set<TripId>>
-        stopsetToTrips;  // associe un stopset (donc une route au sens scientifique) à ses trips
+    // associe un stopset (donc une route au sens scientifique) à ses trips
+    std::map<StopSetId, std::set<TripId>> stopsetToTrips;
     std::unordered_map<RouteId, std::unordered_set<StopSetId>>
         routesToStopsets;  // à partir d'une route GTFS, retrouve ses routes "scientifiques"
 
@@ -81,27 +81,47 @@ partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
         stopsetToTrips[this_stopset_id].emplace(trip_id);
         routesToStopsets[this_route_id].emplace(this_stopset_id);
     }
-
     return {stopsetToTrips, routesToStopsets};
 }
 
-std::pair<std::vector<StopId>, std::unordered_map<StopId, size_t>> rank_stops(
+std::pair<std::vector<StopSetId>, std::unordered_map<StopSetId, size_t>> rank_routes(
+    std::map<StopSetId, std::set<TripId>> const& stopsetToTrips) {
+    // à partir des stops partitionnés en stopsets (i.e. en routes au sens scientifique du terme),
+    // cette fonction attribue à chaque route un rank donné.
+
+    size_t stopset_counter = 0;
+    std::vector<StopSetId> ranked_routes;
+    std::unordered_map<StopSetId, size_t> routeidToRank;
+
+    for (auto ite = stopsetToTrips.cbegin(); ite != stopsetToTrips.cend(); ++ite) {
+        StopSetId const& routeid = ite->first;
+        ranked_routes.push_back(routeid);
+        routeidToRank.insert({routeid, stopset_counter++});
+    }
+
+    // À ce stade :
+    //   - ranked_routes associe un rank à une route (plus précisément, à un StopSetId)
+    //   - routeidToRank associe un StopSetId au rank d'une route
+    return {ranked_routes, routeidToRank};
+}
+
+std::pair<std::vector<ParsedStopId>, std::unordered_map<ParsedStopId, size_t>> rank_stops(
     std::map<StopSetId, std::set<TripId>> const& stopsetToTrips) {
     // à partir des stops partitionnés en stopsets (i.e. en routes au sens scientifique du terme),
     // cette fonction attribue à chaque stop un rank donné.
 
-    std::set<StopId> stops;
+    std::set<ParsedStopId> stops;
     for (auto & [ stopset_id, _ ] : stopsetToTrips) {
-        std::vector<StopId> this_route_stops = my::stopset_id_to_stops(stopset_id);
+        std::vector<ParsedStopId> this_route_stops = my::stopset_id_to_stops(stopset_id);
         stops.insert(this_route_stops.begin(), this_route_stops.end());
     }
 
     // À ce stade, le set contient tous les stops.
 
-    std::vector<StopId> ranked_stops(stops.begin(), stops.end());
-    std::unordered_map<StopId, size_t> stopidToRank;
+    std::vector<ParsedStopId> ranked_stops(stops.begin(), stops.end());
+    std::unordered_map<ParsedStopId, size_t> stopidToRank;
     for (size_t rank = 0; rank < ranked_stops.size(); ++rank) {
-        StopId stopid = ranked_stops[rank];
+        ParsedStopId stopid = ranked_stops[rank];
         stopidToRank.insert({stopid, rank});
     }
 
