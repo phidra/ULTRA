@@ -121,6 +121,56 @@ pair<vector<RAPTOR::StopEvent>, vector<size_t>> convert_stopEventsRelated(
     return {stopEvents, firstStopEventOfRoute};
 }
 
+pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
+    vector<RAPTOR::Route> const& routeData,  // FIXME : on ne devrait pas dépendre de routeData
+    unordered_map<my::ParsedStopId, size_t> const& stopidToRank,
+    map<my::StopSetId, set<my::TripId>> const& stopsetToTrips) {
+    // build d'une structure intermédiaire associant un stop (via son rank) à la liste de ses routes
+    // pour un stop donné, elle contient à la fois la route concernée, et l'index du stop dans la route
+    vector<vector<pair<my::StopSetId, int>>> routesOfAStop(stopidToRank.size());
+
+    for (auto& route : routeData) {
+        my::StopSetId routeName = route.name;  // a (scientific) route's name is its stopset
+        vector<my::ParsedStopId> stops_of_this_route = my::stopset_id_to_stops(routeName);
+
+        for (size_t stop_index = 0; stop_index < stops_of_this_route.size(); ++stop_index) {
+            my::ParsedStopId const& this_stop_id = stops_of_this_route[stop_index];
+            size_t this_stop_rank = stopidToRank.at(this_stop_id);
+
+            vector<pair<my::StopSetId, int>>& routes_of_this_stop = routesOfAStop[this_stop_rank];
+            routes_of_this_stop.emplace_back(routeName, stop_index);
+        }
+    }
+
+    // À ce stade, on connaît pour chaque stop la liste des routes qui l'utilisent
+
+    // TODO = vérifier que chaque route n'apparaît qu'une fois pour un stop donné
+
+    auto[ranked_routes, routeidToRank] = my::rank_routes(stopsetToTrips);
+
+    vector<size_t> firstRouteSegmentOfStop(stopidToRank.size() + 1);
+    vector<RAPTOR::RouteSegment> routeSegments;
+
+    size_t current_stop_first_routesegment = 0;
+
+    for (size_t stop_rank = 0; stop_rank < routesOfAStop.size(); ++stop_rank) {
+        auto& routes_of_this_stop = routesOfAStop[stop_rank];
+
+        for (auto & [ route_stopset_id, stop_index_in_this_route ] : routes_of_this_stop) {
+            auto route_rank = routeidToRank.at(route_stopset_id);
+            routeSegments.emplace_back(RouteId{route_rank}, StopIndex{stop_index_in_this_route});
+        }
+
+        firstRouteSegmentOfStop[stop_rank] = current_stop_first_routesegment;
+        current_stop_first_routesegment += routes_of_this_stop.size();
+    }
+
+    // On sette l'index "past-the-end" de routeSegments :
+    firstRouteSegmentOfStop[routesOfAStop.size()] = current_stop_first_routesegment;
+
+    return {routeSegments, firstRouteSegmentOfStop};
+}
+
 int main(int argc, char** argv) {
     if (argc < 2)
         usage();
@@ -184,49 +234,8 @@ int main(int argc, char** argv) {
     cout << "Le dernier élément de firstStopEventOfRoute est " << firstStopEventOfRoute.back() << endl;
 
     // routeSegments + firstRouteSegmentOfStop
-
-    // structure intermédiaire assocint un stop (via son rank) à la liste de ses routes (scientifiques)
-    // pour un stop donné, elle contient à la fois la route concernée, et l'index du stop dans la route
-    vector<vector<pair<my::StopSetId, int>>> routesOfAStop(stopData.size());
-
-    for (auto& route : routeData) {
-        my::StopSetId routeName = route.name;  // a (scientific) route's name is its stopset
-        vector<my::ParsedStopId> stops_of_this_route = my::stopset_id_to_stops(routeName);
-
-        for (size_t stop_index = 0; stop_index < stops_of_this_route.size(); ++stop_index) {
-            my::ParsedStopId const& this_stop_id = stops_of_this_route[stop_index];
-            size_t this_stop_rank = stopidToRank.at(this_stop_id);
-
-            vector<pair<my::StopSetId, int>>& routes_of_this_stop = routesOfAStop[this_stop_rank];
-            routes_of_this_stop.emplace_back(routeName, stop_index);
-        }
-    }
-
-    // À ce stade, on connaît pour chaque stop la liste des routes qui l'utilisent
-
-    // TODO = vérifier que chaque route n'apparaît qu'une fois pour un stop donné
-
-    auto[ranked_routes, routeidToRank] = my::rank_routes(stopsetToTrips);
-
-    vector<size_t> firstRouteSegmentOfStop(stopData.size() + 1);
-    vector<RAPTOR::RouteSegment> routeSegments;
-
-    size_t current_stop_first_routesegment = 0;
-
-    for (size_t stop_rank = 0; stop_rank < routesOfAStop.size(); ++stop_rank) {
-        auto& routes_of_this_stop = routesOfAStop[stop_rank];
-
-        for (auto & [ route_stopset_id, stop_index_in_this_route ] : routes_of_this_stop) {
-            auto route_rank = routeidToRank.at(route_stopset_id);
-            routeSegments.emplace_back(RouteId{route_rank}, StopIndex{stop_index_in_this_route});
-        }
-
-        firstRouteSegmentOfStop[stop_rank] = current_stop_first_routesegment;
-        current_stop_first_routesegment += routes_of_this_stop.size();
-    }
-
-    // On sette l'index "past-the-end" de routeSegments :
-    firstRouteSegmentOfStop[routesOfAStop.size()] = current_stop_first_routesegment;
+    auto[routeSegments, firstRouteSegmentOfStop] =
+        convert_routeSegmentsRelated(routeData, stopidToRank, stopsetToTrips);
 
     return 0;
 }
