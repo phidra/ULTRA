@@ -45,29 +45,31 @@ vector<RAPTOR::Stop> convert_stopData(vector<my::StopId> const& ranked_stops, ad
     return stopData;
 }
 
-/* pair<vector<StopId>, vector<size_t> > convert_stopIdsRelated(vector<RAPTOR::Route> const& routeData) { */
-/*     vector<StopId> stopIds; */
-/*     vector<size_t> firstStopIdOfRoute(routeData.size() + 1); */
+pair<vector<StopId>, vector<size_t> > convert_stopIdsRelated(vector<RAPTOR::Route> const& routeData,
+                                                             unordered_map<my::StopId, size_t> const& stopidToRank) {
+    vector<StopId> stopIds;
+    vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
 
-/*     size_t current_route_first_stop = 0; */
-/*     int route_index = 0; */
-/*     for (auto& route : routeData) { */
-/*         my::StopSetId routeName = route.name;  // a "route" name is its stopset */
-/*         vector<int> this_route_stops = my::stopset_id_to_stops(routeName); */
-/*         firstStopIdOfRoute[route_index++] = current_route_first_stop; */
-/*         transform(this_route_stops.cbegin(), this_route_stops.cend(), back_inserter(stopIds), */
-/*                   [](int stop) { return StopId{stop}; }); */
-/*         current_route_first_stop += this_route_stops.size(); */
-/*     } */
+    size_t current_route_first_stop = 0;
+    int route_index = 0;
+    for (auto& route : routeData) {
+        my::StopSetId routeName = route.name;  // a (scientific) route's name is its stopset
+        vector<my::StopId> this_route_stops = my::stopset_id_to_stops(routeName);
 
-/*     // À ce stade : */
-/*     //      route_index = nombre de routes */
-/*     //      current_route_first_stop = nombre de stops */
-/*     // On sette l'index "past-the-end" de stopIds : */
-/*     firstStopIdOfRoute[route_index] = current_route_first_stop; */
+        firstStopIdOfRoute[route_index++] = current_route_first_stop;
+        transform(this_route_stops.cbegin(), this_route_stops.cend(), back_inserter(stopIds),
+                  [&stopidToRank](my::StopId const& stopid) { return StopId{stopidToRank.at(stopid)}; });
+        current_route_first_stop += this_route_stops.size();
+    }
 
-/*     return {stopIds, firstStopIdOfRoute}; */
-/* } */
+    // À ce stade :
+    //      route_index = nombre de routes
+    //      current_route_first_stop = nombre de stops
+    // On sette l'index "past-the-end" de stopIds :
+    firstStopIdOfRoute[route_index] = current_route_first_stop;
+
+    return {stopIds, firstStopIdOfRoute};
+}
 
 /* pair<vector<RAPTOR::StopEvent>, vector<size_t> > convert_stopEventsRelated( */
 /*     ad::cppgtfs::gtfs::Feed const& feed, */
@@ -154,17 +156,17 @@ int main(int argc, char** argv) {
         }
     }
 
-    /* // stopIds + firstStopIdOfRoute : */
-    /* auto[stopIds, firstStopIdOfRoute] = convert_stopIdsRelated(routeData); */
-    /* cout << "À ce stade, stopIds contient : " << stopIds.size() << " items." << endl; */
-    /* cout << "À ce stade, firstStopIdOfRoute contient : " << firstStopIdOfRoute.size() << " items." << endl; */
-    /* counter = 0; */
-    /* for (auto idx : firstStopIdOfRoute) { */
-    /*     if (counter++ <= 8) { */
-    /*         cout << "First stop id of this = " << idx << endl; */
-    /*     } */
-    /* } */
-    /* cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl; */
+    // stopIds + firstStopIdOfRoute :
+    auto[stopIds, firstStopIdOfRoute] = convert_stopIdsRelated(routeData, stopidToRank);
+    cout << "À ce stade, stopIds contient : " << stopIds.size() << " items." << endl;
+    cout << "À ce stade, firstStopIdOfRoute contient : " << firstStopIdOfRoute.size() << " items." << endl;
+    counter = 0;
+    for (auto idx : firstStopIdOfRoute) {
+        if (counter++ <= 8) {
+            cout << "First stop id of this = " << idx << endl;
+        }
+    }
+    cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl;
 
     /* // stopEvents + firstStopEventOfRoute : */
     /* auto[stopEvents, firstStopEventOfRoute] = convert_stopEventsRelated(feed, routeData, stopsetToTrips); */
