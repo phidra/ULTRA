@@ -53,17 +53,17 @@ int main(int argc, char** argv) {
         }
     }
 
-    /* // stopIds + firstStopIdOfRoute : */
-    /* auto[stopIds, firstStopIdOfRoute] = convert_stopIdsRelated(routeData, stop_to_rank); */
-    /* cout << "À ce stade, stopIds contient : " << stopIds.size() << " items." << endl; */
-    /* cout << "À ce stade, firstStopIdOfRoute contient : " << firstStopIdOfRoute.size() << " items." << endl; */
-    /* counter = 0; */
-    /* for (auto idx : firstStopIdOfRoute) { */
-    /*     if (counter++ <= 8) { */
-    /*         cout << "First stop id of this route = " << idx << endl; */
-    /*     } */
-    /* } */
-    /* cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl; */
+    // stopIds + firstStopIdOfRoute :
+    auto[stopIds, firstStopIdOfRoute] = build_stopIdsRelated(routeData, stop_to_rank);
+    cout << "À ce stade, stopIds contient : " << stopIds.size() << " items." << endl;
+    cout << "À ce stade, firstStopIdOfRoute contient : " << firstStopIdOfRoute.size() << " items." << endl;
+    counter = 0;
+    for (auto idx : firstStopIdOfRoute) {
+        if (counter++ <= 8) {
+            cout << "First stop id of this route = " << idx << endl;
+        }
+    }
+    cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl;
 
     /* // stopEvents + firstStopEventOfRoute : */
     /* auto[stopEvents, firstStopEventOfRoute] = convert_stopEventsRelated(feed, routeData, route_to_trips); */
