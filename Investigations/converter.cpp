@@ -65,17 +65,17 @@ int main(int argc, char** argv) {
     }
     cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl;
 
-    /* // stopEvents + firstStopEventOfRoute : */
-    /* auto[stopEvents, firstStopEventOfRoute] = convert_stopEventsRelated(feed, routeData, route_to_trips); */
-    /* cout << "À ce stade, stopEvents contient : " << stopEvents.size() << " items." << endl; */
-    /* cout << "À ce stade, firstStopEventOfRoute contient : " << firstStopEventOfRoute.size() << " items." << endl; */
-    /* counter = 0; */
-    /* for (auto idx : firstStopEventOfRoute) { */
-    /*     if (counter++ <= 8) { */
-    /*         cout << "First stop event of this route = " << idx << endl; */
-    /*     } */
-    /* } */
-    /* cout << "Le dernier élément de firstStopEventOfRoute est " << firstStopEventOfRoute.back() << endl; */
+    // stopEvents + firstStopEventOfRoute :
+    auto[stopEvents, firstStopEventOfRoute] = build_stopEventsRelated(routeData, route_to_trips, feed);
+    cout << "À ce stade, stopEvents contient : " << stopEvents.size() << " items." << endl;
+    cout << "À ce stade, firstStopEventOfRoute contient : " << firstStopEventOfRoute.size() << " items." << endl;
+    counter = 0;
+    for (auto idx : firstStopEventOfRoute) {
+        if (counter++ <= 8) {
+            cout << "First stop event of this route = " << idx << endl;
+        }
+    }
+    cout << "Le dernier élément de firstStopEventOfRoute est " << firstStopEventOfRoute.back() << endl;
 
     /* // routeSegments + firstRouteSegmentOfStop */
     /* auto[routeSegments, firstRouteSegmentOfStop] = */
