@@ -107,24 +107,24 @@ inline std::pair<std::vector<StopID>, std::unordered_map<StopID, size_t>> rankSt
     // (this rank allows stops to be stored in a vector)
 
     // first, identify the stops that are used by at least one partitioned route :
-    std::set<StopID> useful_stops;
+    std::set<StopID> usefulStops;
     for (auto & [ route_id, _ ] : routeToTrips) {
-        std::vector<StopID> this_route_stops = my::routeToStops(route_id);
-        useful_stops.insert(this_route_stops.begin(), this_route_stops.end());
+        std::vector<StopID> thisRouteStops = my::routeToStops(route_id);
+        usefulStops.insert(thisRouteStops.begin(), thisRouteStops.end());
     }
 
     // then, rank them :
-    std::vector<StopID> ranked_stops(useful_stops.begin(), useful_stops.end());
-    std::unordered_map<StopID, size_t> stop_to_rank;
-    for (size_t rank = 0; rank < ranked_stops.size(); ++rank) {
-        StopID stopid = ranked_stops[rank];
-        stop_to_rank.insert({stopid, rank});
+    std::vector<StopID> rankedStops(usefulStops.begin(), usefulStops.end());
+    std::unordered_map<StopID, size_t> stopToRank;
+    for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
+        StopID stopid = rankedStops[rank];
+        stopToRank.insert({stopid, rank});
     }
 
     // Here :
-    //   - ranked_stops associates a rank to a stop
-    //   - stop_to_rank associates a stop to its rank
-    return {ranked_stops, stop_to_rank};
+    //   - rankedStops associates a rank to a stop
+    //   - stopToRank associates a stop to its rank
+    return {rankedStops, stopToRank};
 }
 
 }  // namespace my

@@ -31,35 +31,35 @@ int main(int argc, char** argv) {
     // prepare GTFS data :
     auto routeToTrips = my::partitionTripsInRoutes(feed);
     auto[rankedRoutes, routeToRank] = my::rankRoutes(routeToTrips);
-    auto[ranked_stops, stop_to_rank] = my::rankStops(routeToTrips);
+    auto[rankedStops, stopToRank] = my::rankStops(routeToTrips);
 
     // routeData :
     vector<RAPTOR::Route> routeData = build_routeData(routeToTrips);
     cout << "Here, routeData contains : " << routeData.size() << " items." << endl;
-    int route_counter = 0;
+    int routeCounter = 0;
     for (auto& route : routeData) {
-        if (route_counter++ <= 8) {
+        if (routeCounter++ <= 8) {
             cout << "ROUTE = " << route << endl;
         }
     }
 
     // stopData :
-    vector<RAPTOR::Stop> stopData = build_stopData(ranked_stops, feed);
+    vector<RAPTOR::Stop> stopData = build_stopData(rankedStops, feed);
     cout << "Here, stopData contains : " << stopData.size() << " items." << endl;
-    int counter = 0;
+    int stopCounter = 0;
     for (auto& stop : stopData) {
-        if (counter++ <= 8) {
+        if (stopCounter++ <= 8) {
             cout << "STOP = " << stop << endl;
         }
     }
 
     // stopIds + firstStopIdOfRoute :
-    auto[stopIds, firstStopIdOfRoute] = build_stopIdsRelated(routeData, stop_to_rank);
+    auto[stopIds, firstStopIdOfRoute] = build_stopIdsRelated(routeData, stopToRank);
     cout << "Here, stopIds contains : " << stopIds.size() << " items." << endl;
     cout << "Here, firstStopIdOfRoute contains : " << firstStopIdOfRoute.size() << " items." << endl;
-    counter = 0;
+    int otherRouteCounter = 0;
     for (auto idx : firstStopIdOfRoute) {
-        if (counter++ <= 8) {
+        if (otherRouteCounter++ <= 8) {
             cout << "First stop id of this route = " << idx << endl;
         }
     }
@@ -69,9 +69,9 @@ int main(int argc, char** argv) {
     auto[stopEvents, firstStopEventOfRoute] = build_stopEventsRelated(routeData, routeToTrips, feed);
     cout << "Here, stopEvents contains : " << stopEvents.size() << " items." << endl;
     cout << "Here, firstStopEventOfRoute contains : " << firstStopEventOfRoute.size() << " items." << endl;
-    counter = 0;
+    int yetAnotherRouteCounter = 0;
     for (auto idx : firstStopEventOfRoute) {
-        if (counter++ <= 8) {
+        if (yetAnotherRouteCounter++ <= 8) {
             cout << "First stop event of this route = " << idx << endl;
         }
     }
@@ -79,12 +79,12 @@ int main(int argc, char** argv) {
 
     // routeSegments + firstRouteSegmentOfStop
     auto[routeSegments, firstRouteSegmentOfStop] =
-        convert_routeSegmentsRelated(routeData, stop_to_rank, routeToRank, routeToTrips);
+        convert_routeSegmentsRelated(routeData, stopToRank, routeToRank, routeToTrips);
     cout << "Here, routeSegments contains : " << routeSegments.size() << " items." << endl;
     cout << "Here, firstRouteSegmentOfStop contains : " << firstRouteSegmentOfStop.size() << " items." << endl;
-    counter = 0;
+    int lastRouteCounter = 0;
     for (auto idx : firstRouteSegmentOfStop) {
-        if (counter++ <= 8) {
+        if (lastRouteCounter++ <= 8) {
             cout << "First route segment of this stop = " << idx << endl;
         }
     }
