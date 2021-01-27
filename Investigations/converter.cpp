@@ -43,15 +43,15 @@ int main(int argc, char** argv) {
         }
     }
 
-    /* // stopData : */
-    /* vector<RAPTOR::Stop> stopData = convert_stopData(ranked_stops, feed); */
-    /* cout << "À ce stade, stopData contient : " << stopData.size() << " items." << endl; */
-    /* int counter = 0; */
-    /* for (auto& stop : stopData) { */
-    /*     if (counter++ <= 8) { */
-    /*         cout << "STOP = " << stop << endl; */
-    /*     } */
-    /* } */
+    // stopData :
+    vector<RAPTOR::Stop> stopData = build_stopData(ranked_stops, feed);
+    cout << "À ce stade, stopData contient : " << stopData.size() << " items." << endl;
+    int counter = 0;
+    for (auto& stop : stopData) {
+        if (counter++ <= 8) {
+            cout << "STOP = " << stop << endl;
+        }
+    }
 
     /* // stopIds + firstStopIdOfRoute : */
     /* auto[stopIds, firstStopIdOfRoute] = convert_stopIdsRelated(routeData, stop_to_rank); */

@@ -8,7 +8,28 @@
 #include "../DataStructures/RAPTOR/Entities/RouteSegment.h"
 #include "../Custom/prepare_gtfs.h"
 
-// note : ULTRA code is not safe to use in multiple translation units, thus all the code is in header...
+// note : ULTRA code is not safe to use in multiple translation units, thus all the conversion code is in header...
+
+inline ad::cppgtfs::gtfs::Stop const& _get_stop(ad::cppgtfs::gtfs::Feed const& feed, my::StopID const& stop_id) {
+    auto stop_ptr = feed.getStops().get(stop_id);
+    if (stop_ptr == 0) {
+        std::ostringstream oss;
+        oss << "ERROR : unable to get stop with id '" << stop_id << "' (stop_ptr is 0)";
+        throw std::runtime_error(oss.str());
+    }
+
+    return *stop_ptr;
+}
+
+inline ad::cppgtfs::gtfs::Trip const& _get_trip(ad::cppgtfs::gtfs::Feed const& feed, TripID const& trip_id) {
+    auto trip_ptr = feed.getTrips().get(trip_id);
+    if (trip_ptr == 0) {
+        std::ostringstream oss;
+        oss << "ERROR : unable to get trip with id '" << trip_id << "' (trip_ptr is 0)";
+        throw std::runtime_error(oss.str());
+    }
+    return *trip_ptr;
+}
 
 inline std::vector<RAPTOR::Route> build_routeData(std::map<my::RouteID, std::set<my::TripID>> const& route_to_trips) {
     std::vector<RAPTOR::Route> routeData;
@@ -19,38 +40,21 @@ inline std::vector<RAPTOR::Route> build_routeData(std::map<my::RouteID, std::set
     return routeData;
 }
 
-/* inline ad::cppgtfs::gtfs::Trip const& get_trip(ad::cppgtfs::gtfs::Feed const& feed, TripID const& trip_id) { */
-/*     auto trip_ptr = feed.getTrips().get(trip_id); */
-/*     if (trip_ptr == 0) { */
-/*         std::ostringstream oss; */
-/*         oss << "ERROR : unable to get trip with id '" << trip_id << "' (trip_ptr is 0)"; */
-/*         throw std::runtime_error(oss.str()); */
-/*     } */
-/*     return *trip_ptr; */
-/* } */
-
-/* inline std::vector<RAPTOR::Stop> convert_stopData(std::vector<my::ParsedStopId> const& ranked_stops, */
-/*                                                   ad::cppgtfs::gtfs::Feed const& feed) { */
-/*     std::vector<RAPTOR::Stop> stopData(ranked_stops.size()); */
-/*     for (size_t rank = 0; rank < ranked_stops.size(); ++rank) { */
-/*         my::ParsedStopId stop_id = ranked_stops[rank]; */
-/*         auto stop_ptr = feed.getStops().get(stop_id); */
-/*         if (stop_ptr == 0) { */
-/*             std::ostringstream oss; */
-/*             oss << "ERROR : unable to get stop with id '" << stop_id << "' (stop_ptr is 0)"; */
-/*             throw std::runtime_error(oss.str()); */
-/*         } */
-
-/*         auto const& stop = *stop_ptr; */
-/*         Geometry::Point location{Construct::LatLongTag{}, stop.getLat(), stop.getLng()}; */
-/*         stopData[rank] = RAPTOR::Stop{stop.getName(), location}; */
-/*     } */
-/*     return stopData; */
-/* } */
+inline std::vector<RAPTOR::Stop> build_stopData(std::vector<my::StopID> const& ranked_stops,
+                                                ad::cppgtfs::gtfs::Feed const& feed) {
+    std::vector<RAPTOR::Stop> stopData(ranked_stops.size());
+    for (size_t rank = 0; rank < ranked_stops.size(); ++rank) {
+        my::StopID stop_id = ranked_stops[rank];
+        Stop const& stop = _get_stop(feed, stop_id);
+        Geometry::Point location{Construct::LatLongTag{}, stop.getLat(), stop.getLng()};
+        stopData[rank] = RAPTOR::Stop{stop.getName(), location};
+    }
+    return stopData;
+}
 
 /* inline std::pair<std::vector<StopId>, std::vector<size_t>> convert_stopIdsRelated( */
 /*     std::vector<RAPTOR::Route> const& routeData, */
-/*     std::unordered_map<my::ParsedStopId, size_t> const& stopidToRank) { */
+/*     std::unordered_map<my::StopID, size_t> const& stopidToRank) { */
 /*     std::vector<StopId> stopIds; */
 /*     std::vector<size_t> firstStopIdOfRoute(routeData.size() + 1); */
 
@@ -58,11 +62,11 @@ inline std::vector<RAPTOR::Route> build_routeData(std::map<my::RouteID, std::set
 /*     int route_index = 0; */
 /*     for (auto& route : routeData) { */
 /*         my::RouteID routeName = route.name;  // a (scientific) route's name is its stopset */
-/*         std::vector<my::ParsedStopId> stops_of_this_route = my::stopset_id_to_stops(routeName); */
+/*         std::vector<my::StopID> stops_of_this_route = my::stopset_id_to_stops(routeName); */
 
 /*         firstStopIdOfRoute[route_index++] = current_route_first_stop; */
 /*         transform(stops_of_this_route.cbegin(), stops_of_this_route.cend(), back_inserter(stopIds), */
-/*                   [&stopidToRank](my::ParsedStopId const& stopid) { return StopId{stopidToRank.at(stopid)}; }); */
+/*                   [&stopidToRank](my::StopID const& stopid) { return StopId{stopidToRank.at(stopid)}; }); */
 /*         current_route_first_stop += stops_of_this_route.size(); */
 /*     } */
 
@@ -94,7 +98,7 @@ inline std::vector<RAPTOR::Route> build_routeData(std::map<my::RouteID, std::set
 /*         auto const& trips = route_to_trips.at(routeName); */
 /*         for (auto& trip_id : trips) { */
 /*             // récupération du trip courant : */
-/*             auto& trip = my::get_trip(feed, trip_id); */
+/*             auto& trip = my::_get_trip(feed, trip_id); */
 
 /*             // chaque trip a un range de stopEvents */
 /*             // un RAPTOR::StopEvent = {departureTime,arrivalTime} */
@@ -124,7 +128,7 @@ inline std::vector<RAPTOR::Route> build_routeData(std::map<my::RouteID, std::set
 
 /* inline std::pair<std::vector<RAPTOR::RouteSegment>, std::vector<size_t>> convert_routeSegmentsRelated( */
 /*     std::vector<RAPTOR::Route> const& routeData,  // FIXME : on ne devrait pas dépendre de routeData */
-/*     std::unordered_map<my::ParsedStopId, size_t> const& stopidToRank, */
+/*     std::unordered_map<my::StopID, size_t> const& stopidToRank, */
 /*     std::map<my::RouteID, std::set<my::TripID>> const& route_to_trips) { */
 /*     // build d'une structure intermédiaire associant un stop (via son rank) à la liste de ses routes */
 /*     // pour un stop donné, elle contient à la fois la route concernée, et l'index du stop dans la route */
@@ -132,10 +136,10 @@ inline std::vector<RAPTOR::Route> build_routeData(std::map<my::RouteID, std::set
 
 /*     for (auto& route : routeData) { */
 /*         my::RouteID routeName = route.name;  // a (scientific) route's name is its stopset */
-/*         std::vector<my::ParsedStopId> stops_of_this_route = my::stopset_id_to_stops(routeName); */
+/*         std::vector<my::StopID> stops_of_this_route = my::stopset_id_to_stops(routeName); */
 
 /*         for (size_t stop_index = 0; stop_index < stops_of_this_route.size(); ++stop_index) { */
-/*             my::ParsedStopId const& this_stop_id = stops_of_this_route[stop_index]; */
+/*             my::StopID const& this_stop_id = stops_of_this_route[stop_index]; */
 /*             size_t this_stop_rank = stopidToRank.at(this_stop_id); */
 
 /*             std::vector<std::pair<my::RouteID, int>>& routes_of_this_stop = routesOfAStop[this_stop_rank]; */
