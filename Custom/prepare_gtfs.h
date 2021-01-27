@@ -88,34 +88,35 @@ inline std::map<RouteID, std::set<TripID>> partition_trips_in_routes(ad::cppgtfs
     return route_to_trips;
 }
 
-/* inline std::pair<std::vector<RouteID>, std::unordered_map<RouteID, size_t>> rank_routes( */
-/*     std::map<RouteID, std::set<TripID>> const& stopsetToTrips) { */
-/*     // à partir des stops partitionnés en stopsets (i.e. en routes au sens scientifique du terme), */
-/*     // cette fonction attribue à chaque route un rank donné. */
+inline std::pair<std::vector<RouteID>, std::unordered_map<RouteID, size_t>> rank_routes(
+    std::map<RouteID, std::set<TripID>> const& route_to_trips) {
+    // this function ranks the partitioned routes
+    // i.e. each route has an arbitrary rank from 0 to N-1 (where N is the number of route)
+    // (this rank allows routes to be stored in a vector)
 
-/*     size_t stopset_counter = 0; */
-/*     std::vector<RouteID> ranked_routes; */
-/*     std::unordered_map<RouteID, size_t> routeidToRank; */
+    size_t route_rank = 0;
+    std::vector<RouteID> ranked_routes;
+    std::unordered_map<RouteID, size_t> route_to_rank;
 
-/*     for (auto ite = stopsetToTrips.cbegin(); ite != stopsetToTrips.cend(); ++ite) { */
-/*         RouteID const& routeid = ite->first; */
-/*         ranked_routes.push_back(routeid); */
-/*         routeidToRank.insert({routeid, stopset_counter++}); */
-/*     } */
+    for (auto ite = route_to_trips.cbegin(); ite != route_to_trips.cend(); ++ite) {
+        RouteID const& routeid = ite->first;
+        ranked_routes.push_back(routeid);
+        route_to_rank.insert({routeid, route_rank++});
+    }
 
-/*     // À ce stade : */
-/*     //   - ranked_routes associe un rank à une route (plus précisément, à un RouteID) */
-/*     //   - routeidToRank associe un RouteID au rank d'une route */
-/*     return {ranked_routes, routeidToRank}; */
-/* } */
+    // Here :
+    //   - ranked_routes associates a rank to a route
+    //   - route_to_rank associates a route to its rank
+    return {ranked_routes, route_to_rank};
+}
 
 /* inline std::pair<std::vector<ParsedStopId>, std::unordered_map<ParsedStopId, size_t>> rank_stops( */
-/*     std::map<RouteID, std::set<TripID>> const& stopsetToTrips) { */
+/*     std::map<RouteID, std::set<TripID>> const& route_to_trips) { */
 /*     // à partir des stops partitionnés en stopsets (i.e. en routes au sens scientifique du terme), */
 /*     // cette fonction attribue à chaque stop un rank donné. */
 
 /*     std::set<ParsedStopId> stops; */
-/*     for (auto & [ stopset_id, _ ] : stopsetToTrips) { */
+/*     for (auto & [ stopset_id, _ ] : route_to_trips) { */
 /*         std::vector<ParsedStopId> this_route_stops = my::stopset_id_to_stops(stopset_id); */
 /*         stops.insert(this_route_stops.begin(), this_route_stops.end()); */
 /*     } */
@@ -137,8 +138,8 @@ inline std::map<RouteID, std::set<TripID>> partition_trips_in_routes(ad::cppgtfs
 
 /* // vérifie que tous les trips d'un stopset donné ont bien la même route : */
 /* inline void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed, */
-/*                                             std::map<RouteID, std::set<TripID>> const& stopsetToTrips) { */
-/*     for (auto[stopset_id, trips] : stopsetToTrips) { */
+/*                                             std::map<RouteID, std::set<TripID>> const& route_to_trips) { */
+/*     for (auto[stopset_id, trips] : route_to_trips) { */
 /*         RouteId reference_route_id = route_id_from_trip_id(feed, *trips.begin()); */
 
 /*         auto is_mismatch = [&reference_route_id, &feed](auto trip_id) { */

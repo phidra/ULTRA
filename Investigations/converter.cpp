@@ -28,8 +28,13 @@ int main(int argc, char** argv) {
     cout << "Le feed contient " << feed.getStops().size() << " stops" << endl;
     cout << "Le feed contient " << feed.getTrips().size() << " trips" << endl;
 
-    // routeData :
+    // prepare GTFS data :
     auto route_to_trips = my::partition_trips_in_routes(feed);
+    auto[ranked_routes, route_to_rank] = my::rank_routes(route_to_trips);
+
+    // from now on, we don't need cppgtfs feed anymore.
+
+    // routeData :
     /* vector<RAPTOR::Route> routeData = convert_routeData(route_to_trips); */
     /* cout << "À ce stade, routeData contient : " << routeData.size() << " items." << endl; */
     /* int route_counter = 0; */
