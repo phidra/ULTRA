@@ -31,6 +31,7 @@ int main(int argc, char** argv) {
     // prepare GTFS data :
     auto route_to_trips = my::partition_trips_in_routes(feed);
     auto[ranked_routes, route_to_rank] = my::rank_routes(route_to_trips);
+    auto[ranked_stops, stop_to_rank] = my::rank_stops(route_to_trips);
 
     // from now on, we don't need cppgtfs feed anymore.
 
@@ -45,7 +46,6 @@ int main(int argc, char** argv) {
     /* } */
 
     /* // stopData : */
-    /* auto[ranked_stops, stopidToRank] = my::rank_stops(route_to_trips); */
     /* vector<RAPTOR::Stop> stopData = convert_stopData(ranked_stops, feed); */
     /* cout << "À ce stade, stopData contient : " << stopData.size() << " items." << endl; */
     /* int counter = 0; */
@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
     /* } */
 
     /* // stopIds + firstStopIdOfRoute : */
-    /* auto[stopIds, firstStopIdOfRoute] = convert_stopIdsRelated(routeData, stopidToRank); */
+    /* auto[stopIds, firstStopIdOfRoute] = convert_stopIdsRelated(routeData, stop_to_rank); */
     /* cout << "À ce stade, stopIds contient : " << stopIds.size() << " items." << endl; */
     /* cout << "À ce stade, firstStopIdOfRoute contient : " << firstStopIdOfRoute.size() << " items." << endl; */
     /* counter = 0; */
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
 
     /* // routeSegments + firstRouteSegmentOfStop */
     /* auto[routeSegments, firstRouteSegmentOfStop] = */
-    /*     convert_routeSegmentsRelated(routeData, stopidToRank, route_to_trips); */
+    /*     convert_routeSegmentsRelated(routeData, stop_to_rank, route_to_trips); */
     /* cout << "À ce stade, routeSegments contient : " << routeSegments.size() << " items." << endl; */
     /* cout << "À ce stade, firstRouteSegmentOfStop contient : " << firstRouteSegmentOfStop.size() << " items." << endl;
      */
