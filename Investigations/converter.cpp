@@ -24,9 +24,9 @@ int main(int argc, char** argv) {
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfs_folder);
 
-    cout << "Le feed contient " << feed.getRoutes().size() << " routes" << endl;
-    cout << "Le feed contient " << feed.getStops().size() << " stops" << endl;
-    cout << "Le feed contient " << feed.getTrips().size() << " trips" << endl;
+    cout << "This feed contains " << feed.getRoutes().size() << " routes" << endl;
+    cout << "This feed contains " << feed.getStops().size() << " stops" << endl;
+    cout << "This feed contains " << feed.getTrips().size() << " trips" << endl;
 
     // prepare GTFS data :
     auto route_to_trips = my::partition_trips_in_routes(feed);
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 
     // routeData :
     vector<RAPTOR::Route> routeData = build_routeData(route_to_trips);
-    cout << "À ce stade, routeData contient : " << routeData.size() << " items." << endl;
+    cout << "Here, routeData contains : " << routeData.size() << " items." << endl;
     int route_counter = 0;
     for (auto& route : routeData) {
         if (route_counter++ <= 8) {
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
     // stopData :
     vector<RAPTOR::Stop> stopData = build_stopData(ranked_stops, feed);
-    cout << "À ce stade, stopData contient : " << stopData.size() << " items." << endl;
+    cout << "Here, stopData contains : " << stopData.size() << " items." << endl;
     int counter = 0;
     for (auto& stop : stopData) {
         if (counter++ <= 8) {
@@ -55,40 +55,40 @@ int main(int argc, char** argv) {
 
     // stopIds + firstStopIdOfRoute :
     auto[stopIds, firstStopIdOfRoute] = build_stopIdsRelated(routeData, stop_to_rank);
-    cout << "À ce stade, stopIds contient : " << stopIds.size() << " items." << endl;
-    cout << "À ce stade, firstStopIdOfRoute contient : " << firstStopIdOfRoute.size() << " items." << endl;
+    cout << "Here, stopIds contains : " << stopIds.size() << " items." << endl;
+    cout << "Here, firstStopIdOfRoute contains : " << firstStopIdOfRoute.size() << " items." << endl;
     counter = 0;
     for (auto idx : firstStopIdOfRoute) {
         if (counter++ <= 8) {
             cout << "First stop id of this route = " << idx << endl;
         }
     }
-    cout << "Le dernier élément de firstStopIdOfRoute est " << firstStopIdOfRoute.back() << endl;
+    cout << "Last item of firstStopIdOfRoute is " << firstStopIdOfRoute.back() << endl;
 
     // stopEvents + firstStopEventOfRoute :
     auto[stopEvents, firstStopEventOfRoute] = build_stopEventsRelated(routeData, route_to_trips, feed);
-    cout << "À ce stade, stopEvents contient : " << stopEvents.size() << " items." << endl;
-    cout << "À ce stade, firstStopEventOfRoute contient : " << firstStopEventOfRoute.size() << " items." << endl;
+    cout << "Here, stopEvents contains : " << stopEvents.size() << " items." << endl;
+    cout << "Here, firstStopEventOfRoute contains : " << firstStopEventOfRoute.size() << " items." << endl;
     counter = 0;
     for (auto idx : firstStopEventOfRoute) {
         if (counter++ <= 8) {
             cout << "First stop event of this route = " << idx << endl;
         }
     }
-    cout << "Le dernier élément de firstStopEventOfRoute est " << firstStopEventOfRoute.back() << endl;
+    cout << "Last item of firstStopEventOfRoute is " << firstStopEventOfRoute.back() << endl;
 
     // routeSegments + firstRouteSegmentOfStop
     auto[routeSegments, firstRouteSegmentOfStop] =
         convert_routeSegmentsRelated(routeData, stop_to_rank, route_to_rank, route_to_trips);
-    cout << "À ce stade, routeSegments contient : " << routeSegments.size() << " items." << endl;
-    cout << "À ce stade, firstRouteSegmentOfStop contient : " << firstRouteSegmentOfStop.size() << " items." << endl;
+    cout << "Here, routeSegments contains : " << routeSegments.size() << " items." << endl;
+    cout << "Here, firstRouteSegmentOfStop contains : " << firstRouteSegmentOfStop.size() << " items." << endl;
     counter = 0;
     for (auto idx : firstRouteSegmentOfStop) {
         if (counter++ <= 8) {
             cout << "First route segment of this stop = " << idx << endl;
         }
     }
-    cout << "Le dernier élément de firstRouteSegmentOfStop est " << firstRouteSegmentOfStop.back() << endl;
+    cout << "Last item of firstRouteSegmentOfStop is " << firstRouteSegmentOfStop.back() << endl;
 
     return 0;
 }
