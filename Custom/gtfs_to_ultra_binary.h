@@ -122,52 +122,56 @@ inline std::pair<std::vector<RAPTOR::StopEvent>, std::vector<size_t>> build_stop
     return {stopEvents, firstStopEventOfRoute};
 }
 
-/* inline std::pair<std::vector<RAPTOR::RouteSegment>, std::vector<size_t>> convert_routeSegmentsRelated( */
-/*     std::vector<RAPTOR::Route> const& routeData,  // FIXME : on ne devrait pas dépendre de routeData */
-/*     std::unordered_map<my::StopID, size_t> const& stopidToRank, */
-/*     std::map<my::RouteID, std::set<my::TripID>> const& route_to_trips) { */
-/*     // build d'une structure intermédiaire associant un stop (via son rank) à la liste de ses routes */
-/*     // pour un stop donné, elle contient à la fois la route concernée, et l'index du stop dans la route */
-/*     std::vector<std::vector<std::pair<my::RouteID, int>>> routesOfAStop(stopidToRank.size()); */
+inline std::pair<std::vector<RAPTOR::RouteSegment>, std::vector<size_t>> convert_routeSegmentsRelated(
+    std::vector<RAPTOR::Route> const& routeData,
+    std::unordered_map<my::StopID, size_t> const& stop_to_rank,
+    std::unordered_map<my::RouteID, size_t> const& route_to_rank,
+    std::map<my::RouteID, std::set<my::TripID>> const& route_to_trips) {
+    // building an intermediate structure that associates a stop_rank to all its routes
+    // for a given stop, this structures stores some pairs {route + stop index in this route}
 
-/*     for (auto& route : routeData) { */
-/*         my::RouteID routeName = route.name;  // a (scientific) route's name is its stopset */
-/*         std::vector<my::StopID> stops_of_this_route = my::route_to_stops(routeName); */
+    auto nb_stops = stop_to_rank.size();
+    std::vector<std::vector<std::pair<my::RouteID, int>>> routes_using_a_stop(nb_stops);
 
-/*         for (size_t stop_index = 0; stop_index < stops_of_this_route.size(); ++stop_index) { */
-/*             my::StopID const& this_stop_id = stops_of_this_route[stop_index]; */
-/*             size_t this_stop_rank = stopidToRank.at(this_stop_id); */
+    for (auto& route : routeData) {
+        my::RouteID route_id = route.name;
+        std::vector<my::StopID> stops_of_this_route = my::route_to_stops(route_id);
 
-/*             std::vector<std::pair<my::RouteID, int>>& routes_of_this_stop = routesOfAStop[this_stop_rank]; */
-/*             routes_of_this_stop.emplace_back(routeName, stop_index); */
-/*         } */
-/*     } */
+        for (size_t stop_index = 0; stop_index < stops_of_this_route.size(); ++stop_index) {
+            my::StopID const& stop_id = stops_of_this_route[stop_index];
+            size_t stop_rank = stop_to_rank.at(stop_id);
 
-/*     // À ce stade, on connaît pour chaque stop la liste des routes qui l'utilisent */
+            std::vector<std::pair<my::RouteID, int>>& routes_using_this_stop = routes_using_a_stop[stop_rank];
+            routes_using_this_stop.emplace_back(route_id, stop_index);
+        }
+    }
 
-/*     // TODO = vérifier que chaque route n'apparaît qu'une fois pour un stop donné */
+    // From now on, for each stop, we know the routes that uses it
 
-/*     auto[ranked_routes, routeidToRank] = my::rank_routes(route_to_trips); */
+    // TODO = check that each route only appears once for a given stop
 
-/*     std::vector<size_t> firstRouteSegmentOfStop(stopidToRank.size() + 1); */
-/*     std::vector<RAPTOR::RouteSegment> routeSegments; */
+    std::vector<size_t> firstRouteSegmentOfStop(stop_to_rank.size() + 1);
+    std::vector<RAPTOR::RouteSegment> routeSegments;
 
-/*     size_t current_stop_first_routesegment = 0; */
+    size_t current_stop_first_routesegment = 0;
 
-/*     for (size_t stop_rank = 0; stop_rank < routesOfAStop.size(); ++stop_rank) { */
-/*         auto& routes_of_this_stop = routesOfAStop[stop_rank]; */
+    for (size_t stop_rank = 0; stop_rank < routes_using_a_stop.size(); ++stop_rank) {
+        auto& routes_using_this_stop = routes_using_a_stop[stop_rank];
 
-/*         for (auto & [ route_stopset_id, stop_index_in_this_route ] : routes_of_this_stop) { */
-/*             auto route_rank = routeidToRank.at(route_stopset_id); */
-/*             routeSegments.emplace_back(RouteId{route_rank}, StopIndex{stop_index_in_this_route}); */
-/*         } */
+        for (auto & [ route_id, stop_index_in_this_route ] : routes_using_this_stop) {
+            auto route_rank = route_to_rank.at(route_id);
+            routeSegments.emplace_back(RouteId{route_rank}, StopIndex{stop_index_in_this_route});
+        }
 
-/*         firstRouteSegmentOfStop[stop_rank] = current_stop_first_routesegment; */
-/*         current_stop_first_routesegment += routes_of_this_stop.size(); */
-/*     } */
+        firstRouteSegmentOfStop[stop_rank] = current_stop_first_routesegment;
+        current_stop_first_routesegment += routes_using_this_stop.size();
+    }
 
-/*     // On sette l'index "past-the-end" de routeSegments : */
-/*     firstRouteSegmentOfStop[routesOfAStop.size()] = current_stop_first_routesegment; */
+    // From now on :
+    //      current_stop_first_routesegment = total number of routesgments
+    // Setting past-the-end routeSegments :
+    auto nb_routes = routes_using_a_stop.size();
+    firstRouteSegmentOfStop[nb_routes] = current_stop_first_routesegment;
 
-/*     return {routeSegments, firstRouteSegmentOfStop}; */
-/* } */
+    return {routeSegments, firstRouteSegmentOfStop};
+}
