@@ -29,12 +29,12 @@ int main(int argc, char** argv) {
     cout << "This feed contains " << feed.getTrips().size() << " trips" << endl;
 
     // prepare GTFS data :
-    auto route_to_trips = my::partition_trips_in_routes(feed);
-    auto[ranked_routes, route_to_rank] = my::rank_routes(route_to_trips);
-    auto[ranked_stops, stop_to_rank] = my::rank_stops(route_to_trips);
+    auto routeToTrips = my::partitionTripsInRoutes(feed);
+    auto[rankedRoutes, routeToRank] = my::rankRoutes(routeToTrips);
+    auto[ranked_stops, stop_to_rank] = my::rankStops(routeToTrips);
 
     // routeData :
-    vector<RAPTOR::Route> routeData = build_routeData(route_to_trips);
+    vector<RAPTOR::Route> routeData = build_routeData(routeToTrips);
     cout << "Here, routeData contains : " << routeData.size() << " items." << endl;
     int route_counter = 0;
     for (auto& route : routeData) {
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     cout << "Last item of firstStopIdOfRoute is " << firstStopIdOfRoute.back() << endl;
 
     // stopEvents + firstStopEventOfRoute :
-    auto[stopEvents, firstStopEventOfRoute] = build_stopEventsRelated(routeData, route_to_trips, feed);
+    auto[stopEvents, firstStopEventOfRoute] = build_stopEventsRelated(routeData, routeToTrips, feed);
     cout << "Here, stopEvents contains : " << stopEvents.size() << " items." << endl;
     cout << "Here, firstStopEventOfRoute contains : " << firstStopEventOfRoute.size() << " items." << endl;
     counter = 0;
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 
     // routeSegments + firstRouteSegmentOfStop
     auto[routeSegments, firstRouteSegmentOfStop] =
-        convert_routeSegmentsRelated(routeData, stop_to_rank, route_to_rank, route_to_trips);
+        convert_routeSegmentsRelated(routeData, stop_to_rank, routeToRank, routeToTrips);
     cout << "Here, routeSegments contains : " << routeSegments.size() << " items." << endl;
     cout << "Here, firstRouteSegmentOfStop contains : " << firstRouteSegmentOfStop.size() << " items." << endl;
     counter = 0;

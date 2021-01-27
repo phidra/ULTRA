@@ -40,20 +40,20 @@ inline RouteID build_route_id(ad::cppgtfs::gtfs::Trip const& trip) {
         throw std::runtime_error(oss.str());
     }
 
-    RouteID route_id{};
+    RouteID routeId{};
 
     // precondition : getStopTimes return stops in order
     for (auto const& stoptime : trip.getStopTimes()) {
         auto stop = *(stoptime.getStop());
-        route_id.append(stop.getId());
-        route_id.append("+");
+        routeId.append(stop.getId());
+        routeId.append("+");
     }
 
     // remove final '+' :
-    return route_id.substr(0, route_id.size() - 1);
+    return routeId.substr(0, routeId.size() - 1);
 }
 
-inline std::vector<StopID> route_to_stops(RouteID const& route) {
+inline std::vector<StopID> routeToStops(RouteID const& route) {
     std::vector<StopID> stops;
     std::string token;
     std::istringstream iss(route);
@@ -63,53 +63,53 @@ inline std::vector<StopID> route_to_stops(RouteID const& route) {
     return stops;
 }
 
-inline std::map<RouteID, std::set<TripID>> partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
+inline std::map<RouteID, std::set<TripID>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
     // ULTRA uses "scientific" routes, but feed only has GTFS routes.
     // This functions partitions trips amongst their (scientific) route.
     // Two trips will have the same route IF they have excatly the same stops.
 
-    std::map<RouteID, std::set<TripID>> route_to_trips;
+    std::map<RouteID, std::set<TripID>> routeToTrips;
 
-    for (auto const & [ trip_id, trip_ptr ] : feed.getTrips()) {
-        auto& trip = *(trip_ptr);
-        RouteID this_route_id = build_route_id(trip);
-        route_to_trips[this_route_id].emplace(trip_id);
+    for (auto const & [ tripId, tripPtr ] : feed.getTrips()) {
+        auto& trip = *(tripPtr);
+        RouteID thisRouteId = build_route_id(trip);
+        routeToTrips[thisRouteId].emplace(tripId);
     }
-    return route_to_trips;
+    return routeToTrips;
 }
 
-inline std::pair<std::vector<RouteID>, std::unordered_map<RouteID, size_t>> rank_routes(
-    std::map<RouteID, std::set<TripID>> const& route_to_trips) {
+inline std::pair<std::vector<RouteID>, std::unordered_map<RouteID, size_t>> rankRoutes(
+    std::map<RouteID, std::set<TripID>> const& routeToTrips) {
     // this function ranks the partitioned routes
     // i.e. each route has an arbitrary rank from 0 to N-1 (where N is the number of routes)
     // (this rank allows routes to be stored in a vector)
 
-    size_t route_rank = 0;
-    std::vector<RouteID> ranked_routes;
-    std::unordered_map<RouteID, size_t> route_to_rank;
+    size_t routeRank = 0;
+    std::vector<RouteID> rankedRoutes;
+    std::unordered_map<RouteID, size_t> routeToRank;
 
-    for (auto ite = route_to_trips.cbegin(); ite != route_to_trips.cend(); ++ite) {
-        RouteID const& routeid = ite->first;
-        ranked_routes.push_back(routeid);
-        route_to_rank.insert({routeid, route_rank++});
+    for (auto ite = routeToTrips.cbegin(); ite != routeToTrips.cend(); ++ite) {
+        RouteID const& routeId = ite->first;
+        rankedRoutes.push_back(routeId);
+        routeToRank.insert({routeId, routeRank++});
     }
 
     // Here :
-    //   - ranked_routes associates a rank to a route
-    //   - route_to_rank associates a route to its rank
-    return {ranked_routes, route_to_rank};
+    //   - rankedRoutes associates a rank to a route
+    //   - routeToRank associates a route to its rank
+    return {rankedRoutes, routeToRank};
 }
 
-inline std::pair<std::vector<StopID>, std::unordered_map<StopID, size_t>> rank_stops(
-    std::map<RouteID, std::set<TripID>> const& route_to_trips) {
+inline std::pair<std::vector<StopID>, std::unordered_map<StopID, size_t>> rankStops(
+    std::map<RouteID, std::set<TripID>> const& routeToTrips) {
     // this function ranks the stops (stops not used in routes are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)
     // (this rank allows stops to be stored in a vector)
 
     // first, identify the stops that are used by at least one partitioned route :
     std::set<StopID> useful_stops;
-    for (auto & [ route_id, _ ] : route_to_trips) {
-        std::vector<StopID> this_route_stops = my::route_to_stops(route_id);
+    for (auto & [ route_id, _ ] : routeToTrips) {
+        std::vector<StopID> this_route_stops = my::routeToStops(route_id);
         useful_stops.insert(this_route_stops.begin(), this_route_stops.end());
     }
 
