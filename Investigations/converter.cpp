@@ -2,7 +2,7 @@
 #include <string>
 #include "ad/cppgtfs/Parser.h"
 
-#include "../Custom/gtfs.h"
+#include "../Custom/prepare_gtfs.h"
 #include "../Custom/gtfs_to_binary.h"
 
 using namespace std;
