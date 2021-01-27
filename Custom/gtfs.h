@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <numeric>
@@ -12,7 +14,7 @@ using TripId = std::string;
 using RouteId = std::string;
 using ParsedStopId = std::string;
 
-StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
+inline StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     if (trip.getStopTimes().size() < 2) {
         std::ostringstream oss;
         oss << "ERROR : stopset is too small (" << trip.getStopTimes().size() << ") for trip : " << trip.getId();
@@ -32,7 +34,7 @@ StopSetId build_stopset_id(ad::cppgtfs::gtfs::Trip const& trip) {
     return stopset_id.substr(0, stopset_id.size() - 1);
 }
 
-std::vector<ParsedStopId> stopset_id_to_stops(StopSetId const& stopset) {
+inline std::vector<ParsedStopId> stopset_id_to_stops(StopSetId const& stopset) {
     std::vector<ParsedStopId> stops;
     std::string token;
     std::istringstream iss(stopset);
@@ -42,7 +44,7 @@ std::vector<ParsedStopId> stopset_id_to_stops(StopSetId const& stopset) {
     return stops;
 }
 
-RouteId route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId const& trip_id) {
+inline RouteId route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId const& trip_id) {
     auto trip_ptr = feed.getTrips().get(trip_id);
     if (trip_ptr == 0) {
         std::ostringstream oss;
@@ -54,7 +56,7 @@ RouteId route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripId const&
     return real_route.getId();
 }
 
-std::pair<std::map<StopSetId, std::set<TripId>>, std::unordered_map<RouteId, std::unordered_set<StopSetId>>>
+inline std::pair<std::map<StopSetId, std::set<TripId>>, std::unordered_map<RouteId, std::unordered_set<StopSetId>>>
 partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
     // Cette fonction partitionne les trips selon leur stopset
     // deux trips auront le même stopset s'ils ont exactement les mêmes stops
@@ -84,7 +86,7 @@ partition_trips_in_stopsets(ad::cppgtfs::gtfs::Feed const& feed) {
     return {stopsetToTrips, routesToStopsets};
 }
 
-std::pair<std::vector<StopSetId>, std::unordered_map<StopSetId, size_t>> rank_routes(
+inline std::pair<std::vector<StopSetId>, std::unordered_map<StopSetId, size_t>> rank_routes(
     std::map<StopSetId, std::set<TripId>> const& stopsetToTrips) {
     // à partir des stops partitionnés en stopsets (i.e. en routes au sens scientifique du terme),
     // cette fonction attribue à chaque route un rank donné.
@@ -105,7 +107,7 @@ std::pair<std::vector<StopSetId>, std::unordered_map<StopSetId, size_t>> rank_ro
     return {ranked_routes, routeidToRank};
 }
 
-std::pair<std::vector<ParsedStopId>, std::unordered_map<ParsedStopId, size_t>> rank_stops(
+inline std::pair<std::vector<ParsedStopId>, std::unordered_map<ParsedStopId, size_t>> rank_stops(
     std::map<StopSetId, std::set<TripId>> const& stopsetToTrips) {
     // à partir des stops partitionnés en stopsets (i.e. en routes au sens scientifique du terme),
     // cette fonction attribue à chaque stop un rank donné.
@@ -132,8 +134,8 @@ std::pair<std::vector<ParsedStopId>, std::unordered_map<ParsedStopId, size_t>> r
 }
 
 // vérifie que tous les trips d'un stopset donné ont bien la même route :
-void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed,
-                                     std::map<StopSetId, std::set<TripId>> const& stopsetToTrips) {
+inline void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed,
+                                            std::map<StopSetId, std::set<TripId>> const& stopsetToTrips) {
     for (auto[stopset_id, trips] : stopsetToTrips) {
         RouteId reference_route_id = route_id_from_trip_id(feed, *trips.begin());
 
@@ -153,7 +155,7 @@ void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed,
     }
 }
 
-ad::cppgtfs::gtfs::Trip const& get_trip(ad::cppgtfs::gtfs::Feed const& feed, TripId const& trip_id) {
+inline ad::cppgtfs::gtfs::Trip const& get_trip(ad::cppgtfs::gtfs::Feed const& feed, TripId const& trip_id) {
     auto trip_ptr = feed.getTrips().get(trip_id);
     if (trip_ptr == 0) {
         std::ostringstream oss;
