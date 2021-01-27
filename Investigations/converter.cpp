@@ -33,6 +33,12 @@ int main(int argc, char** argv) {
     auto[rankedRoutes, routeToRank] = my::rankRoutes(routeToTrips);
     auto[rankedStops, stopToRank] = my::rankStops(routeToTrips);
 
+    // after this preparation step, from now on :
+    //  - routes of GTFS data are not used anymore (they are replaced with a partition of stops, cf. prepare_gtfs.h)
+    //  - only the stops that appear in at least one trip are used
+    //  - a route (or a stop) can be identified with its RouteID/StopID or its rank
+    //  - the conversion between ID<->rank is done with the above structures
+
     // routeData :
     vector<RAPTOR::Route> routeData = build_routeData(routeToTrips);
     cout << "Here, routeData contains : " << routeData.size() << " items." << endl;
