@@ -3,7 +3,7 @@
 #include "ad/cppgtfs/Parser.h"
 
 #include "../Custom/prepare_gtfs.h"
-#include "../Custom/gtfs_to_binary.h"
+#include "../Custom/gtfs_to_ultra_binary.h"
 
 using namespace std;
 
@@ -33,17 +33,15 @@ int main(int argc, char** argv) {
     auto[ranked_routes, route_to_rank] = my::rank_routes(route_to_trips);
     auto[ranked_stops, stop_to_rank] = my::rank_stops(route_to_trips);
 
-    // from now on, we don't need cppgtfs feed anymore.
-
     // routeData :
-    /* vector<RAPTOR::Route> routeData = convert_routeData(route_to_trips); */
-    /* cout << "À ce stade, routeData contient : " << routeData.size() << " items." << endl; */
-    /* int route_counter = 0; */
-    /* for (auto& route : routeData) { */
-    /*     if (route_counter++ <= 8) { */
-    /*         cout << "ROUTE = " << route << endl; */
-    /*     } */
-    /* } */
+    vector<RAPTOR::Route> routeData = build_routeData(route_to_trips);
+    cout << "À ce stade, routeData contient : " << routeData.size() << " items." << endl;
+    int route_counter = 0;
+    for (auto& route : routeData) {
+        if (route_counter++ <= 8) {
+            cout << "ROUTE = " << route << endl;
+        }
+    }
 
     /* // stopData : */
     /* vector<RAPTOR::Stop> stopData = convert_stopData(ranked_stops, feed); */

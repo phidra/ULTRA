@@ -8,15 +8,25 @@
 #include "../DataStructures/RAPTOR/Entities/RouteSegment.h"
 #include "../Custom/prepare_gtfs.h"
 
-/* // note : ULTRA code is not safe to use in multiple translation units, thus all the code is in header... */
+// note : ULTRA code is not safe to use in multiple translation units, thus all the code is in header...
 
-/* inline std::vector<RAPTOR::Route> convert_routeData( */
-/*     std::map<my::RouteID, std::set<my::TripID>> const& route_to_trips) { */
-/*     std::vector<RAPTOR::Route> routeData; */
-/*     routeData.reserve(route_to_trips.size()); */
-/*     transform(route_to_trips.begin(), route_to_trips.end(), back_inserter(routeData), */
-/*               [](auto& stopset_to_trip) { return RAPTOR::Route(stopset_to_trip.first); }); */
-/*     return routeData; */
+inline std::vector<RAPTOR::Route> build_routeData(std::map<my::RouteID, std::set<my::TripID>> const& route_to_trips) {
+    std::vector<RAPTOR::Route> routeData;
+    routeData.reserve(route_to_trips.size());
+    // note : The route name is its id (and not its rank)
+    transform(route_to_trips.begin(), route_to_trips.end(), back_inserter(routeData),
+              [](auto& stopset_to_trip) { return RAPTOR::Route(stopset_to_trip.first); });
+    return routeData;
+}
+
+/* inline ad::cppgtfs::gtfs::Trip const& get_trip(ad::cppgtfs::gtfs::Feed const& feed, TripID const& trip_id) { */
+/*     auto trip_ptr = feed.getTrips().get(trip_id); */
+/*     if (trip_ptr == 0) { */
+/*         std::ostringstream oss; */
+/*         oss << "ERROR : unable to get trip with id '" << trip_id << "' (trip_ptr is 0)"; */
+/*         throw std::runtime_error(oss.str()); */
+/*     } */
+/*     return *trip_ptr; */
 /* } */
 
 /* inline std::vector<RAPTOR::Stop> convert_stopData(std::vector<my::ParsedStopId> const& ranked_stops, */

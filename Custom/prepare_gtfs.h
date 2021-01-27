@@ -63,18 +63,6 @@ inline std::vector<StopID> route_to_stops(RouteID const& route) {
     return stops;
 }
 
-/* inline RouteId route_id_from_trip_id(ad::cppgtfs::gtfs::Feed const& feed, TripID const& trip_id) { */
-/*     auto trip_ptr = feed.getTrips().get(trip_id); */
-/*     if (trip_ptr == 0) { */
-/*         std::ostringstream oss; */
-/*         oss << "ERROR : unable to get trip with id '" << trip_id << "' (trip_ptr is 0)"; */
-/*         throw std::runtime_error(oss.str()); */
-/*     } */
-/*     auto& trip = *(trip_ptr); */
-/*     auto real_route = *(trip.getRoute()); */
-/*     return real_route.getId(); */
-/* } */
-
 inline std::map<RouteID, std::set<TripID>> partition_trips_in_routes(ad::cppgtfs::gtfs::Feed const& feed) {
     // ULTRA uses "scientific" routes, but feed only has GTFS routes.
     // This functions partitions trips amongst their (scientific) route.
@@ -138,37 +126,5 @@ inline std::pair<std::vector<StopID>, std::unordered_map<StopID, size_t>> rank_s
     //   - stop_to_rank associates a stop to its rank
     return {ranked_stops, stop_to_rank};
 }
-
-/* // vérifie que tous les trips d'un stopset donné ont bien la même route : */
-/* inline void assert_identical_stopset_routes(ad::cppgtfs::gtfs::Feed const& feed, */
-/*                                             std::map<RouteID, std::set<TripID>> const& route_to_trips) { */
-/*     for (auto[stopset_id, trips] : route_to_trips) { */
-/*         RouteId reference_route_id = route_id_from_trip_id(feed, *trips.begin()); */
-
-/*         auto is_mismatch = [&reference_route_id, &feed](auto trip_id) { */
-/*             return route_id_from_trip_id(feed, trip_id) != reference_route_id; */
-/*         }; */
-
-/*         auto mismatching_trip = find_if(trips.cbegin(), trips.cend(), is_mismatch); */
-/*         if (mismatching_trip != trips.cend()) { */
-/*             std::cout << "This stopset has more than 1 real route : " << stopset_id << std::endl; */
-/*             std::cout << "Reference route_id = " << reference_route_id << std::endl; */
-/*             std::cout << "Mismatching trip = " << *mismatching_trip << std::endl; */
-/*             std::cout << "Mismatching trip's route id = " << route_id_from_trip_id(feed, *mismatching_trip) */
-/*                       << std::endl; */
-/*             throw std::runtime_error("failed to assert_identical_stopset_routes"); */
-/*         } */
-/*     } */
-/* } */
-
-/* inline ad::cppgtfs::gtfs::Trip const& get_trip(ad::cppgtfs::gtfs::Feed const& feed, TripID const& trip_id) { */
-/*     auto trip_ptr = feed.getTrips().get(trip_id); */
-/*     if (trip_ptr == 0) { */
-/*         std::ostringstream oss; */
-/*         oss << "ERROR : unable to get trip with id '" << trip_id << "' (trip_ptr is 0)"; */
-/*         throw std::runtime_error(oss.str()); */
-/*     } */
-/*     return *trip_ptr; */
-/* } */
 
 }  // namespace my
