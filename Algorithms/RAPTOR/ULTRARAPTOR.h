@@ -23,6 +23,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 #include "InitialTransfers.h"
 
@@ -31,6 +32,12 @@
 #include "../../DataStructures/Container/Map.h"
 
 #include "Debugger.h"
+
+
+#include <cassert>
+
+#include "../../Custom/legs.h"
+#include "../../Custom/journey.h"
 
 namespace RAPTOR {
 
@@ -41,19 +48,6 @@ public:
     using Debugger = DEBUGGER;
     using Type = ULTRARAPTOR<Debugger>;
 
-private:
-    struct EarliestArrivalLabel {
-        EarliestArrivalLabel() : arrivalTime(never), parentDepartureTime(never), parent(noVertex), usesRoute(false), routeId(noRouteId) {}
-        int arrivalTime;
-        int parentDepartureTime;
-        Vertex parent;
-        bool usesRoute;
-        union {
-            RouteId routeId;
-            Edge transferId;
-        };
-    };
-    using Round = std::vector<EarliestArrivalLabel>;
 
 public:
     template<typename ATTRIBUTE>
@@ -76,7 +70,8 @@ public:
         ULTRARAPTOR(data, chData.forward, chData.backward, Weight, debuggerTemplate) {
     }
 
-    inline void run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
+
+    inline std::vector<Leg> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
         debugger.start();
         debugger.startInitialization();
         clear();
@@ -91,7 +86,10 @@ public:
             if (stopsUpdatedByRoute.empty()) break;
             relaxIntermediateTransfers();
         }
+
         debugger.done();
+        auto journey = myserver::build_legs(source, data, initialTransfers, rounds);
+        return journey;
     }
 
     inline const Debugger& getDebugger() const noexcept {
@@ -106,7 +104,7 @@ private:
         routesServingUpdatedStops.clear();
         targetStop = StopId(data.numberOfStops());
         if constexpr (RESET_CAPACITIES) {
-            std::vector<Round>().swap(rounds);
+            std::vector<myserver::Round>().swap(rounds);
             std::vector<int>(earliestArrival.size(), never).swap(earliestArrival);
         } else {
             rounds.clear();
@@ -181,7 +179,7 @@ private:
                 stop = stops[stopIndex];
                 debugger.scanRouteSegment(data.getRouteSegmentNum(route, stopIndex));
                 if (arrivalByRoute(stop, trip[stopIndex].arrivalTime)) {
-                    EarliestArrivalLabel& label = currentRound()[stop];
+                    myserver::EarliestArrivalLabel& label = currentRound()[stop];
                     label.parent = stops[parentIndex];
                     label.parentDepartureTime = trip[parentIndex].departureTime;
                     label.usesRoute = true;
@@ -203,7 +201,7 @@ private:
             const int arrivalTime = sourceDepartureTime + initialTransfers.getForwardDistance(stop);
             if (arrivalByTransfer(StopId(stop), arrivalTime)) {
                 debugger.updateStopByTransfer(StopId(stop), arrivalTime);
-                EarliestArrivalLabel& label = currentRound()[stop];
+                myserver::EarliestArrivalLabel& label = currentRound()[stop];
                 label.parent = sourceVertex;
                 label.parentDepartureTime = sourceDepartureTime;
                 label.usesRoute = false;
@@ -214,7 +212,7 @@ private:
             const int arrivalTime = sourceDepartureTime + initialTransfers.getDistance();
             if (arrivalByTransfer(targetStop, arrivalTime)) {
                 debugger.updateStopByTransfer(targetStop, arrivalTime);
-                EarliestArrivalLabel& label = currentRound()[targetStop];
+                myserver::EarliestArrivalLabel& label = currentRound()[targetStop];
                 label.parent = sourceVertex;
                 label.parentDepartureTime = sourceDepartureTime;
                 label.usesRoute = false;
@@ -238,7 +236,7 @@ private:
                 AssertMsg(data.isStop(data.transferGraph.get(ToVertex, edge)), "Graph contains edges to non stop vertices!");
                 if (arrivalByTransfer(toStop, arrivalTime)) {
                     debugger.updateStopByTransfer(toStop, arrivalTime);
-                    EarliestArrivalLabel& label = currentRound()[toStop];
+                    myserver::EarliestArrivalLabel& label = currentRound()[toStop];
                     label.parent = stop;
                     label.parentDepartureTime = earliestArrivalTime;
                     label.usesRoute = false;
@@ -249,7 +247,7 @@ private:
                 const int arrivalTime = earliestArrivalTime + initialTransfers.getBackwardDistance(stop);
                 if (arrivalByTransfer(targetStop, arrivalTime)) {
                     debugger.updateStopByTransfer(targetStop, arrivalTime);
-                    EarliestArrivalLabel& label = currentRound()[targetStop];
+                    myserver::EarliestArrivalLabel& label = currentRound()[targetStop];
                     label.parent = stop;
                     label.parentDepartureTime = earliestArrivalTime;
                     label.usesRoute = false;
@@ -262,12 +260,12 @@ private:
         debugger.stopRelaxTransfers();
     }
 
-    inline Round& currentRound() noexcept {
+    inline myserver::Round& currentRound() noexcept {
         AssertMsg(!rounds.empty(), "Cannot return current round, because no round exists!");
         return rounds.back();
     }
 
-    inline Round& previousRound() noexcept {
+    inline myserver::Round& previousRound() noexcept {
         AssertMsg(rounds.size() >= 2, "Cannot return previous round, because less than two rounds exist!");
         return rounds[rounds.size() - 2];
     }
@@ -302,7 +300,7 @@ private:
 
     BucketCHInitialTransfers initialTransfers;
 
-    std::vector<Round> rounds;
+    std::vector<myserver::Round> rounds;
 
     std::vector<int> earliestArrival;
 
