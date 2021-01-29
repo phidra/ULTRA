@@ -9,5 +9,7 @@ Runnables/ComputeShortcuts
 Runnables/RunCSAQueries
 Runnables/RunRAPTORQueries
 
+_build
+
 DATA
-WORKDIR
+WORKDIR*
