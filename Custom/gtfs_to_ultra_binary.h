@@ -8,7 +8,8 @@
 #include "../DataStructures/RAPTOR/Entities/RouteSegment.h"
 #include "../Custom/prepare_gtfs.h"
 
-// note : ULTRA code is not safe to use in multiple translation units, thus all the conversion code is in header...
+// This code helps to build the RAPTOR binary expected by ULTRA, from a given GTFS feed.
+// note : ULTRA code is not safe to use in multiple translation units, thus all the conversion code is in this header...
 
 inline ad::cppgtfs::gtfs::Stop const& _getStop(ad::cppgtfs::gtfs::Feed const& feed, my::StopID const& stopId) {
     auto stopPtr = feed.getStops().get(stopId);
