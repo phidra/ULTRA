@@ -23,7 +23,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <algorithm>
 
 #include "InitialTransfers.h"
 
@@ -32,11 +31,6 @@
 #include "../../DataStructures/Container/Map.h"
 
 #include "Debugger.h"
-
-
-#include <cassert>
-
-#include "../../Custom/legs.h"
 
 namespace RAPTOR {
 
@@ -82,125 +76,10 @@ public:
         ULTRARAPTOR(data, chData.forward, chData.backward, Weight, debuggerTemplate) {
     }
 
-    inline EarliestArrivalLabel get_best_label(int stop) {
-        for (auto round_ite = rounds.rbegin(); round_ite != rounds.rend(); ++round_ite) {
-            auto& label = (*round_ite)[stop];
-            if (label.arrivalTime == never) continue;
-            return label;
-        }
-        return {};
-    }
-
-    inline void display_best_label(int stop) {
-        EarliestArrivalLabel const & label = get_best_label(stop);
-        std::cout << "LABEL OF STOP : " << stop << "   (" << data.stopData[stop] << ")" << std::endl;
-        std::cout << "\t arrivalTime = " << label.arrivalTime << std::endl;
-        std::cout << "\t parentDepartureTime = " << label.parentDepartureTime << std::endl;
-        std::cout << "\t TEMPS DE TRAJET = " << (label.arrivalTime - label.parentDepartureTime) << std::endl;
-        std::cout << "\t parent = " << label.parent;
-        std::cout.flush();
-        if (label.parent.isValid() && data.isStop(label.parent)) {
-            std::cout << "   (" << data.stopData[label.parent] << ")" << std::endl;
-        }
-        else {
-            std::cout << "   (INVALID OR NOT A STOP)" << std::endl;
-        }
-        std::cout << "\t usesRoute = " << label.usesRoute << std::endl;
-        if (label.usesRoute) {
-            std::cout << "\t UNION> routeId = " << label.routeId << std::endl;
-            std::cout << " ROUTE = " << data.routeData[label.routeId] << std::endl;
-        }
-        else {
-            std::cout << "\t UNION> transferId = " << label.transferId << std::endl;
-        }
-        std::cout << std::endl;
-    }
-
-
-    inline std::tuple<StopId, int, EarliestArrivalLabel> find_optimal_last_stop() {
-        // finds the last stop of the optimal journey
-
-        int best_stop = 0;
-        int best_distance = INFTY;
-        EarliestArrivalLabel best_label = {};
-
-        // optimal last stop is the one that minimizes EAT(laststop) + distance(laststop -> targetVertex)
-        for (int candidate_stop = 0; candidate_stop < data.numberOfStops(); ++candidate_stop) {
-            auto from_stop_to_target = initialTransfers.getBackwardDistance(Vertex(candidate_stop));
-            auto candidate_label = get_best_label(candidate_stop);
-            if (candidate_label.arrivalTime == never) continue;
-            auto candidate_distance = from_stop_to_target + candidate_label.arrivalTime;
-            if (candidate_distance < best_distance) {
-                best_distance = candidate_distance;
-                best_label = candidate_label;
-                best_stop = candidate_stop;
-            }
-        }
-
-        // FIXME = handle errors
-        return {StopId(best_stop), best_distance, best_label};
-    }
-
-
-    inline std::vector<Leg> build_legs(Vertex source) {
-        // journey is rebuilt backward : we recursively get parents, beginning with last_stop
-
-        auto [last_stop, last_walk_distance, last_stop_label] = find_optimal_last_stop();
-
-        // for now, we only allow journeys from/to as top -> targetVertex is necessary a stop, and last_walk_distance is necessary 0 :
-        assert(last_walk_distance == 0);
-        assert(last_stop == targetStop);
-
-        std::vector<Leg> legs;
-
-        auto currentStop = Vertex(last_stop);
-        auto currentStopLabel = get_best_label(currentStop);
-
-        // conversion from stop (and its label) to a Leg :
-        auto const& raptorData = this->data;
-        auto to_leg = [&raptorData](EarliestArrivalLabel const& label, int stop) -> Leg {
-            bool is_walk = !label.usesRoute;
-            std::string departure_id = std::to_string(label.parent);
-            std::string arrival_id = std::to_string(stop);
-            int start_time = label.parentDepartureTime;
-            int departure_time = label.parentDepartureTime;
-            int arrival_time = label.arrivalTime;
-            std::cout << "DEPARTURE = " << label.parent << "   " << raptorData.stopData[label.parent] << std::endl;
-            std::cout << "ARRIVAL   = " << stop << "   " << raptorData.stopData[stop] << std::endl;
-            return {
-                is_walk,
-                departure_id,
-                arrival_id,
-                start_time,
-                departure_time,
-                arrival_time
-            };
-        };
-
-        legs.push_back(to_leg(currentStopLabel, currentStop.value()));
-
-        while(currentStopLabel.parent != source && currentStopLabel.parent != currentStop) {
-            currentStop = currentStopLabel.parent;
-            currentStopLabel = get_best_label(currentStop);
-            legs.push_back(to_leg(currentStopLabel, currentStop.value()));
-        }
-
-        // as journey was rebuilt backward, we put it back in proper order :
-        std::reverse(legs.begin(), legs.end());
-        return legs;
-    }
-
-
-    inline std::vector<Leg> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
+    inline void run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
         debugger.start();
         debugger.startInitialization();
         clear();
-        if (!data.isStop(source) || !data.isStop(target)) {
-            std::cout << "For now, we can only handle journeys between stops :" << std::endl;
-            std::cout << "Is SOURCE a stop ? " << data.isStop(source) << std::endl;
-            std::cout << "Is TARGET a stop ? " << data.isStop(target) << std::endl;
-            return {};
-        }
         initialize(source, departureTime, target);
         debugger.doneInitialization();
         relaxInitialTransfers(departureTime);
@@ -212,10 +91,7 @@ public:
             if (stopsUpdatedByRoute.empty()) break;
             relaxIntermediateTransfers();
         }
-
         debugger.done();
-        auto journey = build_legs(source);
-        return journey;
     }
 
     inline const Debugger& getDebugger() const noexcept {

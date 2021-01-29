@@ -11,7 +11,7 @@ ExternalProject_Add(
     PREFIX gtfs_bordeaux
     URL "https://www.data.gouv.fr/fr/datasets/r/13e7e219-b037-4d60-a3ab-e55d2d3e5291"
     DOWNLOAD_NAME "gtfs_bordeaux.zip"
-    URL_HASH MD5="3695f7193376295f331027f1c6b00f6e"
+    URL_HASH MD5=3695f7193376295f331027f1c6b00f6e
     DOWNLOAD_DIR "${BORDEAUX_GTFS_DESTINATION_DIRECTORY}"
     SOURCE_DIR "${BORDEAUX_GTFS_DESTINATION_DIRECTORY}"
     # we only want to download the archive, thus we disable building :
