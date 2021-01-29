@@ -26,25 +26,5 @@ cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
 make -j -C "$BUILD_DIR" gtfs-checker
 popd
 
-
-# download sample GTFS data :
-SAMPLE_GTFS_URL="https://github.com/google/transit/raw/master/gtfs/spec/en/examples/sample-feed-1.zip"
-SAMPLE_GTFS_DIR="${this_script_parent}/DATA/gtfs_sample"
-if [ ! -d "${SAMPLE_GTFS_DIR}" ]
-then
-    mkdir -p "${SAMPLE_GTFS_DIR}"
-    TEMP_GTFS_SAMPLE_DIR="$(mktemp -d --suffix "_SAMPLE_GTFS_DOWNLOAD")"
-    pushd "${TEMP_GTFS_SAMPLE_DIR}"
-    echo "About to download SAMPLE gtfs data : ${SAMPLE_GTFS_URL}"
-    wget "${SAMPLE_GTFS_URL}"
-    unzip sample-feed-1.zip
-    mv ./*.txt "${SAMPLE_GTFS_DIR}"
-    popd
-    rm -rf "${TEMP_GTFS_SAMPLE_DIR}"
-else
-    echo "Not downloading SAMPLE gtfs data : already existing target dir : ${SAMPLE_GTFS_DIR}"
-fi
-
-
 # run checker :
 LD_LIBRARY_PATH="${CLANG_LIBS}" "${BUILD_DIR}/bin/gtfs-checker" "DATA/gtfs_bordeaux"
