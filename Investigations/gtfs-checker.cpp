@@ -11,7 +11,6 @@
 
 #include "../DataStructures/RAPTOR/Entities/Stop.h"
 #include "../DataStructures/RAPTOR/Entities/Route.h"
-#include "../Custom/gtfs.h"
 
 using namespace std;
 
@@ -84,15 +83,6 @@ int main(int argc, char** argv) {
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfs_folder);
 
-    // check_if_all_trips_of_the_same_route_have_similar_stops(feed);
-    auto[stopsetToTrips, routesToStopsets] = my::partition_trips_in_stopsets(feed);
-    my::assert_identical_stopset_routes(feed, stopsetToTrips);
-
-    // Les trips d'une même route ont-ils tous le même stopset ?
-    // a.k.a vérifier s'il n'y a qu'un seul stopset par route (spoiler alert : sur Bordeaux, non)
-    for (auto const & [ route, stopsets ] : routesToStopsets) {
-        cout << "route [" << route << "] has " << stopsets.size() << " different stopsets." << endl;
-    }
-
+    cout << "feed contains " << feed.getRoutes().size() << " routes" << endl;
     return 0;
 }

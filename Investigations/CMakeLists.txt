@@ -52,9 +52,7 @@ set(LIBS
 )
 link_libraries(${LIBS})
 
-set (CPPGTFS_PATH "../libs/cppgtfs")
-add_subdirectory ("${CPPGTFS_PATH}" "${CMAKE_BINARY_DIR}/cppgtfs")
-
+include(cppgtfs.cmake)
 
 include(converter.cmake)
 include(binary-analyzer.cmake)
