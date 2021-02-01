@@ -51,6 +51,7 @@ include(binary-analyzer.cmake)
 include(gtfs-checker.cmake)
 include(bordeaux-data.cmake)
 include(server.cmake)
+include(build-transfer-graph.cmake)
 
 add_dependencies(${GTFSCHECKER} gtfs_bordeaux)
 add_dependencies(${CONVERTER} gtfs_bordeaux)
