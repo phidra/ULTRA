@@ -11,5 +11,5 @@ Runnables/RunRAPTORQueries
 
 _build
 
-DATA
+DATA/downloaded
 WORKDIR*

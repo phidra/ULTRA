@@ -23,4 +23,4 @@ make -j -C "$BUILD_DIR" gtfs-checker
 popd
 
 # run checker :
-"${BUILD_DIR}/bin/gtfs-checker" "DATA/gtfs_bordeaux"
+"${BUILD_DIR}/bin/gtfs-checker" "DATA/downloaded/gtfs_bordeaux"
