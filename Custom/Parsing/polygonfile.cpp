@@ -104,7 +104,6 @@ BgPolygon get_polygon(string polygonfile_path) {
 
     ifstream polygonfile_stream{polygonfile_path};
     if (!polygonfile_stream.good()) {
-        cout << "POUET ! " << polygonfile_path << endl;
         throw UnreadablePolygonFileException{polygonfile_path};
     }
 
