@@ -51,7 +51,7 @@ include(cppgtfs.cmake)
 include(converter.cmake)
 include(binary-analyzer.cmake)
 include(gtfs-checker.cmake)
-include(bordeaux-data.cmake)
+include(bordeaux-data-gtfs.cmake)
 include(server.cmake)
 include(build-transfer-graph.cmake)
 
