@@ -5,6 +5,8 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wunused-parameter")
 # ULTRA code is not robust to all warning flags :
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-infinite-recursion -Wno-unused-variable -Wno-sign-compare")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+# rapidjson :
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-class-memaccess")
 
 
 project(ultra-comprehension)
