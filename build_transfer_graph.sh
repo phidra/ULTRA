@@ -22,8 +22,11 @@ make -j -C "$BUILD_DIR" build-transfer-graph
 popd
 
 # run server :
-WORKDIR="${this_script_parent}/WORKDIR"
+WORKDIR="${this_script_parent}/WORKDIR_build_transfer_graph"
+mkdir -p "$WORKDIR"
+POLYGON_FILE="$WORKDIR/bordeaux_polygon.geojson"
+cp "${this_script_parent}/data/bordeaux_polygon.geojson" "$POLYGON_FILE"
 echo "Using data from WORKDIR = $WORKDIR"
 "${BUILD_DIR}/bin/build-transfer-graph" \
     "pouet1" \
-    "pouet2"
+    "$POLYGON_FILE"

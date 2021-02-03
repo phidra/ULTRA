@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
     my::BgPolygon polygon;
     try {
         polygon = get_polygon(polygonfile);
+        std::cout << "is_empty = " << my::is_empty(polygon) << std::endl;
     } catch (std::exception& e) {
         std::cout << "EXCEPTION: " << e.what() << std::endl;
         usage(argv[0]);
