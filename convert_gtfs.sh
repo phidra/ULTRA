@@ -26,4 +26,4 @@ popd
 WORKDIR="${this_script_parent}/WORKDIR_converter"
 echo "Using WORKDIR = $WORKDIR"
 mkdir -p "$WORKDIR"
-"${BUILD_DIR}/bin/ultra-converter" "DATA/downloaded/gtfs_bordeaux"
+"${BUILD_DIR}/bin/ultra-converter" "DOWNLOADED_DATA/gtfs_bordeaux"

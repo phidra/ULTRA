@@ -23,7 +23,7 @@ popd
 
 # download data :
 "${this_script_parent}"/download_KIT_data.sh
-DOWNLOADED_DATA="${this_script_parent}/DATA/downloaded/complete"
+DOWNLOADED_DATA="${this_script_parent}/DOWNLOADED_DATA/complete"
 
 
 # run analyzer :
