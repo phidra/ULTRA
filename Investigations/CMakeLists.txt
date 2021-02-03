@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
-set(CMAKE_CXX_COMPILER "clang-9")
-#set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wunused-parameter")
 
 # ULTRA code is not robust to all warning flags :
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-infinite-recursion -Wno-unused-variable -Wno-sign-compare")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+
 
 project(ultra-comprehension)
 set(CMAKE_BUILD_TYPE Release)
@@ -14,10 +15,8 @@ conan_basic_setup()
 
 
 set(COMMON_COMPILE_OPTIONS
-    -std=c++17
     -fopenmp
     -pipe
-    -stdlib=libc++
 )
 set(RELEASE_COMPILE_OPTIONS
     -ffast-math
@@ -44,13 +43,6 @@ add_compile_options(
     ${OPTIMIZATION_COMPILE_OPTIONS}
     ${RELEASE_COMPILE_OPTIONS}
 )
-
-set(LIBS
-    c++abi
-    c++
-    m
-)
-link_libraries(${LIBS})
 
 include(cppgtfs.cmake)
 

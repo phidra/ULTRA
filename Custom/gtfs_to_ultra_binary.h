@@ -65,7 +65,7 @@ inline std::pair<std::vector<StopId>, std::vector<size_t>> build_stopIdsRelated(
         my::RouteID routeId = routeData[routeRank].name;
         std::vector<my::StopID> stopsOfCurrentRoute = my::routeToStops(routeId);
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
-                  [&stopToRank](my::StopID const& stopid) { return StopId{stopToRank.at(stopid)}; });
+                  [&stopToRank](my::StopID const& stopid) { return StopId{static_cast<u_int32_t>(stopToRank.at(stopid))}; });
 
         firstStopIdOfRoute[routeRank] = currentRouteFirstStop;
         currentRouteFirstStop += stopsOfCurrentRoute.size();
@@ -160,8 +160,8 @@ inline std::pair<std::vector<RAPTOR::RouteSegment>, std::vector<size_t>> convert
         auto& routesUsingThisStop = routesUsingAStop[stopRank];
 
         for (auto & [ routeId, stopIndexInThisRoute ] : routesUsingThisStop) {
-            auto routeRank = routeToRank.at(routeId);
-            routeSegments.emplace_back(RouteId{routeRank}, StopIndex{stopIndexInThisRoute});
+            auto routeRank = static_cast<u_int32_t>(routeToRank.at(routeId));
+            routeSegments.emplace_back(RouteId{routeRank}, StopIndex{static_cast<u_int32_t>(stopIndexInThisRoute)});
         }
 
         firstRouteSegmentOfStop[stopRank] = currentStopFirstRouteSegment;

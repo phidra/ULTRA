@@ -31,8 +31,8 @@ int main(int argc, char** argv) {
 
     /* int SOURCE = 435; */
     /* int TARGET = 120; */
-    int SOURCE = 4350;
-    int TARGET = 1200;
+    u_int32_t SOURCE = 4350;
+    u_int32_t TARGET = 1200;
     int DEPARTURE_TIME = 36000;
 
     if (!data.isStop(Vertex{SOURCE}) || !data.isStop(Vertex{TARGET})) {

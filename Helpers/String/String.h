@@ -169,7 +169,7 @@ namespace String {
     inline std::string prettyInt(double i) {return prettyInt<int>(i);}
 
     inline std::string prettyDouble(const double d, const unsigned precision = 2, const bool includePreDecimals = false) {
-        if (d > std::numeric_limits<long long>::max()) return std::to_string(d);
+        if (d > static_cast<double>(std::numeric_limits<long long>::max())) return std::to_string(d);
         double decimal = std::abs(d);
         const std::string preDecimals = ((d < 0) ? "-" : "") + prettyInt((long long)decimal);
         std::stringstream result;

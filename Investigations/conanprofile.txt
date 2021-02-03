@@ -1,3 +1,0 @@
-[env]
-CC=clang-9
-CXX=clang-9
