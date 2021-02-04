@@ -20,6 +20,9 @@
 
 #pragma once
 
+#include <cmath>
+#include <algorithm>
+
 inline double degreesToRadians(const double radius) {
     return (radius / 180.0) * M_PI;
 }
