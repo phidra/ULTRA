@@ -26,6 +26,7 @@
 #include <type_traits>
 #include <iomanip>
 #include <algorithm>
+#include <set>
 
 #include "GraphInterface.h"
 
