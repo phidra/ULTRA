@@ -30,7 +30,7 @@ Node get_closest_node(RTree const& rtree, Stop const& stop) {
 }
 
 pair<vector<Edge>, vector<StopWithClosestNode>> extend_graph(vector<Stop> const& stops, vector<Edge> const& edges, float walkspeed_km_per_h) {
-    // note : this is currently done in multiple steps (+ copies) pour code clarity
+    // note : this is currently done in multiple steps (+ copies) for code clarity
     //        but if performance is an issue, we could easily do better
 
     // index all nodes in graph :
@@ -56,7 +56,7 @@ pair<vector<Edge>, vector<StopWithClosestNode>> extend_graph(vector<Stop> const&
             weight_in_seconds
         );
 
-        // for each stop, with memorize the closest node :
+        // for each stop, we memorize the closest node :
         stops_with_closest_node.emplace_back(stop, closest_node.id, closest_node.url);
 
     }
