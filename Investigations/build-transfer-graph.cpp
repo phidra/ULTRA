@@ -3,6 +3,7 @@
 
 #include "../DataStructures/RAPTOR/Data.h"
 #include "../Custom/Parsing/polygonfile.h"
+#include "../Custom/Graph/graph.h"
 
 inline void usage(const std::string binary_name) noexcept {
     std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile>" << std::endl;
@@ -23,7 +24,7 @@ int main(int argc, char** argv) {
     my::BgPolygon polygon;
     try {
         polygon = get_polygon(polygonfile);
-        std::cout << "is_empty = " << my::is_empty(polygon) << std::endl;
+        std::cout << "Is polygon empty = " << my::is_empty(polygon) << std::endl;
     } catch (std::exception& e) {
         std::cout << "EXCEPTION: " << e.what() << std::endl;
         usage(argv[0]);
@@ -33,6 +34,11 @@ int main(int argc, char** argv) {
         usage(argv[0]);
         exit(2);
     }
+
+    std::cout << "Building edges from OSM graph..." << std::endl;
+    float walkspeed_km_per_h = 4.7;
+    auto edges = my::osm_to_graph(osmfile, polygon, walkspeed_km_per_h);
+    std::cout << "Number of edges in graph : " << edges.size() << std::endl;
 
     return 0;
 }
