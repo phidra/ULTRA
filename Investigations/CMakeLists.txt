@@ -46,6 +46,8 @@ add_compile_options(
     ${RELEASE_COMPILE_OPTIONS}
 )
 
+file(GLOB_RECURSE CUSTOM_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/../Custom/*.cpp")
+
 include(cppgtfs.cmake)
 
 include(converter.cmake)
