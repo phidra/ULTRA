@@ -13,3 +13,5 @@ _build
 
 DOWNLOADED_DATA
 WORKDIR*
+
+.clangd
