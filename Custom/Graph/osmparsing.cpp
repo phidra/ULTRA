@@ -52,8 +52,9 @@ bool is_way_interesting(const osmium::Way& way) {
 
 bool is_way_in_polygon(const osmium::Way& way, const BgPolygon& polygon) {
     // if there is no polygon, consider that all ways are ok :
-    if (my::is_empty(polygon))
+    if (my::is_empty(polygon)) {
         return true;
+    }
 
     // otherwise, a way is considered in polygon if any of its extremities is inside the polygon :
     auto front = way.nodes().front();

@@ -5,6 +5,7 @@
 #include "../DataStructures/Geometry/Point.h"
 #include "../Custom/Parsing/polygonfile.h"
 #include "../Custom/Graph/graph.h"
+#include "../Custom/Dumping/geojson.h"
 
 inline void usage(const std::string binary_name) noexcept {
     std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile>" << std::endl;
@@ -58,6 +59,14 @@ int main(int argc, char** argv) {
     std::cout << "TravelTime of edge = " << ultragraph.get(TravelTime, edge) << std::endl;
     std::cout << "Number of vertices in ultragraph : " << ultragraph.numVertices() << std::endl;
     std::cout << "Number of edges    in ultragraph : " << ultragraph.numEdges() << std::endl;
+
+
+    //ofstream geojson_graph(output_dir + "graph.geojson");
+    std::ofstream geojson_graph("/tmp/graph.geojson");
+    my::dump_geojson_graph(geojson_graph, edges);
+
+    std::ofstream out_polygon("/tmp/polygon.geojson");
+    my::dump_geojson_line(out_polygon, polygon.outer());
 
     return 0;
 }

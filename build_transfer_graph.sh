@@ -26,7 +26,7 @@ WORKDIR="${this_script_parent}/WORKDIR_build_transfer_graph"
 mkdir -p "$WORKDIR"
 POLYGON_FILE="$WORKDIR/bordeaux_polygon.geojson"
 OSM_FILE="$WORKDIR/aquitaine-latest.osm.pbf"
-cp "${this_script_parent}/data/bordeaux_polygon.geojson" "$POLYGON_FILE"
+cp "${this_script_parent}/data/bordeaux_polygon_TEST.geojson" "$POLYGON_FILE"
 cp "${this_script_parent}/DOWNLOADED_DATA/osm_bordeaux/aquitaine-latest.osm.pbf" "$OSM_FILE"
 echo "Using data from WORKDIR = $WORKDIR"
 "${BUILD_DIR}/bin/build-transfer-graph" \
