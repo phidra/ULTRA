@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <unordered_set>
 
 #include "../DataStructures/RAPTOR/Data.h"
 #include "../DataStructures/Geometry/Point.h"
@@ -96,6 +97,45 @@ int main(int argc, char** argv) {
 
     std::ofstream stops_stream(output_dir + "stops.geojson");
     dump_geojson_stops(stops_stream, stops_with_closest_node);
+
+    // associate each vertex with its edges :
+    std::map<my::NodeId, std::vector<size_t>> nodeToOutEdges;
+    std::map<my::NodeId, std::vector<size_t>> nodeToInEdges;
+    size_t edge_index = 0;
+    for (auto edge: edges_with_stops) {
+        nodeToOutEdges[edge.node_from.id].push_back(edge_index);
+        nodeToInEdges[edge.node_to.id].push_back(edge_index);
+        ++edge_index;
+    }
+    std::cout << "The association map OUT has " << nodeToOutEdges.size() << " items" << std::endl;
+    std::cout << "The association map IN  has " << nodeToInEdges.size() << " items" << std::endl;
+
+    // ordering vertices :
+    std::vector<my::NodeId> orderedNodes;
+    std::unordered_set<my::NodeId> alreadyOrderedNodes;
+    std::transform(
+        stops_with_closest_node.cbegin(),
+        stops_with_closest_node.cend(),
+        std::back_inserter(orderedNodes),
+        [&alreadyOrderedNodes](my::StopWithClosestNode const& stop) {
+            alreadyOrderedNodes.insert(stop.id);
+            return stop.id;
+        }
+    );
+
+    for (auto edge: edges_with_stops) {
+        if (alreadyOrderedNodes.find(edge.node_from.id) == alreadyOrderedNodes.end()) {
+            alreadyOrderedNodes.insert(edge.node_from.id);
+            orderedNodes.push_back(edge.node_from.id);
+        }
+        if (alreadyOrderedNodes.find(edge.node_to.id) == alreadyOrderedNodes.end()) {
+            alreadyOrderedNodes.insert(edge.node_to.id);
+            orderedNodes.push_back(edge.node_to.id);
+        }
+    }
+
+    std::cout << "nb ordered nodes (1) = " << orderedNodes.size() << std::endl;
+    std::cout << "nb ordered nodes (2) = " << alreadyOrderedNodes.size() << std::endl;
 
     return 0;
 }
