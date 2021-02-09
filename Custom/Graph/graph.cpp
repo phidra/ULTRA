@@ -41,13 +41,11 @@ std::vector<Edge> build_graph(std::map<WayId, std::vector<LocatedNode> > const& 
     vector<Edge> edges;
     float walkspeed_m_per_s = walkspeed_km_per_h / 3.6;
 
-    // precondition = chaque way a au moins 2 nodes
+    // precondition = each way has at least 2 nodes
 
-    // itérer sur toutes les ways
     for (auto ite : way_to_nodes) {
         auto nodes = ite.second;
 
-        // pour chaque way, itérer sur les nodes
         auto first_node = nodes.begin();
         auto last_node = (nodes.end() - 1);
         while (first_node != last_node) {

@@ -21,7 +21,6 @@ cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
 make -j -C "$BUILD_DIR" build-transfer-graph
 popd
 
-# run server :
 WORKDIR="${this_script_parent}/WORKDIR_build_transfer_graph"
 mkdir -p "$WORKDIR/INPUT"
 POLYGON_FILE="$WORKDIR/INPUT/bordeaux_polygon.geojson"

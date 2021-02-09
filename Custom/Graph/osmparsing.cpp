@@ -34,8 +34,6 @@ void FillingHandler::way(const osmium::Way& way) noexcept {
 bool is_way_interesting(const osmium::Way& way) {
     // as a rule of thumb, if a way has the 'highway' tag, it can be used for routing :
     // FIXME : we would probably like to filter out non-pedestrian ways.
-    // see for instance :
-    //     https://gitlab.mappy.priv/dt.lbs/labri-internship/-/blob/7ff7e30fb593be3ed260f81f6f870c920a21721c/src/is_of_interest.sql#L18
     if (way.tags()["highway"] == nullptr)
         return false;
 

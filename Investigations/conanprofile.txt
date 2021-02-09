@@ -1,3 +1,4 @@
+# FIXME: this should not be part of the project...
 [settings]
 os=Linux
 os_build=Linux

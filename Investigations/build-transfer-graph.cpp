@@ -83,8 +83,8 @@ int main(int argc, char** argv) {
 
 
     auto transferGraph = my::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
-    std::cout << "The real transferGraph has these vertices : " << transferGraph.numVertices() << std::endl;
-    std::cout << "The real transferGraph has these edges    : " << transferGraph.numEdges() << std::endl;
+    std::cout << "The transferGraph has these vertices : " << transferGraph.numVertices() << std::endl;
+    std::cout << "The transferGraph has these edges    : " << transferGraph.numEdges() << std::endl;
 
     return 0;
 }
