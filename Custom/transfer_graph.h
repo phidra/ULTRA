@@ -10,7 +10,7 @@
 #include "Common/graphtypes.h"
 
 // note : ULTRA code is not safe to use in multiple translation units, thus all the code is exposed in this header...
-//
+
 namespace my {
 
 std::pair<std::vector<my::NodeId>, std::unordered_map<my::NodeId, size_t>>
@@ -81,18 +81,17 @@ TransferGraph computeTransferGraph(
     std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
     TransferGraph transferGraph;
     size_t vertex_rank = 0;
+
     for (auto node_id: rankedNodes) {
-        // 0. récupérer les coordonnées du vertex
-        Geometry::Point vertex_latlon{Construct::LatLongTag{}, 48.761138, 2.306042};
 
         // 1. ajouter le vertex au graphe :
-        Vertex currentVertex = transferGraph.addVertex(vertex_latlon);
+        Vertex currentVertex = transferGraph.addVertex();
         if (static_cast<size_t>(currentVertex) != vertex_rank) {
             std::cout << "ERROR : le rank devrait être l'id du vertex." << std::endl;
             std::exit(4);
         }
 
-        // 2. ajouter chaque out-edges (par définition, ils ne vont que vers des nodes déjà existants) :
+        // 2. ajouter chaque out-edges (vu les étapes précédentes, ils ne vont que vers des nodes déjà existants) :
         auto& currentVertexOutEdges = nodeToOutEdges[vertex_rank];
         for (auto& outEdgeIndex: currentVertexOutEdges) {
             auto edge = edges[outEdgeIndex];
@@ -102,6 +101,10 @@ TransferGraph computeTransferGraph(
             }
             auto target_vertex_rank = nodeToRank.at(edge.node_to.id);
             auto addedEdge = transferGraph.addEdge(currentVertex, Vertex{target_vertex_rank});
+            Geometry::Point currentVertexLatlon{Construct::LatLongTag{}, edge.node_from.location.lat(), edge.node_from.location.lon()};
+            Geometry::Point targetVertexLatlon{Construct::LatLongTag{}, edge.node_to.location.lat(), edge.node_to.location.lon()};
+            transferGraph.setVertexAttributes(currentVertex, currentVertexLatlon);  // fixme: could be done only once
+            transferGraph.setVertexAttributes(currentVertex, targetVertexLatlon);   // fixme: could be done only once
 
             // weight in graph is an int -> travel-time is converted in deciseconds :
             auto used_weight = 10 * edge.weight;
@@ -110,6 +113,7 @@ TransferGraph computeTransferGraph(
 
         ++vertex_rank;
     }
+
     return transferGraph;
 }
 
