@@ -101,7 +101,7 @@ TransferGraph computeTransferGraph(
             }
             auto target_vertex_rank = nodeToRank.at(edge.node_to.id);
             auto addedEdge = transferGraph.addEdge(currentVertex, Vertex{target_vertex_rank});
-            Geometry::Point currentVertexLatlon{Construct::LatLongTag{}, edge.node_from.location.lat(), edge.node_from.location.lon()};
+            Geometry::Point currentVertexLatlon{Construct::LatLongTag{}, edge.node_from.lat(), edge.node_from.lon()};
             Geometry::Point targetVertexLatlon{Construct::LatLongTag{}, edge.node_to.location.lat(), edge.node_to.location.lon()};
             transferGraph.setVertexAttributes(currentVertex, currentVertexLatlon);  // fixme: could be done only once
             transferGraph.setVertexAttributes(currentVertex, targetVertexLatlon);   // fixme: could be done only once

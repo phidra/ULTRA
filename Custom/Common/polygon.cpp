@@ -6,8 +6,8 @@ using namespace std;
 namespace my {
 
 BgPolygon create_polygon(vector<pair<double, double>> const& points) {
-    // precondition = les points doivent être définis dans le sens anti-horaire
-    // precondition = le polygon doit être fermé (= le dernier point et le premier point sont identiques)
+    // precondition = points must be defined counter-clockwise
+    // precondition = polygon must be closed (= last point and first point are identical)
     // cf. https://www.boost.org/doc/libs/1_74_0/libs/geometry/doc/html/geometry/reference/models/model_polygon.html
     BgPolygon polygon;
     for (auto& point : points) {

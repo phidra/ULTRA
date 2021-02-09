@@ -9,20 +9,18 @@ namespace my {
 inline std::string node_url(NodeOsmId id) {
     return std::string("https://www.openstreetmap.org/node/") + std::to_string(id);
 }
-using NodeId = std::string;  // this id is the one that is used in graph and hub-labelling
+using NodeId = std::string;
 
 struct Node {
     inline Node(NodeOsmId osm_id_, osmium::Location const& location_)
         : url{node_url(osm_id_)},
           id{url},  // for OSM nodes, node ids are their URL
-          location{location_},
-          is_stop{false} {}
+          location{location_} {}
 
     inline Node(NodeId id, osmium::Location const& location_)
         : url{},
           id{id},
-          location{location_},
-          is_stop{false} {}
+          location{location_} {}
 
     inline double lon() const { return location.lon(); }
     inline double lat() const { return location.lat(); }
@@ -32,7 +30,6 @@ struct Node {
     std::string url;
     NodeId id;
     osmium::Location location;
-    bool is_stop;  // a node is a stop_node if its id was replaced by a stopId
 };
 
 struct NodeHasher {
@@ -56,9 +53,9 @@ struct Edge {
           geometry{geometry_} {}
 
     static inline Edge build_reverted(Edge const& edge) {
+        // the reverted Edge E2 of an edge E1 is one when E2.node_from == E1.node_to (and vice-versa)
         // copying geometry to not steal it from original edge :
         Polyline geometry_copy{edge.geometry};
-        // to revert an edge, invert node_from and node_to :
         return Edge{edge.node_to.id, edge.node_from.id, std::move(geometry_copy), edge.length_m, edge.weight};
     }
 
