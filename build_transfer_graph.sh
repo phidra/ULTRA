@@ -23,11 +23,13 @@ popd
 
 # run server :
 WORKDIR="${this_script_parent}/WORKDIR_build_transfer_graph"
-mkdir -p "$WORKDIR"
-POLYGON_FILE="$WORKDIR/bordeaux_polygon.geojson"
-OSM_FILE="$WORKDIR/aquitaine-latest.osm.pbf"
-STOPS_FILE="$WORKDIR/bordeaux_stops.txt"
-cp "${this_script_parent}/data/bordeaux_polygon_TEST.geojson" "$POLYGON_FILE"
+mkdir -p "$WORKDIR/INPUT"
+POLYGON_FILE="$WORKDIR/INPUT/bordeaux_polygon.geojson"
+OSM_FILE="$WORKDIR/INPUT/aquitaine-latest.osm.pbf"
+STOPS_FILE="$WORKDIR/INPUT/bordeaux_stops.txt"
+
+# cp "${this_script_parent}/data/bordeaux_polygon_TEST.geojson" "$POLYGON_FILE"
+cp "${this_script_parent}/data/bordeaux_polygon.geojson" "$POLYGON_FILE"
 cp "${this_script_parent}/DOWNLOADED_DATA/osm_bordeaux/aquitaine-latest.osm.pbf" "$OSM_FILE"
 cp "${this_script_parent}/DOWNLOADED_DATA/gtfs_bordeaux/stops.txt" "$STOPS_FILE"
 echo "Using data from WORKDIR = $WORKDIR"
@@ -37,4 +39,5 @@ set -o xtrace
 "${BUILD_DIR}/bin/build-transfer-graph" \
     "$OSM_FILE" \
     "$POLYGON_FILE" \
-    "$STOPS_FILE"
+    "$STOPS_FILE" \
+    "$WORKDIR"

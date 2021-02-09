@@ -10,17 +10,21 @@
 #include "../Custom/Dumping/geojson.h"
 
 inline void usage(const std::string binary_name) noexcept {
-    std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile> <stopfile>" << std::endl;
+    std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile>  <stopfile>  <output-dir>" << std::endl;
     exit(0);
 }
 
 int main(int argc, char** argv) {
-    if (argc < 4)
+    if (argc < 5)
         usage(argv[0]);
 
     const std::string osmfile = argv[1];
     const std::string polygonfile = argv[2];
     auto stopfile = argv[3];
+    std::string output_dir = argv[4];
+    if (output_dir.back() != '/') {
+        output_dir.push_back('/');
+    }
     std::ifstream stopfile_stream{stopfile};
     if (!stopfile_stream.good()) {
         std::cerr << "ERROR: unable to read stopfile : '" << stopfile << "'\n";
@@ -29,8 +33,10 @@ int main(int argc, char** argv) {
         std::exit(2);
     }
 
-    std::cout << "osmfile          = " << osmfile << std::endl;
-    std::cout << "polygonfile      = " << polygonfile << std::endl;
+    std::cout << "OSMFILE          = " << osmfile << std::endl;
+    std::cout << "POLYGONFILE      = " << polygonfile << std::endl;
+    std::cout << "STOPFILE         = " << stopfile << std::endl;
+    std::cout << "OUTPUT_DIR       = " << output_dir << std::endl;
     std::cout << std::endl;
 
     my::BgPolygon polygon;
@@ -74,17 +80,22 @@ int main(int argc, char** argv) {
     std::cout << "Number of edges    in ultragraph : " << ultragraph.numEdges() << std::endl;
 
 
-    //ofstream geojson_graph(output_dir + "graph.geojson");
-    std::ofstream geojson_graph("/tmp/graph.geojson");
-    my::dump_geojson_graph(geojson_graph, edges);
+    std::ofstream original_graph_stream(output_dir + "original_graph.geojson");
+    my::dump_geojson_graph(original_graph_stream, edges);
 
-    std::ofstream out_polygon("/tmp/polygon.geojson");
-    my::dump_geojson_line(out_polygon, polygon.outer());
+    std::ofstream polygon_stream(output_dir + "polygon.geojson");
+    my::dump_geojson_line(polygon_stream, polygon.outer());
 
     // extend graph with stop-edges :
     auto [edges_with_stops,stops_with_closest_node] = my::extend_graph(stops, edges, walkspeed_km_per_h);
     std::cout << "nb edges including stops = " << edges_with_stops.size() << std::endl;
     std::cout << "nb stops = " << stops_with_closest_node.size() << std::endl;
+
+    std::ofstream extended_graph_stream(output_dir + "graph_with_stops.geojson");
+    dump_geojson_graph(extended_graph_stream, edges_with_stops);
+
+    std::ofstream stops_stream(output_dir + "stops.geojson");
+    dump_geojson_stops(stops_stream, stops_with_closest_node);
 
     return 0;
 }
