@@ -64,25 +64,6 @@ int main(int argc, char** argv) {
     auto edges = my::osm_to_graph(osmfile, polygon, walkspeed_km_per_h);
     std::cout << "Number of edges in original graph : " << edges.size() << std::endl;
 
-    TransferGraph ultragraph;
-    ultragraph.addVertices(100);
-
-    Geometry::Point antony_latlon{Construct::LatLongTag{}, 48.761138, 2.306042};
-    Geometry::Point paris_latlon{Construct::LatLongTag{}, 48.854661, 2.340363};
-    Vertex antony = ultragraph.addVertex(antony_latlon);
-    Vertex paris = ultragraph.addVertex(paris_latlon);
-    std::cout << "Antony coords is : " << antony_latlon << std::endl;
-    std::cout << "Paris coords is : " << paris_latlon << std::endl;
-
-    // NOTE : with addEdge, we can only add edges from the LAST vertex of the graph :
-    // auto edge = ultragraph.addEdge(antony, paris);  // this won't work as "antony" is not the last vertex
-    auto edge = ultragraph.addEdge(paris, antony);  // this works bc paris is the last vertex
-    edge.set(TravelTime, 42);
-    std::cout << "TravelTime of edge = " << ultragraph.get(TravelTime, edge) << std::endl;
-    std::cout << "Number of vertices in ultragraph : " << ultragraph.numVertices() << std::endl;
-    std::cout << "Number of edges    in ultragraph : " << ultragraph.numEdges() << std::endl;
-
-
     std::ofstream original_graph_stream(output_dir + "original_graph.geojson");
     my::dump_geojson_graph(original_graph_stream, edges);
 
