@@ -112,30 +112,29 @@ int main(int argc, char** argv) {
 
     // ordering vertices :
     std::vector<my::NodeId> orderedNodes;
-    std::unordered_set<my::NodeId> alreadyOrderedNodes;
-    std::transform(
+    std::unordered_map<my::NodeId, size_t> nodeToOrder;
+    std::for_each(
         stops_with_closest_node.cbegin(),
         stops_with_closest_node.cend(),
-        std::back_inserter(orderedNodes),
-        [&alreadyOrderedNodes](my::StopWithClosestNode const& stop) {
-            alreadyOrderedNodes.insert(stop.id);
-            return stop.id;
+        [&nodeToOrder, &orderedNodes](my::StopWithClosestNode const& stop) {
+            orderedNodes.push_back(stop.id);
+            nodeToOrder.insert({stop.id, orderedNodes.size() - 1});
         }
     );
 
     for (auto edge: edges_with_stops) {
-        if (alreadyOrderedNodes.find(edge.node_from.id) == alreadyOrderedNodes.end()) {
-            alreadyOrderedNodes.insert(edge.node_from.id);
+        if (nodeToOrder.find(edge.node_from.id) == nodeToOrder.end()) {
             orderedNodes.push_back(edge.node_from.id);
+            nodeToOrder.insert({edge.node_from.id, orderedNodes.size() - 1});
         }
-        if (alreadyOrderedNodes.find(edge.node_to.id) == alreadyOrderedNodes.end()) {
-            alreadyOrderedNodes.insert(edge.node_to.id);
+        if (nodeToOrder.find(edge.node_to.id) == nodeToOrder.end()) {
             orderedNodes.push_back(edge.node_to.id);
+            nodeToOrder.insert({edge.node_to.id, orderedNodes.size() - 1});
         }
     }
 
     std::cout << "nb ordered nodes (1) = " << orderedNodes.size() << std::endl;
-    std::cout << "nb ordered nodes (2) = " << alreadyOrderedNodes.size() << std::endl;
+    std::cout << "nb ordered nodes (2) = " << nodeToOrder.size() << std::endl;
 
     return 0;
 }
