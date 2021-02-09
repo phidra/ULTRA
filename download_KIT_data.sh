@@ -21,8 +21,8 @@ raptor.binary.graph.travelTime
 # note : there are also some files for CSA on the server...
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
-PARTIAL_DIR="${this_script_parent}/DATA/partial"
-COMPLETE_DIR="${this_script_parent}/DATA/complete"
+PARTIAL_DIR="${this_script_parent}/DOWNLOADED_DATA/partial"
+COMPLETE_DIR="${this_script_parent}/DOWNLOADED_DATA/complete"
 
 # partial :
 if [ ! -d "${PARTIAL_DIR}" ]

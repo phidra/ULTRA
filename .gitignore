@@ -11,5 +11,7 @@ Runnables/RunRAPTORQueries
 
 _build
 
-DATA
+DOWNLOADED_DATA
 WORKDIR*
+
+.clangd

@@ -1,5 +1,6 @@
 [requires]
 rapidjson/1.1.0
+fast-cpp-csv-parser/cci.20200830
 
 [generators]
 cmake
