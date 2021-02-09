@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
         exit(2);
     }
 
-    // parse stopfile early, to fail early if needed :
+    // parse stopfile early, in order to fail early if needed :
     std::vector<my::Stop> stops = my::parse_stopfile(stopfile, stopfile_stream);
 
     std::cout << "Building edges from OSM graph..." << std::endl;
