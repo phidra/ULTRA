@@ -55,6 +55,13 @@ struct Edge {
           weight{weight_},
           geometry{geometry_} {}
 
+    static inline Edge build_reverted(Edge const& edge) {
+        // copying geometry to not steal it from original edge :
+        Polyline geometry_copy{edge.geometry};
+        // to revert an edge, invert node_from and node_to :
+        return Edge{edge.node_to.id, edge.node_from.id, std::move(geometry_copy), edge.length_m, edge.weight};
+    }
+
     Node node_from;
     Node node_to;
     float length_m;

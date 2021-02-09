@@ -8,12 +8,14 @@
 #include "../Custom/Parsing/stopfile.h"
 #include "../Custom/Graph/extending_with_stops.h"
 #include "../Custom/Graph/graph.h"
+#include "../Custom/transfer_graph.h"
 #include "../Custom/Dumping/geojson.h"
 
 inline void usage(const std::string binary_name) noexcept {
     std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile>  <stopfile>  <output-dir>" << std::endl;
     exit(0);
 }
+
 
 int main(int argc, char** argv) {
     if (argc < 5)
@@ -60,7 +62,7 @@ int main(int argc, char** argv) {
     std::cout << "Building edges from OSM graph..." << std::endl;
     float walkspeed_km_per_h = 4.7;
     auto edges = my::osm_to_graph(osmfile, polygon, walkspeed_km_per_h);
-    std::cout << "Number of edges in graph : " << edges.size() << std::endl;
+    std::cout << "Number of edges in original graph : " << edges.size() << std::endl;
 
     TransferGraph ultragraph;
     ultragraph.addVertices(100);
@@ -88,53 +90,20 @@ int main(int argc, char** argv) {
     my::dump_geojson_line(polygon_stream, polygon.outer());
 
     // extend graph with stop-edges :
-    auto [edges_with_stops,stops_with_closest_node] = my::extend_graph(stops, edges, walkspeed_km_per_h);
-    std::cout << "nb edges including stops = " << edges_with_stops.size() << std::endl;
-    std::cout << "nb stops = " << stops_with_closest_node.size() << std::endl;
+    auto [edgesWithStops,stopsWithClosestNode] = my::extend_graph(stops, edges, walkspeed_km_per_h);
+    std::cout << "nb edges (including added stops) = " << edgesWithStops.size() << std::endl;
+    std::cout << "nb stops = " << stopsWithClosestNode.size() << std::endl;
 
     std::ofstream extended_graph_stream(output_dir + "graph_with_stops.geojson");
-    dump_geojson_graph(extended_graph_stream, edges_with_stops);
+    dump_geojson_graph(extended_graph_stream, edgesWithStops);
 
     std::ofstream stops_stream(output_dir + "stops.geojson");
-    dump_geojson_stops(stops_stream, stops_with_closest_node);
+    dump_geojson_stops(stops_stream, stopsWithClosestNode);
 
-    // associate each vertex with its edges :
-    std::map<my::NodeId, std::vector<size_t>> nodeToOutEdges;
-    std::map<my::NodeId, std::vector<size_t>> nodeToInEdges;
-    size_t edge_index = 0;
-    for (auto edge: edges_with_stops) {
-        nodeToOutEdges[edge.node_from.id].push_back(edge_index);
-        nodeToInEdges[edge.node_to.id].push_back(edge_index);
-        ++edge_index;
-    }
-    std::cout << "The association map OUT has " << nodeToOutEdges.size() << " items" << std::endl;
-    std::cout << "The association map IN  has " << nodeToInEdges.size() << " items" << std::endl;
 
-    // ranking vertices :
-    std::vector<my::NodeId> rankedNodes;
-    std::unordered_map<my::NodeId, size_t> nodeToRank;
-    std::for_each(
-        stops_with_closest_node.cbegin(),
-        stops_with_closest_node.cend(),
-        [&nodeToRank, &rankedNodes](my::StopWithClosestNode const& stop) {
-            rankedNodes.push_back(stop.id);
-            nodeToRank.insert({stop.id, rankedNodes.size() - 1});
-        }
-    );
-
-    for (auto edge: edges_with_stops) {
-        if (nodeToRank.find(edge.node_from.id) == nodeToRank.end()) {
-            rankedNodes.push_back(edge.node_from.id);
-            nodeToRank.insert({edge.node_from.id, rankedNodes.size() - 1});
-        }
-        if (nodeToRank.find(edge.node_to.id) == nodeToRank.end()) {
-            rankedNodes.push_back(edge.node_to.id);
-            nodeToRank.insert({edge.node_to.id, rankedNodes.size() - 1});
-        }
-    }
-
-    std::cout << "nb ranked nodes (1) = " << rankedNodes.size() << std::endl;
-    std::cout << "nb ranked nodes (2) = " << nodeToRank.size() << std::endl;
+    auto transferGraph = my::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
+    std::cout << "The real transferGraph has these vertices : " << transferGraph.numVertices() << std::endl;
+    std::cout << "The real transferGraph has these edges    : " << transferGraph.numEdges() << std::endl;
 
     return 0;
 }
