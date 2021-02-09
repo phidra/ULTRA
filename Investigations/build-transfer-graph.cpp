@@ -4,20 +4,30 @@
 #include "../DataStructures/RAPTOR/Data.h"
 #include "../DataStructures/Geometry/Point.h"
 #include "../Custom/Parsing/polygonfile.h"
+#include "../Custom/Parsing/stopfile.h"
+#include "../Custom/Graph/extending_with_stops.h"
 #include "../Custom/Graph/graph.h"
 #include "../Custom/Dumping/geojson.h"
 
 inline void usage(const std::string binary_name) noexcept {
-    std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile>" << std::endl;
+    std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile> <stopfile>" << std::endl;
     exit(0);
 }
 
 int main(int argc, char** argv) {
-    if (argc < 3)
+    if (argc < 4)
         usage(argv[0]);
 
     const std::string osmfile = argv[1];
     const std::string polygonfile = argv[2];
+    auto stopfile = argv[3];
+    std::ifstream stopfile_stream{stopfile};
+    if (!stopfile_stream.good()) {
+        std::cerr << "ERROR: unable to read stopfile : '" << stopfile << "'\n";
+        std::cerr << "\n";
+        usage(argv[0]);
+        std::exit(2);
+    }
 
     std::cout << "osmfile          = " << osmfile << std::endl;
     std::cout << "polygonfile      = " << polygonfile << std::endl;
@@ -36,6 +46,9 @@ int main(int argc, char** argv) {
         usage(argv[0]);
         exit(2);
     }
+
+    // parse stopfile early, to fail early if needed :
+    std::vector<my::Stop> stops = my::parse_stopfile(stopfile, stopfile_stream);
 
     std::cout << "Building edges from OSM graph..." << std::endl;
     float walkspeed_km_per_h = 4.7;
@@ -67,6 +80,11 @@ int main(int argc, char** argv) {
 
     std::ofstream out_polygon("/tmp/polygon.geojson");
     my::dump_geojson_line(out_polygon, polygon.outer());
+
+    // extend graph with stop-edges :
+    auto [edges_with_stops,stops_with_closest_node] = my::extend_graph(stops, edges, walkspeed_km_per_h);
+    std::cout << "nb edges including stops = " << edges_with_stops.size() << std::endl;
+    std::cout << "nb stops = " << stops_with_closest_node.size() << std::endl;
 
     return 0;
 }

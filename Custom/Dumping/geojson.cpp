@@ -2,17 +2,8 @@
 #include <iomanip>
 
 #include "geojson.h"
-#include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/ostreamwrapper.h>
 
 using namespace std;
-
-
-namespace bg = boost::geometry;
-using Point = bg::model::point<double, 2, bg::cs::cartesian>;
-using MultiPoint = bg::model::multi_point<Point>;
-using Polygon = bg::model::polygon<Point>;
 
 namespace my {
 
