@@ -110,31 +110,31 @@ int main(int argc, char** argv) {
     std::cout << "The association map OUT has " << nodeToOutEdges.size() << " items" << std::endl;
     std::cout << "The association map IN  has " << nodeToInEdges.size() << " items" << std::endl;
 
-    // ordering vertices :
-    std::vector<my::NodeId> orderedNodes;
-    std::unordered_map<my::NodeId, size_t> nodeToOrder;
+    // ranking vertices :
+    std::vector<my::NodeId> rankedNodes;
+    std::unordered_map<my::NodeId, size_t> nodeToRank;
     std::for_each(
         stops_with_closest_node.cbegin(),
         stops_with_closest_node.cend(),
-        [&nodeToOrder, &orderedNodes](my::StopWithClosestNode const& stop) {
-            orderedNodes.push_back(stop.id);
-            nodeToOrder.insert({stop.id, orderedNodes.size() - 1});
+        [&nodeToRank, &rankedNodes](my::StopWithClosestNode const& stop) {
+            rankedNodes.push_back(stop.id);
+            nodeToRank.insert({stop.id, rankedNodes.size() - 1});
         }
     );
 
     for (auto edge: edges_with_stops) {
-        if (nodeToOrder.find(edge.node_from.id) == nodeToOrder.end()) {
-            orderedNodes.push_back(edge.node_from.id);
-            nodeToOrder.insert({edge.node_from.id, orderedNodes.size() - 1});
+        if (nodeToRank.find(edge.node_from.id) == nodeToRank.end()) {
+            rankedNodes.push_back(edge.node_from.id);
+            nodeToRank.insert({edge.node_from.id, rankedNodes.size() - 1});
         }
-        if (nodeToOrder.find(edge.node_to.id) == nodeToOrder.end()) {
-            orderedNodes.push_back(edge.node_to.id);
-            nodeToOrder.insert({edge.node_to.id, orderedNodes.size() - 1});
+        if (nodeToRank.find(edge.node_to.id) == nodeToRank.end()) {
+            rankedNodes.push_back(edge.node_to.id);
+            nodeToRank.insert({edge.node_to.id, rankedNodes.size() - 1});
         }
     }
 
-    std::cout << "nb ordered nodes (1) = " << orderedNodes.size() << std::endl;
-    std::cout << "nb ordered nodes (2) = " << nodeToOrder.size() << std::endl;
+    std::cout << "nb ranked nodes (1) = " << rankedNodes.size() << std::endl;
+    std::cout << "nb ranked nodes (2) = " << nodeToRank.size() << std::endl;
 
     return 0;
 }
