@@ -5,22 +5,25 @@
 
 #include "../DataStructures/RAPTOR/Data.h"
 #include "../Custom/json.h"
+#include "../Custom/Parsing/geojson_stops.h"
 
 inline void usage() noexcept {
-    std::cout << "Usage: ultra-server  <RAPTOR binary>  <TODO>" << std::endl;
+    std::cout << "Usage: ultra-server  <RAPTOR binary>  <bucketCH-basename>  <stopfile>" << std::endl;
     exit(0);
 }
 
 using ShortcutRAPTOR = RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>;
 
 int main(int argc, char** argv) {
-    if (argc < 3)
+    if (argc < 4)
         usage();
     const std::string raptorFile = argv[1];
     const std::string bucketChBasename = argv[2];
+    const std::string stopfile_path = argv[3];
 
     std::cout << "raptorFile       = " << raptorFile << std::endl;
-    std::cout << "bucketChBasename = " << raptorFile << std::endl;
+    std::cout << "bucketChBasename = " << bucketChBasename << std::endl;
+    std::cout << "stopfile_path    = " << stopfile_path << std::endl;
 
     RAPTOR::Data data = RAPTOR::Data::FromBinary(raptorFile);
     data.useImplicitDepartureBufferTimes();
@@ -28,6 +31,10 @@ int main(int argc, char** argv) {
 
     CH::CH bucketCH(bucketChBasename);
     ShortcutRAPTOR algorithm(data, bucketCH);
+
+    std::ifstream stopfile_stream(stopfile_path);
+    auto stops = myserver::load_stopfile(stopfile_stream);
+    std::cout << "Number of loaded stops = " << stops.size() << std::endl;
 
     /* int SOURCE = 435; */
     /* int TARGET = 120; */
