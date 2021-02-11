@@ -6,6 +6,8 @@
 #include "../DataStructures/RAPTOR/Data.h"
 #include "../Custom/json.h"
 #include "../Custom/Parsing/geojson_stops.h"
+#include "../Custom/Parsing/gtfs_stops.h"
+#include "../Custom/Dumping/json_helper.h"
 
 inline void usage() noexcept {
     std::cout << "Usage: ultra-server  <RAPTOR binary>  <bucketCH-basename>  <stopfile>" << std::endl;
@@ -21,9 +23,9 @@ int main(int argc, char** argv) {
     const std::string bucketChBasename = argv[2];
     const std::string stopfile_path = argv[3];
 
-    std::cout << "raptorFile       = " << raptorFile << std::endl;
-    std::cout << "bucketChBasename = " << bucketChBasename << std::endl;
-    std::cout << "stopfile_path    = " << stopfile_path << std::endl;
+    std::cout << "raptorFile            = " << raptorFile << std::endl;
+    std::cout << "bucketChBasename      = " << bucketChBasename << std::endl;
+    std::cout << "stopfile_path         = " << stopfile_path << std::endl;
 
     RAPTOR::Data data = RAPTOR::Data::FromBinary(raptorFile);
     data.useImplicitDepartureBufferTimes();
@@ -57,6 +59,31 @@ int main(int argc, char** argv) {
         std::cout << leg.as_string() << std::endl;
     }
     std::cout << std::endl;
+
+    // ideally, we'd like to have a stopmap with stop infos (name, id, ...)
+    // for now, we build a stopmap with stopinfo from the transferGraph :
+    // this "coarse" stopmap only has rank and coordinates of the stops.
+    auto numStops = data.numberOfStops();
+    std::cout << "How many stops in the transferGraph : " << numStops << std::endl;
+    myserver::StopMap coarse_stopmap;
+    for (int stopRank = 0; stopRank < numStops; ++stopRank) {
+        Geometry::Point coords = data.transferGraph.get(Coordinates, Vertex(stopRank));
+
+        // as we have no further info on stops in ULTRA data, for now, id and name are identical to the rank :
+        std::string id = std::to_string(stopRank);
+        std::string name = std::to_string(stopRank);
+        coarse_stopmap.emplace(make_pair(id, myserver::Stop{id, name, coords.longitude, coords.latitude}));
+    }
+    std::cout << std::endl;
+
+    std::cout << "How many stops in the coarse stopmap : " << coarse_stopmap.size() << std::endl;
+    std::cout << std::endl;
+
+    // FIXME : temporarily dumping legs as geojson :
+    rapidjson::Document doc(rapidjson::kObjectType);
+    rapidjson::Document::AllocatorType& a = doc.GetAllocator();
+    auto geojson = myserver::legs_to_geojson(legs, coarse_stopmap, a);
+    myserver::dump_to_file(geojson, "/tmp/journey.geojson");
 
     return 0;
 }

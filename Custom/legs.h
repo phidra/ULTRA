@@ -18,13 +18,12 @@ struct Leg {
           start_time{start_time_},
           departure_time{departure_time_},
           arrival_id{arrival_id_},
-          arrival_time{arrival_time_} {}
+          arrival_time{arrival_time_},
+        // ULTRA legs have no stops details, so only first and last stops :
+          stops{departure_id, arrival_id} {}
 
     bool is_walk;
     std::string departure_id;
-
-    // ULTRA legs have no stops, but this is kept for compatibility with unrestricted-walking :
-    std::vector<std::string> stops;
 
     // leg has several times / durations, because it may include some waiting before the traveling :
     int start_time;      // leg's start_time is either the full journey's departure_time, or the arrival_time of the
@@ -34,6 +33,8 @@ struct Leg {
     // for PT, full_duration = waiting_duration + traveling_duration
     std::string arrival_id;
     int arrival_time;
+
+    std::vector<std::string> stops;
 
     inline int get_full_duration() const { return arrival_time - start_time; }
     inline int get_waiting_duration() const { return departure_time - start_time; }
