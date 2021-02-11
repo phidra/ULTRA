@@ -33,8 +33,8 @@ int main(int argc, char** argv) {
     ShortcutRAPTOR algorithm(data, bucketCH);
 
     std::ifstream stopfile_stream(stopfile_path);
-    auto stops = myserver::load_stopfile(stopfile_stream);
-    std::cout << "Number of loaded stops = " << stops.size() << std::endl;
+    auto stopmap = myserver::load_stopfile(stopfile_stream);
+    std::cout << "Number of loaded stops = " << stopmap.size() << std::endl;
 
     /* int SOURCE = 435; */
     /* int TARGET = 120; */

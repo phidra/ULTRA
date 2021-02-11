@@ -1,7 +1,10 @@
 #pragma once
 
+#include <vector>
 #include <string>
 #include "exceptions.h"
+
+namespace myserver {
 
 struct Leg {
     Leg(bool is_walk_,
@@ -19,6 +22,9 @@ struct Leg {
 
     bool is_walk;
     std::string departure_id;
+
+    // ULTRA legs have no stops, but this is kept for compatibility with unrestricted-walking :
+    std::vector<std::string> stops;
 
     // leg has several times / durations, because it may include some waiting before the traveling :
     int start_time;      // leg's start_time is either the full journey's departure_time, or the arrival_time of the
@@ -52,3 +58,5 @@ struct Leg {
         return oss.str();
     }
 };
+
+}
