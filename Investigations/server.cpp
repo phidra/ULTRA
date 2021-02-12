@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 
+#include <httplib.h>
+
 #include "../Algorithms/RAPTOR/ULTRARAPTOR.h"
 
 #include "../DataStructures/RAPTOR/Data.h"
@@ -8,20 +10,30 @@
 #include "../Custom/Parsing/geojson_stops.h"
 #include "../Custom/Parsing/gtfs_stops.h"
 #include "../Custom/Dumping/json_helper.h"
+#include "../Custom/Handlers/echo_handler.h"
 
 inline void usage() noexcept {
-    std::cout << "Usage: ultra-server  <RAPTOR binary>  <bucketCH-basename>  <stopfile>" << std::endl;
+    std::cout << "Usage: ultra-server  <port>  <RAPTOR binary>  <bucketCH-basename>  <stopfile>" << std::endl;
     exit(0);
 }
 
 using ShortcutRAPTOR = RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>;
 
 int main(int argc, char** argv) {
-    if (argc < 4)
+    if (argc < 5)
         usage();
-    const std::string raptorFile = argv[1];
-    const std::string bucketChBasename = argv[2];
-    const std::string stopfile_path = argv[3];
+    int port = 0;
+    try {
+        port = std::stoi(argv[1]);
+    } catch (...) {
+        std::cerr << "ERROR : unable to parse port '" << argv[1] << "'" << std::endl;
+        usage();
+        exit(1);
+    }
+    std::cerr << "Listening to port " << port << std::endl;
+    const std::string raptorFile = argv[2];
+    const std::string bucketChBasename = argv[3];
+    const std::string stopfile_path = argv[4];
 
     std::cout << "raptorFile            = " << raptorFile << std::endl;
     std::cout << "bucketChBasename      = " << bucketChBasename << std::endl;
@@ -84,6 +96,15 @@ int main(int argc, char** argv) {
     rapidjson::Document::AllocatorType& a = doc.GetAllocator();
     auto geojson = myserver::legs_to_geojson(legs, coarse_stopmap, a);
     myserver::dump_to_file(geojson, "/tmp/journey.geojson");
+
+
+    httplib::Server svr;
+
+    // echo :
+    svr.Get("/echo", myserver::handle_echo);
+
+    svr.listen("0.0.0.0", port);
+    std::cerr << "Exiting" << std::endl;
 
     return 0;
 }
