@@ -111,6 +111,12 @@ int main(int argc, char** argv) {
     };
     svr.Get("/journey_between_stops", f1);
 
+    // journey between locations :
+    auto f2 = [&algorithm, &coarse_stopmap](const httplib::Request& req, httplib::Response& res) {
+        handle_journey_between_locations(req, res, algorithm, coarse_stopmap);
+    };
+    svr.Get("/journey_between_locations", f2);
+
     // Serving a viewer, which files are located in "src/Static/viewer". This assumes that :
     //      program binary is in :  src/_build/bin/
     //      viewer folder is in :   src/Static/viewer/

@@ -12,6 +12,7 @@
 #include "../legs.h"
 #include "../stopmap.h"
 #include "../Dumping/duration_helper.h"
+#include "../Snapping/snapping.h"
 
 using namespace std;
 
@@ -150,6 +151,46 @@ pair<double, double> parse_location(string const& location_str) {
     return {longitude, latitude};
 }
 
+JourneyParams parse_locations_params(const httplib::Params& params, myserver::StopMap const& stops) {
+    // other params are ignored
+
+    string src = get_required_param_as_string(params, "src");
+    auto src_pair = parse_location(src);
+    auto src_result =  get_closest_stop(src_pair.first, src_pair.second);
+    auto src_id = get<0>(src_result);
+    auto src_name = stopid_to_stopname(src_id, stops, "unknown-name");
+    auto src_lon = get<1>(src_result);
+    auto src_lat = get<2>(src_result);
+    auto src_snap_distance = get<3>(src_result);
+
+    string dst = get_required_param_as_string(params, "dst");
+    auto dst_pair = parse_location(dst);
+    auto dst_result =  get_closest_stop(dst_pair.first, dst_pair.second);
+    auto dst_id = get<0>(dst_result);
+    auto dst_name = stopid_to_stopname(dst_id, stops, "unknown-name");
+    auto dst_lon = get<1>(dst_result);
+    auto dst_lat = get<2>(dst_result);
+    auto dst_snap_distance = get<3>(dst_result);
+
+    int departure_time = get_required_param_as_int(params, "departure-time");
+
+    // FIXME : use the real stops given the requested locations (with rtree) :
+    return {
+        "4350",
+        "4350",
+        8.656104,
+        47.267889,
+        42,
+        "1200",
+        "1200",
+        7.068796,
+        47.17562,
+        52,
+        36000
+    };
+    // return {src_id, src_name, src_lon, src_lat, src_snap_distance, dst_id, dst_name, dst_lon, dst_lat, dst_snap_distance, departure_time};
+}
+
 rapidjson::Document prepare_response(const httplib::Request& req, httplib::Response& res) {
     // postcondition = has an empty "response" object
     rapidjson::Document doc(rapidjson::kObjectType);
@@ -257,4 +298,26 @@ void handle_journey_between_stops(const httplib::Request& req, httplib::Response
     } else {
         finalize_response(res, doc, 500, "raptor encountered an error");
     }
+}
+
+void handle_journey_between_locations(const httplib::Request& req, httplib::Response& res, RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>& algo, myserver::StopMap const& stops) {
+    JourneyParams jparams;
+    try {
+        jparams = parse_locations_params(req.params, stops);
+    } catch (Error400& e) {
+        rapidjson::Document doc = prepare_response(req, res);
+        finalize_response(res, doc, 400, e.what());
+        return;
+    }
+
+    // if we get here, params are ok :
+    rapidjson::Document doc = prepare_response(req, res);
+    rapidjson::Document::AllocatorType& a = doc.GetAllocator();
+    bool is_raptor_ok = compute_journey(jparams, doc["response"], a, algo, stops);
+    if (is_raptor_ok) {
+        finalize_response(res, doc, 200, "");
+    } else {
+        finalize_response(res, doc, 500, "raptor encountered an error");
+    }
+
 }
