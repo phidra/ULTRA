@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cassert>
 
 #include "InitialTransfers.h"
 
@@ -34,7 +35,6 @@
 #include "Debugger.h"
 
 
-#include <cassert>
 
 #include "../../Custom/legs.h"
 #include "../../Custom/journey.h"

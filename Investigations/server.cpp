@@ -11,6 +11,7 @@
 #include "../Custom/Parsing/gtfs_stops.h"
 #include "../Custom/Dumping/json_helper.h"
 #include "../Custom/Handlers/echo_handler.h"
+#include "../Custom/Handlers/journey_handler.h"
 
 inline void usage() noexcept {
     std::cout << "Usage: ultra-server  <port>  <RAPTOR binary>  <bucketCH-basename>  <stopfile>" << std::endl;
@@ -103,8 +104,15 @@ int main(int argc, char** argv) {
     // echo :
     svr.Get("/echo", myserver::handle_echo);
 
+    // journey between stops :
+    auto f1 = [&algorithm, &coarse_stopmap](const httplib::Request& req, httplib::Response& res) {
+        handle_journey_between_stops(req, res, algorithm, coarse_stopmap);
+    };
+    svr.Get("/journey_between_stops", f1);
+
     svr.listen("0.0.0.0", port);
     std::cerr << "Exiting" << std::endl;
+
 
     return 0;
 }

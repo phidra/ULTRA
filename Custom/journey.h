@@ -33,7 +33,7 @@ inline EarliestArrivalLabel get_best_label(int stop, std::vector<Round> const& r
     return {};
 }
 
-inline std::tuple<StopId, int, myserver::EarliestArrivalLabel> _find_optimal_last_stop(
+inline std::tuple<::StopId, int, myserver::EarliestArrivalLabel> _find_optimal_last_stop(
     RAPTOR::Data const& data,
     RAPTOR::BucketCHInitialTransfers const& initialTransfers,
     std::vector<Round> const& rounds) {
@@ -58,7 +58,7 @@ inline std::tuple<StopId, int, myserver::EarliestArrivalLabel> _find_optimal_las
     }
 
     // FIXME = handle errors
-    return {StopId(best_stop), best_distance, best_label};
+    return {::StopId{best_stop}, best_distance, best_label};
 }
 
 inline std::vector<Leg> build_legs(Vertex source,
