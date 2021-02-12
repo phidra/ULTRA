@@ -32,7 +32,7 @@ namespace Intermediate {
 class StopEvent {
 
 public:
-    static const std::string CSV_HEADER;
+    inline static const std::string CSV_HEADER = "stop_id,arr_time,dep_time";
 
 public:
     StopEvent(const StopId stopId = noStop, const int arrivalTime = -1, const int departureTime = -2) :
@@ -93,8 +93,6 @@ public:
     int departureTime{-2};
 
 };
-
-const std::string StopEvent::CSV_HEADER = "stop_id,arr_time,dep_time";
 
 inline bool less(const std::vector<StopEvent>& a, const std::vector<StopEvent>& b) noexcept {
     const size_t size = std::min(a.size(), b.size());
