@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #include <httplib.h>
 
@@ -109,6 +110,19 @@ int main(int argc, char** argv) {
         handle_journey_between_stops(req, res, algorithm, coarse_stopmap);
     };
     svr.Get("/journey_between_stops", f1);
+
+    // Serving a viewer, which files are located in "src/Static/viewer". This assumes that :
+    //      program binary is in :  src/_build/bin/
+    //      viewer folder is in :   src/Static/viewer/
+    std::filesystem::path program_path{argv[0]};
+    auto src_path = program_path.parent_path().parent_path().parent_path();
+    auto viewer_path = src_path / "Static" / "viewer";
+    std::cerr << "Serving viewer from folder : " << viewer_path << std::endl;
+    auto ret = svr.set_mount_point("/viewer", viewer_path.string().c_str());
+    if (!ret) {
+        std::cerr << "ERROR with serving viewer from folder : " << viewer_path << std::endl;
+        return 1;
+    }
 
     svr.listen("0.0.0.0", port);
     std::cerr << "Exiting" << std::endl;
