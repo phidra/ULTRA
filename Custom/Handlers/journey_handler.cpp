@@ -174,21 +174,7 @@ JourneyParams parse_locations_params(const httplib::Params& params, myserver::St
 
     int departure_time = get_required_param_as_int(params, "departure-time");
 
-    // FIXME : use the real stops given the requested locations (with rtree) :
-    return {
-        "4350",
-        "4350",
-        8.656104,
-        47.267889,
-        42,
-        "1200",
-        "1200",
-        7.068796,
-        47.17562,
-        52,
-        36000
-    };
-    // return {src_id, src_name, src_lon, src_lat, src_snap_distance, dst_id, dst_name, dst_lon, dst_lat, dst_snap_distance, departure_time};
+    return {src_id, src_name, src_lon, src_lat, src_snap_distance, dst_id, dst_name, dst_lon, dst_lat, dst_snap_distance, departure_time};
 }
 
 rapidjson::Document prepare_response(const httplib::Request& req, httplib::Response& res) {

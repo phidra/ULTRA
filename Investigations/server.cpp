@@ -13,6 +13,7 @@
 #include "../Custom/Dumping/json_helper.h"
 #include "../Custom/Handlers/echo_handler.h"
 #include "../Custom/Handlers/journey_handler.h"
+#include "../Custom/Snapping/snapping.h"
 
 inline void usage() noexcept {
     std::cout << "Usage: ultra-server  <port>  <RAPTOR binary>  <bucketCH-basename>  <stopfile>" << std::endl;
@@ -89,6 +90,7 @@ int main(int argc, char** argv) {
         coarse_stopmap.emplace(make_pair(id, myserver::Stop{id, name, coords.longitude, coords.latitude}));
     }
     std::cout << std::endl;
+    build_index(coarse_stopmap);
 
     std::cout << "How many stops in the coarse stopmap : " << coarse_stopmap.size() << std::endl;
     std::cout << std::endl;

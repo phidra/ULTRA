@@ -20,12 +20,12 @@ void build_index(myserver::StopMap stops) {
 }
 
 tuple<string, double, double, float> get_closest_stop(double lon, double lat) {
-    return {"coucou", 4.1, 4.2, 4.3};
-    /* vector<RtreeValue> closest_stops; */
-    /* BgPoint point{lon, lat}; */
-    /* rtree.query(boost::geometry::index::nearest(point, 1), back_inserter(closest_stops)); */
-    /* auto closest_stop_id = closest_stops.front().second; */
-    /* auto closest_stop_loc = closest_stops.front().first; */
-    /* auto distance = boost::geometry::distance(closest_stop_loc, BgPoint{lon, lat}, HAVERSINE); */
-    /* return make_tuple(closest_stop_id, get<0>(closest_stop_loc), get<1>(closest_stop_loc), distance); */
+    /* return {"coucou", 4.1, 4.2, 4.3}; */
+    vector<RtreeValue> closest_stops;
+    BgPoint point{lon, lat};
+    rtree.query(boost::geometry::index::nearest(point, 1), back_inserter(closest_stops));
+    auto closest_stop_id = closest_stops.front().second;
+    auto closest_stop_loc = closest_stops.front().first;
+    auto distance = boost::geometry::distance(closest_stop_loc, BgPoint{lon, lat}, HAVERSINE);
+    return make_tuple(closest_stop_id, get<0>(closest_stop_loc), get<1>(closest_stop_loc), distance);
 }
