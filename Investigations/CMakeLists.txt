@@ -56,6 +56,7 @@ include(bordeaux-data-gtfs.cmake)
 include(bordeaux-data-osm.cmake)
 include(server.cmake)
 include(build-transfer-graph.cmake)
+include(build-raptor-binary.cmake)
 
 add_dependencies(${GTFSCHECKER} gtfs_bordeaux)
 add_dependencies(${CONVERTER} gtfs_bordeaux)
