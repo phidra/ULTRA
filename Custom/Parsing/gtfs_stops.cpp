@@ -1,4 +1,4 @@
-#include "stopfile.h"
+#include "gtfs_stops.h"
 
 #include "csv.h"
 
@@ -6,7 +6,7 @@ using namespace std;
 
 namespace my {
 
-vector<Stop> parse_stopfile(const char* stopfile, istream& stopfile_stream) {
+vector<Stop> parse_gtfs_stops(const char* gtfs_stopfile, istream& stopfile_stream) {
     // clang-format off
     //
     // BORDEAUX :
@@ -23,7 +23,7 @@ vector<Stop> parse_stopfile(const char* stopfile, istream& stopfile_stream) {
 
     vector<Stop> all_stops;
 
-    io::CSVReader<4, io::trim_chars<>, io::double_quote_escape<',', '"'> > in(stopfile, stopfile_stream);
+    io::CSVReader<4, io::trim_chars<>, io::double_quote_escape<',', '"'> > in(gtfs_stopfile, stopfile_stream);
     in.read_header(io::ignore_extra_column, "stop_id", "stop_name", "stop_lat", "stop_lon");
     string stop_id, stop_name;
     double stop_lat, stop_lon;

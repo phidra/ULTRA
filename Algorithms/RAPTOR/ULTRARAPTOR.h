@@ -24,6 +24,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cassert>
 
 #include "InitialTransfers.h"
 
@@ -34,7 +35,6 @@
 #include "Debugger.h"
 
 
-#include <cassert>
 
 #include "../../Custom/legs.h"
 #include "../../Custom/journey.h"
@@ -71,7 +71,7 @@ public:
     }
 
 
-    inline std::vector<Leg> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
+    inline std::vector<myserver::Leg> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
         debugger.start();
         debugger.startInitialization();
         clear();
@@ -88,7 +88,7 @@ public:
         }
 
         debugger.done();
-        auto journey = myserver::build_legs(source, data, initialTransfers, rounds);
+        auto journey = myserver::build_legs(source, target, data, initialTransfers, rounds);
         return journey;
     }
 

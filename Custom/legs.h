@@ -1,7 +1,10 @@
 #pragma once
 
+#include <vector>
 #include <string>
 #include "exceptions.h"
+
+namespace myserver {
 
 struct Leg {
     Leg(bool is_walk_,
@@ -15,7 +18,9 @@ struct Leg {
           start_time{start_time_},
           departure_time{departure_time_},
           arrival_id{arrival_id_},
-          arrival_time{arrival_time_} {}
+          arrival_time{arrival_time_},
+        // ULTRA legs have no info on intermediate stops, so we only know about first and last :
+          stops{departure_id, arrival_id} {}
 
     bool is_walk;
     std::string departure_id;
@@ -28,6 +33,8 @@ struct Leg {
     // for PT, full_duration = waiting_duration + traveling_duration
     std::string arrival_id;
     int arrival_time;
+
+    std::vector<std::string> stops;
 
     inline int get_full_duration() const { return arrival_time - start_time; }
     inline int get_waiting_duration() const { return departure_time - start_time; }
@@ -52,3 +59,5 @@ struct Leg {
         return oss.str();
     }
 };
+
+}

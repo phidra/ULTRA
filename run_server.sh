@@ -24,7 +24,10 @@ popd
 
 # run server :
 WORKDIR="${this_script_parent}/WORKDIR"
+PORT="8080"
 echo "Using data from WORKDIR = $WORKDIR"
 "${BUILD_DIR}/bin/ultra-server" \
+    "$PORT" \
     "${WORKDIR}/COMPUTE_SHORTCUTS_OUTPUT/ultra_shortcuts.binary" \
-    "${WORKDIR}/BUILD_BUCKETCH_OUTPUT/bucketch.graph"
+    "${WORKDIR}/BUILD_BUCKETCH_OUTPUT/bucketch.graph" \
+    "${this_script_parent}/WORKDIR_build_transfer_graph/stops.geojson"

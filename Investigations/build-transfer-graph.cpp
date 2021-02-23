@@ -5,14 +5,14 @@
 #include "../DataStructures/RAPTOR/Data.h"
 #include "../DataStructures/Geometry/Point.h"
 #include "../Custom/Parsing/polygonfile.h"
-#include "../Custom/Parsing/stopfile.h"
+#include "../Custom/Parsing/gtfs_stops.h"
 #include "../Custom/Graph/extending_with_stops.h"
 #include "../Custom/Graph/graph.h"
 #include "../Custom/transfer_graph.h"
 #include "../Custom/Dumping/geojson.h"
 
 inline void usage(const std::string binary_name) noexcept {
-    std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile>  <stopfile>  <output-dir>" << std::endl;
+    std::cout << "Usage:  " << binary_name << "  <osmfile>  <polygonfile>  <gtfs-stopfile>  <output-dir>" << std::endl;
     exit(0);
 }
 
@@ -23,14 +23,14 @@ int main(int argc, char** argv) {
 
     const std::string osmfile = argv[1];
     const std::string polygonfile = argv[2];
-    auto stopfile = argv[3];
+    auto gtfs_stopfile = argv[3];
     std::string output_dir = argv[4];
     if (output_dir.back() != '/') {
         output_dir.push_back('/');
     }
-    std::ifstream stopfile_stream{stopfile};
+    std::ifstream stopfile_stream{gtfs_stopfile};
     if (!stopfile_stream.good()) {
-        std::cerr << "ERROR: unable to read stopfile : '" << stopfile << "'\n";
+        std::cerr << "ERROR: unable to read gtfs_stopfile : '" << gtfs_stopfile << "'\n";
         std::cerr << "\n";
         usage(argv[0]);
         std::exit(2);
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
     std::cout << "OSMFILE          = " << osmfile << std::endl;
     std::cout << "POLYGONFILE      = " << polygonfile << std::endl;
-    std::cout << "STOPFILE         = " << stopfile << std::endl;
+    std::cout << "STOPFILE         = " << gtfs_stopfile << std::endl;
     std::cout << "OUTPUT_DIR       = " << output_dir << std::endl;
     std::cout << std::endl;
 
@@ -56,8 +56,8 @@ int main(int argc, char** argv) {
         exit(2);
     }
 
-    // parse stopfile early, in order to fail early if needed :
-    std::vector<my::Stop> stops = my::parse_stopfile(stopfile, stopfile_stream);
+    // parse gtfs_stopfile early, in order to fail early if needed :
+    std::vector<my::Stop> stops = my::parse_gtfs_stops(gtfs_stopfile, stopfile_stream);
 
     std::cout << "Building edges from OSM graph..." << std::endl;
     float walkspeed_km_per_h = 4.7;

@@ -33,7 +33,7 @@ namespace Intermediate {
 class Stop {
 
 public:
-    static const std::string CSV_HEADER;
+    inline static const std::string CSV_HEADER = "lon,lat,name,change_time";
 
 public:
     Stop(const std::string& name = "", const Geometry::Point& coordinates = Geometry::Point(), const int minTransferTime = 0) :
@@ -90,7 +90,5 @@ public:
     int minTransferTime{0};
 
 };
-
-const std::string Stop::CSV_HEADER = "lon,lat,name,change_time";
 
 }

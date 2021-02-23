@@ -34,7 +34,7 @@ namespace Intermediate {
 class Trip {
 
 public:
-    static const std::string CSV_HEADER;
+    inline static const std::string CSV_HEADER = "name,route,vehicle";
 
 public:
     Trip(const std::string& tripName = "", const std::string& routeName = "", const int type = -1) :
@@ -142,8 +142,6 @@ public:
     int type{-1};
 
 };
-
-const std::string Trip::CSV_HEADER = "name,route,vehicle";
 
 inline bool isFiFo(const Trip& a, const Trip& b) noexcept {
     AssertMsg(a.stopEvents.size() == b.stopEvents.size(), "FiFO property can only be tested for trips of equal size!");

@@ -1,7 +1,9 @@
 #pragma once
 
+#include "../Algorithms/RAPTOR/InitialTransfers.h"
 #include "../DataStructures/RAPTOR/Data.h"
 #include "../Helpers/Types.h"
+#include "../Custom/legs.h"
 
 namespace myserver {
 
@@ -31,7 +33,7 @@ inline EarliestArrivalLabel get_best_label(int stop, std::vector<Round> const& r
     return {};
 }
 
-inline std::tuple<StopId, int, myserver::EarliestArrivalLabel> _find_optimal_last_stop(
+inline std::tuple<::StopId, int, myserver::EarliestArrivalLabel> _find_optimal_last_stop(
     RAPTOR::Data const& data,
     RAPTOR::BucketCHInitialTransfers const& initialTransfers,
     std::vector<Round> const& rounds) {
@@ -56,10 +58,11 @@ inline std::tuple<StopId, int, myserver::EarliestArrivalLabel> _find_optimal_las
     }
 
     // FIXME = handle errors
-    return {StopId(best_stop), best_distance, best_label};
+    return {::StopId{best_stop}, best_distance, best_label};
 }
 
 inline std::vector<Leg> build_legs(Vertex source,
+                                   Vertex target,
                                    RAPTOR::Data const& data,
                                    RAPTOR::BucketCHInitialTransfers const& initialTransfers,
                                    std::vector<Round> const& rounds) {
@@ -70,7 +73,7 @@ inline std::vector<Leg> build_legs(Vertex source,
     // for now, we only allow journeys from/to as top -> targetVertex is necessary a stop, and last_walk_distance is
     // necessary 0 :
     assert(last_walk_distance == 0);
-    assert(last_stop == targetStop);
+    assert(last_stop == target);
 
     std::vector<Leg> legs;
 

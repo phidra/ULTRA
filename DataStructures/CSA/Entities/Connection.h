@@ -33,7 +33,7 @@ namespace CSA {
 class Connection {
 
 public:
-    static const std::string CSV_HEADER;
+    inline static const std::string CSV_HEADER = "dep_stop,arr_stop,dep_time,arr_time,trip_id";
 
 public:
     Connection(const StopId departureStopId = noStop, const StopId arrivalStopId = noStop, const int departureTime = -1, const int arrivalTime = 0, const TripId tripId = noTripId) :
@@ -105,7 +105,5 @@ public:
     TripId tripId{noTripId};
 
 };
-
-const std::string Connection::CSV_HEADER = "dep_stop,arr_stop,dep_time,arr_time,trip_id";
 
 }

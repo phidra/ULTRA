@@ -33,7 +33,7 @@ namespace CSA {
 class Trip {
 
 public:
-    static const std::string CSV_HEADER;
+    inline static const std::string CSV_HEADER = "name,vehicle";
 
 public:
     Trip(const std::string& tripName = "", const std::string& routeName = "", const int type = -1) :
@@ -68,7 +68,5 @@ public:
     int type{-1};
 
 };
-
-const std::string Trip::CSV_HEADER = "name,vehicle";
 
 }

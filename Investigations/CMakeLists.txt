@@ -25,11 +25,9 @@ set(RELEASE_COMPILE_OPTIONS
     -ffast-math
     -ftree-vectorize
     -Wfatal-errors
-    -DNDEBUG
 )
 set(OPTIMIZATION_COMPILE_OPTIONS
     -march=native
-    -O3
 )
 set(DEBUG_COMPILE_OPTIONS
     -rdynamic
