@@ -16,7 +16,10 @@
 #include "../Custom/Snapping/snapping.h"
 
 inline void usage() noexcept {
-    std::cout << "Usage: ultra-server  <port>  <RAPTOR binary>  <bucketCH-basename>  <stopfile>" << std::endl;
+    std::cout << "Usage: ultra-server  <port>  <RAPTOR binary>  <bucketCH-basename>  <stopfile>\n";
+    std::cout << "\n";
+    std::cout << "This is a BLOCKING server -> do NOT use in anything remotely close to production !\n";
+    std::cout << std::endl;
     exit(0);
 }
 
@@ -76,7 +79,7 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     // ideally, we'd like to have a stopmap with stop infos (name, id, ...)
-    // for now, we build a stopmap with stopinfo from the transferGraph :
+    // for now, we build a stopmap from the transferGraph, which has very few infos on stops :
     // this "coarse" stopmap only has rank and coordinates of the stops.
     auto numStops = data.numberOfStops();
     std::cout << "How many stops in the transferGraph : " << numStops << std::endl;

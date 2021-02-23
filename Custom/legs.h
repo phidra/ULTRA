@@ -19,7 +19,7 @@ struct Leg {
           departure_time{departure_time_},
           arrival_id{arrival_id_},
           arrival_time{arrival_time_},
-        // ULTRA legs have no stops details, so only first and last stops :
+        // ULTRA legs have no info on intermediate stops, so we only know about first and last :
           stops{departure_id, arrival_id} {}
 
     bool is_walk;
