@@ -36,7 +36,7 @@ echo ""
 
 set -o xtrace
 "${BUILD_DIR}/bin/build-raptor-binary" \
+    "DOWNLOADED_DATA/gtfs_bordeaux" \
     "$OSM_FILE" \
     "$POLYGON_FILE" \
-    "$STOPS_FILE" \
     "$WORKDIR"
