@@ -36,6 +36,9 @@ int main(int argc, char** argv) {
     cout << "Dumping GTFS binary into : " << output_file << endl;
     binaryData.dump(output_file);
 
+    // checking + displaying :
+    bool isSerializationIdempotent = binaryData.checkSerializationIdempotence();
+    cout << "Is serialization idempotent ? " << isSerializationIdempotent << endl;
     display(binaryData);
 
     return 0;
@@ -43,8 +46,6 @@ int main(int argc, char** argv) {
 
 
 void display(my::GtfsUltraData const& binaryData) {
-    bool isSerializationIdempotent = binaryData.checkSerializationIdempotence();
-    cout << "Is serialization idempotent ? " << isSerializationIdempotent << endl;
     cout << "How many stops ? " << binaryData.stopIds.size() << endl;
 
     cout << "Here, routeData contains : " << binaryData.routeData.size() << " items." << endl;

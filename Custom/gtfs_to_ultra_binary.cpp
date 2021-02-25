@@ -239,52 +239,64 @@ bool my::GtfsUltraData::checkSerializationIdempotence() const {
 
     IO::deserialize(tmpfile.file, freshFirstRouteSegmentOfStop, freshFirstStopIdOfRoute, freshFirstStopEventOfRoute, freshRouteSegments, freshStopIds, freshStopEvents, freshStopData, freshRouteData, freshImplicitDepartureBufferTimes, freshImplicitArrivalBufferTimes);
 
-    cout << "Is serialization + deserialization idempotent ?" << endl;
-    cout << (firstRouteSegmentOfStop == freshFirstRouteSegmentOfStop) << endl;
-    cout << (firstStopIdOfRoute == freshFirstStopIdOfRoute) << endl;
-    cout << (firstStopEventOfRoute == freshFirstStopEventOfRoute) << endl;
-
-    auto are_route_segments_equal = equal(
+    bool areFirstRouteSegmentOfStopEqual = firstRouteSegmentOfStop == freshFirstRouteSegmentOfStop;
+    bool areFirstStopIdOfRouteEqual = firstStopIdOfRoute == freshFirstStopIdOfRoute;
+    bool areFirstStopEventOfRouteEqual = firstStopEventOfRoute == freshFirstStopEventOfRoute;
+    bool areRouteSegmentsEqual = equal(
         routeSegments.begin(),
         routeSegments.end(),
         freshRouteSegments.begin(),
         [](auto const& x, auto const& y) { return x.routeId == y.routeId && x.stopIndex == y.stopIndex; }
     );
-
-    cout << are_route_segments_equal << endl;
-    cout << (stopIds == freshStopIds) << endl;
-
-    auto are_stop_events_equal = equal(
+    bool areStopIdsEqual = stopIds == freshStopIds;
+    bool areStopEventsEqual = equal(
         stopEvents.begin(),
         stopEvents.end(),
         freshStopEvents.begin(),
         [](auto const& x, auto const& y) { return x.arrivalTime == y.arrivalTime && x.departureTime == y.departureTime; }
     );
-
-    cout << are_stop_events_equal << endl;
-
-    auto are_stops_equal = equal(
+    bool areStopDataEqual = equal(
         stopData.begin(),
         stopData.end(),
         freshStopData.begin(),
         [](auto const& x, auto const& y) { return x.name == y.name && x.coordinates == y.coordinates && x.minTransferTime == y.minTransferTime; }
     );
-    cout << are_stops_equal << endl;
-
-
-    auto are_routes_equal = equal(
+    bool areRouteDataEqual = equal(
         routeData.begin(),
         routeData.end(),
         freshRouteData.begin(),
         [](auto const& x, auto const& y) { return x.name == y.name && x.type == y.type; }
     );
-    cout << are_routes_equal << endl;
+    bool areImplicitDepartureBufferTimesEqual = implicitDepartureBufferTimes == freshImplicitDepartureBufferTimes;
+    bool areImplicitArrivalBufferTimesEqual = implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes;
 
-    cout << (implicitDepartureBufferTimes == freshImplicitDepartureBufferTimes) << endl;
-    cout << (implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes) << endl;
-    cout << "That's all folks !" << endl;
 
-    return true;  // stub
+    cout << "DETAILS : is serialization + deserialization idempotent ?" << endl;
+    cout << boolalpha;
+    cout << areFirstRouteSegmentOfStopEqual << endl;
+    cout << areFirstStopIdOfRouteEqual << endl;
+    cout << areFirstStopEventOfRouteEqual << endl;
+    cout << areRouteSegmentsEqual << endl;
+    cout << areStopIdsEqual << endl;
+    cout << areStopEventsEqual << endl;
+    cout << areStopDataEqual << endl;
+    cout << areRouteDataEqual << endl;
+    cout << areImplicitDepartureBufferTimesEqual << endl;
+    cout << areImplicitArrivalBufferTimesEqual << endl;
+
+
+    return (
+        areFirstRouteSegmentOfStopEqual &&
+        areFirstStopIdOfRouteEqual &&
+        areFirstStopEventOfRouteEqual &&
+        areRouteSegmentsEqual &&
+        areStopIdsEqual &&
+        areStopEventsEqual &&
+        areStopDataEqual &&
+        areRouteDataEqual &&
+        areImplicitDepartureBufferTimesEqual &&
+        areImplicitArrivalBufferTimesEqual
+    );
 }
 
 }  // namespace my
