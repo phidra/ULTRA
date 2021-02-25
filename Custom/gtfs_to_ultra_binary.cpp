@@ -179,7 +179,7 @@ pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-void do_the_full_preparation(ad::cppgtfs::gtfs::Feed const& feed, string const& outputFileName) {
+void convert_gtfs_to_ultra_binary(ad::cppgtfs::gtfs::Feed const& feed, string const& outputFileName, bool checkIdempotence) {
     // prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
     auto[rankedRoutes, routeToRank] = rankRoutes(routeToTrips);
@@ -253,64 +253,66 @@ void do_the_full_preparation(ad::cppgtfs::gtfs::Feed const& feed, string const& 
     bool implicitArrivalBufferTimes = false;
     IO::serialize(outputFileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
 
+    if (checkIdempotence) {
 
-    // unserializing, to check that serialization+deserialization is idempotent :
-    vector<size_t> freshFirstRouteSegmentOfStop;
-    vector<size_t> freshFirstStopIdOfRoute;
-    vector<size_t> freshFirstStopEventOfRoute;
-    vector<RAPTOR::RouteSegment> freshRouteSegments;
-    vector<StopId> freshStopIds;
-    vector<RAPTOR::StopEvent> freshStopEvents;
-    vector<RAPTOR::Stop> freshStopData;
-    vector<RAPTOR::Route> freshRouteData;
-    bool freshImplicitDepartureBufferTimes;
-    bool freshImplicitArrivalBufferTimes;
+        // unserializing, to check that serialization+deserialization is idempotent :
+        vector<size_t> freshFirstRouteSegmentOfStop;
+        vector<size_t> freshFirstStopIdOfRoute;
+        vector<size_t> freshFirstStopEventOfRoute;
+        vector<RAPTOR::RouteSegment> freshRouteSegments;
+        vector<StopId> freshStopIds;
+        vector<RAPTOR::StopEvent> freshStopEvents;
+        vector<RAPTOR::Stop> freshStopData;
+        vector<RAPTOR::Route> freshRouteData;
+        bool freshImplicitDepartureBufferTimes;
+        bool freshImplicitArrivalBufferTimes;
 
-    IO::deserialize(outputFileName, freshFirstRouteSegmentOfStop, freshFirstStopIdOfRoute, freshFirstStopEventOfRoute, freshRouteSegments, freshStopIds, freshStopEvents, freshStopData, freshRouteData, freshImplicitDepartureBufferTimes, freshImplicitArrivalBufferTimes);
-    cout << "Is serialization + deserialization idempotent ?" << endl;
-    cout << (firstRouteSegmentOfStop == freshFirstRouteSegmentOfStop) << endl;
-    cout << (firstStopIdOfRoute == freshFirstStopIdOfRoute) << endl;
-    cout << (firstStopEventOfRoute == freshFirstStopEventOfRoute) << endl;
+        IO::deserialize(outputFileName, freshFirstRouteSegmentOfStop, freshFirstStopIdOfRoute, freshFirstStopEventOfRoute, freshRouteSegments, freshStopIds, freshStopEvents, freshStopData, freshRouteData, freshImplicitDepartureBufferTimes, freshImplicitArrivalBufferTimes);
+        cout << "Is serialization + deserialization idempotent ?" << endl;
+        cout << (firstRouteSegmentOfStop == freshFirstRouteSegmentOfStop) << endl;
+        cout << (firstStopIdOfRoute == freshFirstStopIdOfRoute) << endl;
+        cout << (firstStopEventOfRoute == freshFirstStopEventOfRoute) << endl;
 
-    auto are_route_segments_equal = equal(
-        routeSegments.begin(),
-        routeSegments.end(),
-        freshRouteSegments.begin(),
-        [](auto const& left, auto const& right) { return left.routeId == right.routeId && left.stopIndex == right.stopIndex; }
-    );
+        auto are_route_segments_equal = equal(
+            routeSegments.begin(),
+            routeSegments.end(),
+            freshRouteSegments.begin(),
+            [](auto const& left, auto const& right) { return left.routeId == right.routeId && left.stopIndex == right.stopIndex; }
+        );
 
-    cout << are_route_segments_equal << endl;
-    cout << (stopIds == freshStopIds) << endl;
+        cout << are_route_segments_equal << endl;
+        cout << (stopIds == freshStopIds) << endl;
 
-    auto are_stop_events_equal = equal(
-        stopEvents.begin(),
-        stopEvents.end(),
-        freshStopEvents.begin(),
-        [](auto const& left, auto const& right) { return left.arrivalTime == right.arrivalTime && left.departureTime == right.departureTime; }
-    );
+        auto are_stop_events_equal = equal(
+            stopEvents.begin(),
+            stopEvents.end(),
+            freshStopEvents.begin(),
+            [](auto const& left, auto const& right) { return left.arrivalTime == right.arrivalTime && left.departureTime == right.departureTime; }
+        );
 
-    cout << are_stop_events_equal << endl;
+        cout << are_stop_events_equal << endl;
 
-    auto are_stops_equal = equal(
-        stopData.begin(),
-        stopData.end(),
-        freshStopData.begin(),
-        [](auto const& left, auto const& right) { return left.name == right.name && left.coordinates == right.coordinates && left.minTransferTime == right.minTransferTime; }
-    );
-    cout << are_stops_equal << endl;
+        auto are_stops_equal = equal(
+            stopData.begin(),
+            stopData.end(),
+            freshStopData.begin(),
+            [](auto const& left, auto const& right) { return left.name == right.name && left.coordinates == right.coordinates && left.minTransferTime == right.minTransferTime; }
+        );
+        cout << are_stops_equal << endl;
 
 
-    auto are_routes_equal = equal(
-        routeData.begin(),
-        routeData.end(),
-        freshRouteData.begin(),
-        [](auto const& left, auto const& right) { return left.name == right.name && left.type == right.type; }
-    );
-    cout << are_routes_equal << endl;
+        auto are_routes_equal = equal(
+            routeData.begin(),
+            routeData.end(),
+            freshRouteData.begin(),
+            [](auto const& left, auto const& right) { return left.name == right.name && left.type == right.type; }
+        );
+        cout << are_routes_equal << endl;
 
-    cout << (implicitDepartureBufferTimes == freshImplicitDepartureBufferTimes) << endl;
-    cout << (implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes) << endl;
-    cout << "That's all folks !" << endl;
+        cout << (implicitDepartureBufferTimes == freshImplicitDepartureBufferTimes) << endl;
+        cout << (implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes) << endl;
+        cout << "That's all folks !" << endl;
+    }
 }
 
 }  // namespace my

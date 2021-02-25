@@ -29,7 +29,8 @@ int main(int argc, char** argv) {
     cout << "This feed contains " << feed.getStops().size() << " stops" << endl;
     cout << "This feed contains " << feed.getTrips().size() << " trips" << endl;
 
-    my::do_the_full_preparation(feed, output_file);
+    constexpr const bool checkIdempotence = true;
+    my::convert_gtfs_to_ultra_binary(feed, output_file, checkIdempotence);
     cout << "Dumped GTFS binary into : " << output_file << endl;
 
     return 0;

@@ -30,6 +30,6 @@ std::pair<std::vector<RAPTOR::RouteSegment>, std::vector<size_t>> convert_routeS
     std::unordered_map<my::RouteID, size_t> const& routeToRank,
     std::map<my::RouteID, std::set<my::TripID>> const& routeToTrips);
 
-void do_the_full_preparation(ad::cppgtfs::gtfs::Feed const& feed, std::string const& outputFileName);
+void convert_gtfs_to_ultra_binary(ad::cppgtfs::gtfs::Feed const& feed, std::string const& outputFileName, bool checkIdempotence);
 
 }  // namespace my
