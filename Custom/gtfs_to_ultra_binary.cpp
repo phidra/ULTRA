@@ -1,6 +1,8 @@
 #include <iostream>
 #include <numeric>
 #include <algorithm>
+#include <filesystem>
+#include <cstdio>
 
 #include "gtfs_to_ultra_binary.h"
 #include "prepare_gtfs.h"
@@ -34,7 +36,7 @@ static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& fee
     return *tripPtr;
 }
 
-vector<RAPTOR::Route> build_routeData(map<my::RouteID, set<my::TripID>> const& routeToTrips) {
+static vector<RAPTOR::Route> build_routeData(map<my::RouteID, set<my::TripID>> const& routeToTrips) {
     vector<RAPTOR::Route> routeData;
     routeData.reserve(routeToTrips.size());
     // note : The route name is NOT its rank, but its id, i.e. the concatenation of its stops
@@ -43,7 +45,7 @@ vector<RAPTOR::Route> build_routeData(map<my::RouteID, set<my::TripID>> const& r
     return routeData;
 }
 
-vector<RAPTOR::Stop> build_stopData(vector<my::StopID> const& rankedStops,
+static vector<RAPTOR::Stop> build_stopData(vector<my::StopID> const& rankedStops,
                                                 ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::Stop> stopData(rankedStops.size());
     for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
@@ -55,7 +57,7 @@ vector<RAPTOR::Stop> build_stopData(vector<my::StopID> const& rankedStops,
     return stopData;
 }
 
-pair<vector<StopId>, vector<size_t>> build_stopIdsRelated(
+static pair<vector<StopId>, vector<size_t>> build_stopIdsRelated(
     vector<RAPTOR::Route> const& routeData,
     unordered_map<my::StopID, size_t> const& stopToRank) {
     vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
@@ -82,7 +84,7 @@ pair<vector<StopId>, vector<size_t>> build_stopIdsRelated(
     return {stopIds, firstStopIdOfRoute};
 }
 
-pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
+static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     vector<RAPTOR::Route> const& routeData,
     map<my::RouteID, set<my::TripID>> const& routeToTrips,
     ad::cppgtfs::gtfs::Feed const& feed) {
@@ -125,7 +127,7 @@ pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     return {stopEvents, firstStopEventOfRoute};
 }
 
-pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
+static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
     vector<RAPTOR::Route> const& routeData,
     unordered_map<my::StopID, size_t> const& stopToRank,
     unordered_map<my::RouteID, size_t> const& routeToRank,
@@ -179,140 +181,110 @@ pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-void convert_gtfs_to_ultra_binary(ad::cppgtfs::gtfs::Feed const& feed, string const& outputFileName, bool checkIdempotence) {
+
+my::GtfsUltraData::GtfsUltraData(ad::cppgtfs::gtfs::Feed const& feed) {
     // prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
     auto[rankedRoutes, routeToRank] = rankRoutes(routeToTrips);
     auto[rankedStops, stopToRank] = rankStops(routeToTrips);
 
-    // after this preparation step, from now on :
+    // from now on :
     //  - routes of GTFS data are not used anymore (they are replaced with a partition of stops, cf. prepare_gtfs.h)
     //  - only the stops that appear in at least one trip are used
     //  - a route (or a stop) can be identified with its RouteID/StopID or its rank
     //  - the conversion between ID<->rank is done with the above structures
 
-    // routeData :
-    vector<RAPTOR::Route> routeData = build_routeData(routeToTrips);
-    cout << "Here, routeData contains : " << routeData.size() << " items." << endl;
-    int routeCounter = 0;
-    for (auto& route : routeData) {
-        if (routeCounter++ <= 8) {
-            cout << "ROUTE = " << route << endl;
-        }
-    }
-
-    // stopData :
-    vector<RAPTOR::Stop> stopData = build_stopData(rankedStops, feed);
-    cout << "Here, stopData contains : " << stopData.size() << " items." << endl;
-    int stopCounter = 0;
-    for (auto& stop : stopData) {
-        if (stopCounter++ <= 8) {
-            cout << "STOP = " << stop << endl;
-        }
-    }
-
-    // stopIds + firstStopIdOfRoute :
-    auto[stopIds, firstStopIdOfRoute] = build_stopIdsRelated(routeData, stopToRank);
-    cout << "Here, stopIds contains : " << stopIds.size() << " items." << endl;
-    cout << "Here, firstStopIdOfRoute contains : " << firstStopIdOfRoute.size() << " items." << endl;
-    int otherRouteCounter = 0;
-    for (auto idx : firstStopIdOfRoute) {
-        if (otherRouteCounter++ <= 8) {
-            cout << "First stop id of this route = " << idx << endl;
-        }
-    }
-    cout << "Last item of firstStopIdOfRoute is " << firstStopIdOfRoute.back() << endl;
-
-    // stopEvents + firstStopEventOfRoute :
-    auto[stopEvents, firstStopEventOfRoute] = build_stopEventsRelated(routeData, routeToTrips, feed);
-    cout << "Here, stopEvents contains : " << stopEvents.size() << " items." << endl;
-    cout << "Here, firstStopEventOfRoute contains : " << firstStopEventOfRoute.size() << " items." << endl;
-    int yetAnotherRouteCounter = 0;
-    for (auto idx : firstStopEventOfRoute) {
-        if (yetAnotherRouteCounter++ <= 8) {
-            cout << "First stop event of this route = " << idx << endl;
-        }
-    }
-    cout << "Last item of firstStopEventOfRoute is " << firstStopEventOfRoute.back() << endl;
-
-    // routeSegments + firstRouteSegmentOfStop
-    auto[routeSegments, firstRouteSegmentOfStop] =
+    routeData = build_routeData(routeToTrips);
+    stopData = build_stopData(rankedStops, feed);
+    std::tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, stopToRank);
+    std::tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, routeToTrips, feed);
+    std::tie(routeSegments, firstRouteSegmentOfStop) =
         convert_routeSegmentsRelated(routeData, stopToRank, routeToRank, routeToTrips);
-    cout << "Here, routeSegments contains : " << routeSegments.size() << " items." << endl;
-    cout << "Here, firstRouteSegmentOfStop contains : " << firstRouteSegmentOfStop.size() << " items." << endl;
-    int lastRouteCounter = 0;
-    for (auto idx : firstRouteSegmentOfStop) {
-        if (lastRouteCounter++ <= 8) {
-            cout << "First route segment of this stop = " << idx << endl;
-        }
-    }
-    cout << "Last item of firstRouteSegmentOfStop is " << firstRouteSegmentOfStop.back() << endl;
 
-    // serializing :
-    bool implicitDepartureBufferTimes = false;
-    bool implicitArrivalBufferTimes = false;
-    IO::serialize(outputFileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
-
-    if (checkIdempotence) {
-
-        // unserializing, to check that serialization+deserialization is idempotent :
-        vector<size_t> freshFirstRouteSegmentOfStop;
-        vector<size_t> freshFirstStopIdOfRoute;
-        vector<size_t> freshFirstStopEventOfRoute;
-        vector<RAPTOR::RouteSegment> freshRouteSegments;
-        vector<StopId> freshStopIds;
-        vector<RAPTOR::StopEvent> freshStopEvents;
-        vector<RAPTOR::Stop> freshStopData;
-        vector<RAPTOR::Route> freshRouteData;
-        bool freshImplicitDepartureBufferTimes;
-        bool freshImplicitArrivalBufferTimes;
-
-        IO::deserialize(outputFileName, freshFirstRouteSegmentOfStop, freshFirstStopIdOfRoute, freshFirstStopEventOfRoute, freshRouteSegments, freshStopIds, freshStopEvents, freshStopData, freshRouteData, freshImplicitDepartureBufferTimes, freshImplicitArrivalBufferTimes);
-        cout << "Is serialization + deserialization idempotent ?" << endl;
-        cout << (firstRouteSegmentOfStop == freshFirstRouteSegmentOfStop) << endl;
-        cout << (firstStopIdOfRoute == freshFirstStopIdOfRoute) << endl;
-        cout << (firstStopEventOfRoute == freshFirstStopEventOfRoute) << endl;
-
-        auto are_route_segments_equal = equal(
-            routeSegments.begin(),
-            routeSegments.end(),
-            freshRouteSegments.begin(),
-            [](auto const& left, auto const& right) { return left.routeId == right.routeId && left.stopIndex == right.stopIndex; }
-        );
-
-        cout << are_route_segments_equal << endl;
-        cout << (stopIds == freshStopIds) << endl;
-
-        auto are_stop_events_equal = equal(
-            stopEvents.begin(),
-            stopEvents.end(),
-            freshStopEvents.begin(),
-            [](auto const& left, auto const& right) { return left.arrivalTime == right.arrivalTime && left.departureTime == right.departureTime; }
-        );
-
-        cout << are_stop_events_equal << endl;
-
-        auto are_stops_equal = equal(
-            stopData.begin(),
-            stopData.end(),
-            freshStopData.begin(),
-            [](auto const& left, auto const& right) { return left.name == right.name && left.coordinates == right.coordinates && left.minTransferTime == right.minTransferTime; }
-        );
-        cout << are_stops_equal << endl;
+    // FIXME : stub ?
+    implicitDepartureBufferTimes = false;
+    implicitArrivalBufferTimes = false;
+}
 
 
-        auto are_routes_equal = equal(
-            routeData.begin(),
-            routeData.end(),
-            freshRouteData.begin(),
-            [](auto const& left, auto const& right) { return left.name == right.name && left.type == right.type; }
-        );
-        cout << are_routes_equal << endl;
+void my::GtfsUltraData::dump(string const& filename) const {
+    IO::serialize(filename, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
+}
 
-        cout << (implicitDepartureBufferTimes == freshImplicitDepartureBufferTimes) << endl;
-        cout << (implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes) << endl;
-        cout << "That's all folks !" << endl;
-    }
+
+bool my::GtfsUltraData::checkSerializationIdempotence() const {
+    struct AutoDeleteTempFile {
+        // file path is computed at construction, but no file is created on disk :
+        AutoDeleteTempFile() : file{tmpnam(nullptr)} {}
+        // attemps to remove file on destruction :
+        ~AutoDeleteTempFile() { std::filesystem::remove(file); }
+        std::filesystem::path file;
+    };
+    AutoDeleteTempFile tmpfile;
+
+    // serializing in a temporary file :
+    dump(tmpfile.file);
+
+    // unserializing, to check that serialization+deserialization is idempotent :
+    vector<size_t> freshFirstRouteSegmentOfStop;
+    vector<size_t> freshFirstStopIdOfRoute;
+    vector<size_t> freshFirstStopEventOfRoute;
+    vector<RAPTOR::RouteSegment> freshRouteSegments;
+    vector<StopId> freshStopIds;
+    vector<RAPTOR::StopEvent> freshStopEvents;
+    vector<RAPTOR::Stop> freshStopData;
+    vector<RAPTOR::Route> freshRouteData;
+    bool freshImplicitDepartureBufferTimes;
+    bool freshImplicitArrivalBufferTimes;
+
+    IO::deserialize(tmpfile.file, freshFirstRouteSegmentOfStop, freshFirstStopIdOfRoute, freshFirstStopEventOfRoute, freshRouteSegments, freshStopIds, freshStopEvents, freshStopData, freshRouteData, freshImplicitDepartureBufferTimes, freshImplicitArrivalBufferTimes);
+
+    cout << "Is serialization + deserialization idempotent ?" << endl;
+    cout << (firstRouteSegmentOfStop == freshFirstRouteSegmentOfStop) << endl;
+    cout << (firstStopIdOfRoute == freshFirstStopIdOfRoute) << endl;
+    cout << (firstStopEventOfRoute == freshFirstStopEventOfRoute) << endl;
+
+    auto are_route_segments_equal = equal(
+        routeSegments.begin(),
+        routeSegments.end(),
+        freshRouteSegments.begin(),
+        [](auto const& x, auto const& y) { return x.routeId == y.routeId && x.stopIndex == y.stopIndex; }
+    );
+
+    cout << are_route_segments_equal << endl;
+    cout << (stopIds == freshStopIds) << endl;
+
+    auto are_stop_events_equal = equal(
+        stopEvents.begin(),
+        stopEvents.end(),
+        freshStopEvents.begin(),
+        [](auto const& x, auto const& y) { return x.arrivalTime == y.arrivalTime && x.departureTime == y.departureTime; }
+    );
+
+    cout << are_stop_events_equal << endl;
+
+    auto are_stops_equal = equal(
+        stopData.begin(),
+        stopData.end(),
+        freshStopData.begin(),
+        [](auto const& x, auto const& y) { return x.name == y.name && x.coordinates == y.coordinates && x.minTransferTime == y.minTransferTime; }
+    );
+    cout << are_stops_equal << endl;
+
+
+    auto are_routes_equal = equal(
+        routeData.begin(),
+        routeData.end(),
+        freshRouteData.begin(),
+        [](auto const& x, auto const& y) { return x.name == y.name && x.type == y.type; }
+    );
+    cout << are_routes_equal << endl;
+
+    cout << (implicitDepartureBufferTimes == freshImplicitDepartureBufferTimes) << endl;
+    cout << (implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes) << endl;
+    cout << "That's all folks !" << endl;
+
+    return true;  // stub
 }
 
 }  // namespace my
