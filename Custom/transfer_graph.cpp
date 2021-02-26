@@ -1,10 +1,16 @@
 #include <iostream>
-#include <unordered_set>
 #include <map>
 
 #include "transfer_graph.h"
 
+#include "../DataStructures/RAPTOR/Data.h"
 #include "../DataStructures/Geometry/Point.h"
+#include "../Custom/Parsing/polygonfile.h"
+#include "../Custom/Parsing/gtfs_stops.h"
+#include "../Custom/Graph/extending_with_stops.h"
+#include "../Custom/Graph/graph.h"
+#include "../Custom/transfer_graph.h"
+#include "../Custom/Dumping/geojson.h"
 
 
 // note : ULTRA code is not safe to use in multiple translation units,
@@ -132,6 +138,64 @@ TransferGraph buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, st
 
     auto transferGraph = _computeTransferGraph(rankedNodes, nodeToOutEdges, properOrderEdges, nodeToRank);
     return transferGraph;
+}
+
+
+my::UltraTransferData::UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopFile) {
+
+    my::BgPolygon polygon = get_polygon(polygonFile);  // may raise
+
+    /* try { */
+    /*     polygon = get_polygon(polygonFile); */
+    /*     std::cout << "Is polygon empty = " << my::is_empty(polygon) << std::endl; */
+    /* } catch (std::exception& e) { */
+    /*     std::cout << "EXCEPTION: " << e.what() << std::endl; */
+    /*     usage(argv[0]); */
+    /*     exit(2); */
+    /* } catch (...) { */
+    /*     std::cout << "UNKNOWN EXCEPTION" << std::endl; */
+    /*     usage(argv[0]); */
+    /*     exit(2); */
+    /* } */
+
+
+    std::ifstream stopFileStream{gtfsStopFile};
+    if (!stopFileStream.good()) {
+        std::cerr << "ERROR: unable to read gtfsStopFile : '" << gtfsStopFile << "'\n";
+        std::cerr << "\n";
+        raise(42);   // FIXME
+    }
+
+
+    // parse gtfsStopFile early, in order to fail early if needed :
+    std::vector<my::Stop> stops = my::parse_gtfs_stops(gtfsStopFile.string().c_str(), stopFileStream);
+
+    std::cout << "Building edges from OSM graph..." << std::endl;
+    float walkspeed_km_per_h = 4.7;
+    auto edges = my::osm_to_graph(osmFile, polygon, walkspeed_km_per_h);
+    std::cout << "Number of edges in original graph : " << edges.size() << std::endl;
+
+    /* std::ofstream original_graph_stream(output_dir + "original_graph.geojson"); */
+    /* my::dump_geojson_graph(original_graph_stream, edges); */
+
+    /* std::ofstream polygon_stream(output_dir + "polygon.geojson"); */
+    /* my::dump_geojson_line(polygon_stream, polygon.outer()); */
+
+    // extend graph with stop-edges :
+    auto [edgesWithStops,stopsWithClosestNode] = my::extend_graph(stops, edges, walkspeed_km_per_h);
+    std::cout << "nb edges (including added stops) = " << edgesWithStops.size() << std::endl;
+    std::cout << "nb stops = " << stopsWithClosestNode.size() << std::endl;
+
+    /* std::ofstream extended_graph_stream(output_dir + "graph_with_stops.geojson"); */
+    /* dump_geojson_graph(extended_graph_stream, edgesWithStops); */
+
+    /* std::ofstream stops_stream(output_dir + "stops.geojson"); */
+    /* dump_geojson_stops(stops_stream, stopsWithClosestNode); */
+
+
+    transferGraph = my::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
+    std::cout << "The transferGraph has these vertices : " << transferGraph.numVertices() << std::endl;
+    std::cout << "The transferGraph has these edges    : " << transferGraph.numEdges() << std::endl;
 }
 
 }
