@@ -10,9 +10,29 @@
 #include "../Custom/transfer_graph.h"
 #include "../Custom/Dumping/geojson.h"
 
-inline void usage(const std::string binary_name) noexcept {
-    std::cout << "Usage:  " << binary_name << "  <osmFile>  <polygonFile>  <gtfs-stopfile>  <output-dir>" << std::endl;
+inline void usage(const std::string programName) noexcept {
+    std::cout << "Usage:  " << programName << "  <osmFile>  <polygonFile>  <gtfs-stopfile>  <output-dir>" << std::endl;
     exit(0);
+}
+
+my::UltraTransferData buildTransferData(
+    std::filesystem::path osmFile,
+    std::filesystem::path polygonFile,
+    std::filesystem::path gtfsStopFile,
+    float walkspeedKmPerHour,
+    std::string programName) {
+    try {
+        my::UltraTransferData transferData{osmFile, polygonFile, gtfsStopFile, walkspeedKmPerHour};
+        return transferData;
+    } catch (std::exception& e) {
+        std::cout << "EXCEPTION: " << e.what() << std::endl;
+        usage(programName);
+        exit(2);
+    } catch (...) {
+        std::cout << "UNKNOWN EXCEPTION" << std::endl;
+        usage(programName);
+        exit(2);
+    }
 }
 
 
@@ -36,24 +56,17 @@ int main(int argc, char** argv) {
 
     constexpr const float walkspeedKmPerHour = 4.7;
 
-    TransferGraph transferGraph;
-    try {
-        my::UltraTransferData transferData{osmFile, polygonFile, gtfsStopFile, walkspeedKmPerHour};
-        transferData.dumpIntermediary(outputDir);
-        transferGraph = std::move(transferData.transferGraph);
-    } catch (std::exception& e) {
-        std::cout << "EXCEPTION: " << e.what() << std::endl;
-        usage(argv[0]);
-        exit(2);
-    } catch (...) {
-        std::cout << "UNKNOWN EXCEPTION" << std::endl;
-        usage(argv[0]);
-        exit(2);
-    }
+    my::UltraTransferData transferData = buildTransferData(
+        osmFile,
+        polygonFile,
+        gtfsStopFile,
+        walkspeedKmPerHour,
+        argv[0]);
+    transferData.dumpIntermediary(outputDir);
 
     // serializing :
     const std::string outputFileName = outputDir + "serialized.binary.graph";
-    transferGraph.writeBinary(outputFileName);
+    transferData.transferGraph.writeBinary(outputFileName);
     std::cout << "TransferGraph dumped in : " << outputFileName << std::endl;
 
     // unserializing, to see if serialization+serialization is idempotent :
@@ -61,7 +74,7 @@ int main(int argc, char** argv) {
     freshTransferGraph.readBinary(outputFileName);
 
     std::ostringstream stats1_stream;
-    transferGraph.printAnalysis(stats1_stream);
+    transferData.transferGraph.printAnalysis(stats1_stream);
     const std::string stats1 = stats1_stream.str();
 
     std::ostringstream stats2_stream;
