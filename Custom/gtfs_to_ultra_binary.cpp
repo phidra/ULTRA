@@ -181,7 +181,7 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::GtfsUltraData& toFill) {
+static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::UltraGtfsData& toFill) {
     // prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
     auto[rankedRoutes, routeToRank] = rankRoutes(routeToTrips);
@@ -206,7 +206,7 @@ static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::GtfsUltraData&
 }
 
 
-my::GtfsUltraData::GtfsUltraData(string const& gtfsFolder) {
+my::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     ad::cppgtfs::Parser parser;
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfsFolder);
@@ -214,12 +214,12 @@ my::GtfsUltraData::GtfsUltraData(string const& gtfsFolder) {
 }
 
 
-void my::GtfsUltraData::dump(string const& filename) const {
+void my::UltraGtfsData::dump(string const& filename) const {
     IO::serialize(filename, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
 }
 
 
-bool my::GtfsUltraData::checkSerializationIdempotence() const {
+bool my::UltraGtfsData::checkSerializationIdempotence() const {
     struct AutoDeleteTempFile {
         // file path is computed at construction, but no file is created on disk :
         AutoDeleteTempFile() : file{tmpnam(nullptr)} {}

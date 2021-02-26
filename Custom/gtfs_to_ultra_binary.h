@@ -11,8 +11,8 @@
 namespace my {
 
 //From a given GTFS feed, builds the RAPTOR binary expected by ULTRA :
-struct GtfsUltraData {
-    GtfsUltraData(std::string const& gtfsFolder);
+struct UltraGtfsData {
+    UltraGtfsData(std::string const& gtfsFolder);
     void dump(std::string const& filename) const;
     bool checkSerializationIdempotence() const;
 

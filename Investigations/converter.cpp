@@ -11,7 +11,7 @@ inline void usage() noexcept {
     exit(1);
 }
 
-void display(my::GtfsUltraData const& binaryData);
+void display(my::UltraGtfsData const& binaryData);
 
 int main(int argc, char** argv) {
     if (argc < 3)
@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     cout << "Dumping converted binary to : " << outputFile << endl;
 
     // converting + dumping :
-    my::GtfsUltraData binaryData{gtfsFolder};
+    my::UltraGtfsData binaryData{gtfsFolder};
     cout << "Dumping GTFS binary into : " << outputFile << endl;
     binaryData.dump(outputFile);
 
@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 }
 
 
-void display(my::GtfsUltraData const& binaryData) {
+void display(my::UltraGtfsData const& binaryData) {
     cout << "How many stops ? " << binaryData.stopIds.size() << endl;
 
     cout << "Here, routeData contains : " << binaryData.routeData.size() << " items." << endl;
