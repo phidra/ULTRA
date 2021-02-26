@@ -141,24 +141,13 @@ TransferGraph buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, st
 }
 
 
-my::UltraTransferData::UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopFile, float walkspeedKmPerHour_) : walkspeedKmPerHour{walkspeedKmPerHour_} {
-
-    my::BgPolygon polygon = get_polygon(polygonFile);  // may raise
-
-    // FIXME
-    /* try { */
-    /*     polygon = get_polygon(polygonFile); */
-    /*     std::cout << "Is polygon empty = " << my::is_empty(polygon) << std::endl; */
-    /* } catch (std::exception& e) { */
-    /*     std::cout << "EXCEPTION: " << e.what() << std::endl; */
-    /*     usage(argv[0]); */
-    /*     exit(2); */
-    /* } catch (...) { */
-    /*     std::cout << "UNKNOWN EXCEPTION" << std::endl; */
-    /*     usage(argv[0]); */
-    /*     exit(2); */
-    /* } */
-
+my::UltraTransferData::UltraTransferData(
+    std::filesystem::path osmFile,
+    std::filesystem::path polygonFile,
+    std::filesystem::path gtfsStopFile,
+    float walkspeedKmPerHour_) :
+    walkspeedKmPerHour{walkspeedKmPerHour_},
+    polygon{get_polygon(polygonFile)} {
 
     std::ifstream stopFileStream{gtfsStopFile};
     if (!stopFileStream.good()) {
@@ -175,27 +164,29 @@ my::UltraTransferData::UltraTransferData(std::filesystem::path osmFile, std::fil
     edges = my::osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
     std::cout << "Number of edges in original graph : " << edges.size() << std::endl;
 
-    /* std::ofstream original_graph_stream(output_dir + "original_graph.geojson"); */
-    /* my::dump_geojson_graph(original_graph_stream, edges); */
-
-    /* std::ofstream polygon_stream(output_dir + "polygon.geojson"); */
-    /* my::dump_geojson_line(polygon_stream, polygon.outer()); */
-
     // extend graph with stop-edges :
     std::tie(edgesWithStops,stopsWithClosestNode) = my::extend_graph(stops, edges, walkspeedKmPerHour);
     std::cout << "nb edges (including added stops) = " << edgesWithStops.size() << std::endl;
     std::cout << "nb stops = " << stopsWithClosestNode.size() << std::endl;
 
-    /* std::ofstream extended_graph_stream(output_dir + "graph_with_stops.geojson"); */
-    /* dump_geojson_graph(extended_graph_stream, edgesWithStops); */
-
-    /* std::ofstream stops_stream(output_dir + "stops.geojson"); */
-    /* dump_geojson_stops(stops_stream, stopsWithClosestNode); */
-
 
     transferGraph = my::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
     std::cout << "The transferGraph has these vertices : " << transferGraph.numVertices() << std::endl;
     std::cout << "The transferGraph has these edges    : " << transferGraph.numEdges() << std::endl;
+}
+
+void my::UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
+    std::ofstream originalGraphStream(outputDir + "original_graph.geojson");
+    my::dump_geojson_graph(originalGraphStream, edges);
+
+    std::ofstream polygonStream(outputDir + "polygon.geojson");
+    my::dump_geojson_line(polygonStream, polygon.outer());
+
+    std::ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson");
+    my::dump_geojson_graph(extendedGraphStream, edgesWithStops);
+
+    std::ofstream stopsStream(outputDir + "stops.geojson");
+    my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
 }
 
 }

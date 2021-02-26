@@ -5,6 +5,7 @@
 
 #include "../DataStructures/Graph/Graph.h"
 #include "Common/graphtypes.h"
+#include "Common/polygon.h"
 
 namespace my {
 
@@ -15,12 +16,15 @@ TransferGraph buildTransferGraph(
 struct UltraTransferData {
 
     UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopfile, float walkspeedKmPerHour_);
+    void dumpIntermediary(std::string const& outputDir) const;
+
+    float walkspeedKmPerHour;
+    my::BgPolygon polygon;
 
     TransferGraph transferGraph;
 
-private:
+    // intermediate data :
     std::vector<my::Stop> stops;
-    float walkspeedKmPerHour;
     std::vector<my::Edge> edges;
     std::vector<my::Edge> edgesWithStops;
     std::vector<my::StopWithClosestNode> stopsWithClosestNode;

@@ -23,23 +23,37 @@ int main(int argc, char** argv) {
     const std::string osmFile = argv[1];
     const std::string polygonFile = argv[2];
     auto gtfsStopFile = argv[3];
-    std::string output_dir = argv[4];
-    if (output_dir.back() != '/') {
-        output_dir.push_back('/');
+    std::string outputDir = argv[4];
+    if (outputDir.back() != '/') {
+        outputDir.push_back('/');
     }
 
     std::cout << "OSMFILE          = " << osmFile << std::endl;
     std::cout << "POLYGONFILE      = " << polygonFile << std::endl;
     std::cout << "STOPFILE         = " << gtfsStopFile << std::endl;
-    std::cout << "OUTPUT_DIR       = " << output_dir << std::endl;
+    std::cout << "OUTPUT_DIR       = " << outputDir << std::endl;
     std::cout << std::endl;
 
     constexpr const float walkspeedKmPerHour = 4.7;
-    my::UltraTransferData transferData{osmFile, polygonFile, gtfsStopFile, walkspeedKmPerHour};
+
+    TransferGraph transferGraph;
+    try {
+        my::UltraTransferData transferData{osmFile, polygonFile, gtfsStopFile, walkspeedKmPerHour};
+        transferData.dumpIntermediary(outputDir);
+        transferGraph = std::move(transferData.transferGraph);
+    } catch (std::exception& e) {
+        std::cout << "EXCEPTION: " << e.what() << std::endl;
+        usage(argv[0]);
+        exit(2);
+    } catch (...) {
+        std::cout << "UNKNOWN EXCEPTION" << std::endl;
+        usage(argv[0]);
+        exit(2);
+    }
 
     // serializing :
-    const std::string outputFileName = output_dir + "serialized.binary.graph";
-    transferData.transferGraph.writeBinary(outputFileName);
+    const std::string outputFileName = outputDir + "serialized.binary.graph";
+    transferGraph.writeBinary(outputFileName);
     std::cout << "TransferGraph dumped in : " << outputFileName << std::endl;
 
     // unserializing, to see if serialization+serialization is idempotent :
@@ -47,7 +61,7 @@ int main(int argc, char** argv) {
     freshTransferGraph.readBinary(outputFileName);
 
     std::ostringstream stats1_stream;
-    transferData.transferGraph.printAnalysis(stats1_stream);
+    transferGraph.printAnalysis(stats1_stream);
     const std::string stats1 = stats1_stream.str();
 
     std::ostringstream stats2_stream;
