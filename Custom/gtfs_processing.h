@@ -6,6 +6,8 @@
 
 #include "ad/cppgtfs/Parser.h"
 
+// this code process GTFS feed to ease conversion to ULTRA binary format
+
 namespace my {
 
 // About the word "route" :

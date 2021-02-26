@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_set>
+#include <vector>
 
 #include "../DataStructures/RAPTOR/Entities/Stop.h"
 #include "../DataStructures/RAPTOR/Entities/Route.h"
@@ -8,16 +8,11 @@
 #include "../DataStructures/RAPTOR/Entities/RouteSegment.h"
 #include "../Helpers/Types.h"
 
-#include "ad/cppgtfs/Parser.h"
-
-#include "prepare_gtfs.h"
-
-
 namespace my {
 
 //From a given GTFS feed, builds the RAPTOR binary expected by ULTRA :
 struct GtfsUltraData {
-    GtfsUltraData(ad::cppgtfs::gtfs::Feed const& feed);
+    GtfsUltraData(std::string const& gtfsFolder);
     void dump(std::string const& filename) const;
     bool checkSerializationIdempotence() const;
 

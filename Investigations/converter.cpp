@@ -17,24 +17,16 @@ int main(int argc, char** argv) {
     if (argc < 3)
         usage();
 
-    const string gtfs_folder = argv[1];
-    const string output_file = argv[2];
+    const string gtfsFolder = argv[1];
+    const string outputFile = argv[2];
 
-    cout << "Parsing GTFS from folder    : " << gtfs_folder << endl;
-    cout << "Dumping converted binary to : " << output_file << endl;
-
-    ad::cppgtfs::Parser parser;
-    ad::cppgtfs::gtfs::Feed feed;
-    parser.parse(&feed, gtfs_folder);
-
-    cout << "This feed contains " << feed.getRoutes().size() << " routes" << endl;
-    cout << "This feed contains " << feed.getStops().size() << " stops" << endl;
-    cout << "This feed contains " << feed.getTrips().size() << " trips" << endl;
+    cout << "Parsing GTFS from folder    : " << gtfsFolder << endl;
+    cout << "Dumping converted binary to : " << outputFile << endl;
 
     // converting + dumping :
-    my::GtfsUltraData binaryData{feed};
-    cout << "Dumping GTFS binary into : " << output_file << endl;
-    binaryData.dump(output_file);
+    my::GtfsUltraData binaryData{gtfsFolder};
+    cout << "Dumping GTFS binary into : " << outputFile << endl;
+    binaryData.dump(outputFile);
 
     // checking + displaying :
     bool isSerializationIdempotent = binaryData.checkSerializationIdempotence();

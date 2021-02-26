@@ -5,13 +5,13 @@
 #include <cstdio>
 
 #include "gtfs_to_ultra_binary.h"
-#include "prepare_gtfs.h"
+#include "ad/cppgtfs/Parser.h"
+#include "gtfs_processing.h"
+
 
 using namespace std;
 
 // This code helps to build the RAPTOR binary expected by ULTRA, from a given GTFS feed.
-// note : ULTRA code is not safe to use in multiple translation units, thus all the conversion code is in this header...
-
 
 namespace my {
 
@@ -181,8 +181,7 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-
-my::GtfsUltraData::GtfsUltraData(ad::cppgtfs::gtfs::Feed const& feed) {
+static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::GtfsUltraData& toFill) {
     // prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
     auto[rankedRoutes, routeToRank] = rankRoutes(routeToTrips);
@@ -194,16 +193,24 @@ my::GtfsUltraData::GtfsUltraData(ad::cppgtfs::gtfs::Feed const& feed) {
     //  - a route (or a stop) can be identified with its RouteID/StopID or its rank
     //  - the conversion between ID<->rank is done with the above structures
 
-    routeData = build_routeData(routeToTrips);
-    stopData = build_stopData(rankedStops, feed);
-    std::tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, stopToRank);
-    std::tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, routeToTrips, feed);
-    std::tie(routeSegments, firstRouteSegmentOfStop) =
-        convert_routeSegmentsRelated(routeData, stopToRank, routeToRank, routeToTrips);
+    toFill.routeData = build_routeData(routeToTrips);
+    toFill.stopData = build_stopData(rankedStops, feed);
+    std::tie(toFill.stopIds, toFill.firstStopIdOfRoute) = build_stopIdsRelated(toFill.routeData, stopToRank);
+    std::tie(toFill.stopEvents, toFill.firstStopEventOfRoute) = build_stopEventsRelated(toFill.routeData, routeToTrips, feed);
+    std::tie(toFill.routeSegments, toFill.firstRouteSegmentOfStop) =
+        convert_routeSegmentsRelated(toFill.routeData, stopToRank, routeToRank, routeToTrips);
 
     // FIXME : stub ?
-    implicitDepartureBufferTimes = false;
-    implicitArrivalBufferTimes = false;
+    toFill.implicitDepartureBufferTimes = false;
+    toFill.implicitArrivalBufferTimes = false;
+}
+
+
+my::GtfsUltraData::GtfsUltraData(string const& gtfsFolder) {
+    ad::cppgtfs::Parser parser;
+    ad::cppgtfs::gtfs::Feed feed;
+    parser.parse(&feed, gtfsFolder);
+    fillFromFeed(feed, *this);
 }
 
 
