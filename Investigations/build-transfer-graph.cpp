@@ -1,14 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "../DataStructures/RAPTOR/Data.h"
-#include "../DataStructures/Geometry/Point.h"
-#include "../Custom/Parsing/polygonfile.h"
-#include "../Custom/Parsing/gtfs_stops.h"
-#include "../Custom/Graph/extending_with_stops.h"
-#include "../Custom/Graph/graph.h"
 #include "../Custom/transfer_graph.h"
-#include "../Custom/Dumping/geojson.h"
 
 inline void usage(const std::string programName) noexcept {
     std::cout << "Usage:  " << programName << "  <osmFile>  <polygonFile>  <gtfs-stopfile>  <output-dir>" << std::endl;
