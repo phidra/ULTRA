@@ -1,13 +1,12 @@
 #include <iostream>
 #include <numeric>
 #include <algorithm>
-#include <filesystem>
-#include <cstdio>
 
 #include "gtfs_to_ultra_binary.h"
-#include "ad/cppgtfs/Parser.h"
 #include "gtfs_processing.h"
+#include "Common/autodeletefile.h"
 
+#include "ad/cppgtfs/Parser.h"
 
 using namespace std;
 
@@ -80,7 +79,6 @@ static pair<vector<StopId>, vector<size_t>> build_stopIdsRelated(
     //      currentRouteFirstStop = number of stops in all the routes
     // Setting past-the-end stopIDs :
     firstStopIdOfRoute[routeRank] = currentRouteFirstStop;
-
     return {stopIds, firstStopIdOfRoute};
 }
 
@@ -220,14 +218,7 @@ void my::UltraGtfsData::dump(string const& filename) const {
 
 
 bool my::UltraGtfsData::checkSerializationIdempotence() const {
-    struct AutoDeleteTempFile {
-        // file path is computed at construction, but no file is created on disk :
-        AutoDeleteTempFile() : file{tmpnam(nullptr)} {}
-        // attemps to remove file on destruction :
-        ~AutoDeleteTempFile() { std::filesystem::remove(file); }
-        std::filesystem::path file;
-    };
-    AutoDeleteTempFile tmpfile;
+    my::AutoDeleteTempFile tmpfile;
 
     // serializing in a temporary file :
     dump(tmpfile.file);

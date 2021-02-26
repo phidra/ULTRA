@@ -11,7 +11,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 project(ultra-comprehension)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()

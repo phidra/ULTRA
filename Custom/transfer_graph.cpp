@@ -11,6 +11,7 @@
 #include "../Custom/Graph/graph.h"
 #include "../Custom/transfer_graph.h"
 #include "../Custom/Dumping/geojson.h"
+#include "../Custom/Common/autodeletefile.h"
 
 
 // note : ULTRA code is not safe to use in multiple translation units,
@@ -190,14 +191,7 @@ void my::UltraTransferData::dumpIntermediary(std::string const& outputDir) const
 }
 
 bool my::UltraTransferData::checkSerializationIdempotence() const {
-    struct AutoDeleteTempFile {
-        // file path is computed at construction, but no file is created on disk :
-        AutoDeleteTempFile() : file{tmpnam(nullptr)} {}
-        // attemps to remove file on destruction :
-        ~AutoDeleteTempFile() { std::filesystem::remove(file); }
-        std::filesystem::path file;
-    };
-    AutoDeleteTempFile tmpfile;
+    my::AutoDeleteTempFile tmpfile;
 
     transferGraph.writeBinary(tmpfile.file);
 
