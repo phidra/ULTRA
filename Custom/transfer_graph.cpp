@@ -189,4 +189,32 @@ void my::UltraTransferData::dumpIntermediary(std::string const& outputDir) const
     my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
 }
 
+bool my::UltraTransferData::checkSerializationIdempotence() const {
+    struct AutoDeleteTempFile {
+        // file path is computed at construction, but no file is created on disk :
+        AutoDeleteTempFile() : file{tmpnam(nullptr)} {}
+        // attemps to remove file on destruction :
+        ~AutoDeleteTempFile() { std::filesystem::remove(file); }
+        std::filesystem::path file;
+    };
+    AutoDeleteTempFile tmpfile;
+
+    transferGraph.writeBinary(tmpfile.file);
+
+    // unserializing, to see if serialization+serialization is idempotent :
+    TransferGraph freshTransferGraph;
+    freshTransferGraph.readBinary(tmpfile.file);
+
+    // we only check the stats :
+    std::ostringstream stats1_stream;
+    transferGraph.printAnalysis(stats1_stream);
+    const std::string stats1 = stats1_stream.str();
+
+    std::ostringstream stats2_stream;
+    freshTransferGraph.printAnalysis(stats2_stream);
+    const std::string stats2 = stats2_stream.str();
+
+    return (stats1 == stats2);
+}
+
 }

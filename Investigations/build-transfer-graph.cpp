@@ -62,21 +62,10 @@ int main(int argc, char** argv) {
     transferData.transferGraph.writeBinary(outputFileName);
     std::cout << "TransferGraph dumped in : " << outputFileName << std::endl;
 
-    // unserializing, to see if serialization+serialization is idempotent :
-    TransferGraph freshTransferGraph;
-    freshTransferGraph.readBinary(outputFileName);
-
-    std::ostringstream stats1_stream;
-    transferData.transferGraph.printAnalysis(stats1_stream);
-    const std::string stats1 = stats1_stream.str();
-
-    std::ostringstream stats2_stream;
-    freshTransferGraph.printAnalysis(stats2_stream);
-    const std::string stats2 = stats2_stream.str();
+    transferData.transferGraph.printAnalysis(std::cout);
 
     std::cout << "Is serialization+deserialization idempotent ?" << std::endl;
-    std::cout << (stats1 == stats2) << std::endl;
-    std::cout << stats1 << std::endl;
+    std::cout << std::boolalpha << transferData.checkSerializationIdempotence() << std::endl;
 
     return 0;
 }
