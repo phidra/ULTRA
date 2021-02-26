@@ -141,10 +141,11 @@ TransferGraph buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, st
 }
 
 
-my::UltraTransferData::UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopFile) {
+my::UltraTransferData::UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopFile, float walkspeedKmPerHour_) : walkspeedKmPerHour{walkspeedKmPerHour_} {
 
     my::BgPolygon polygon = get_polygon(polygonFile);  // may raise
 
+    // FIXME
     /* try { */
     /*     polygon = get_polygon(polygonFile); */
     /*     std::cout << "Is polygon empty = " << my::is_empty(polygon) << std::endl; */
@@ -168,11 +169,10 @@ my::UltraTransferData::UltraTransferData(std::filesystem::path osmFile, std::fil
 
 
     // parse gtfsStopFile early, in order to fail early if needed :
-    std::vector<my::Stop> stops = my::parse_gtfs_stops(gtfsStopFile.string().c_str(), stopFileStream);
+    stops = my::parse_gtfs_stops(gtfsStopFile.string().c_str(), stopFileStream);
 
     std::cout << "Building edges from OSM graph..." << std::endl;
-    float walkspeed_km_per_h = 4.7;
-    auto edges = my::osm_to_graph(osmFile, polygon, walkspeed_km_per_h);
+    edges = my::osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
     std::cout << "Number of edges in original graph : " << edges.size() << std::endl;
 
     /* std::ofstream original_graph_stream(output_dir + "original_graph.geojson"); */
@@ -182,7 +182,7 @@ my::UltraTransferData::UltraTransferData(std::filesystem::path osmFile, std::fil
     /* my::dump_geojson_line(polygon_stream, polygon.outer()); */
 
     // extend graph with stop-edges :
-    auto [edgesWithStops,stopsWithClosestNode] = my::extend_graph(stops, edges, walkspeed_km_per_h);
+    std::tie(edgesWithStops,stopsWithClosestNode) = my::extend_graph(stops, edges, walkspeedKmPerHour);
     std::cout << "nb edges (including added stops) = " << edgesWithStops.size() << std::endl;
     std::cout << "nb stops = " << stopsWithClosestNode.size() << std::endl;
 

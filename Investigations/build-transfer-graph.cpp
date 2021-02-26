@@ -34,10 +34,8 @@ int main(int argc, char** argv) {
     std::cout << "OUTPUT_DIR       = " << output_dir << std::endl;
     std::cout << std::endl;
 
-    my::UltraTransferData transferData{osmFile, polygonFile, gtfsStopFile};
-
-
-    // --------------------------------------------------------------------------------
+    constexpr const float walkspeedKmPerHour = 4.7;
+    my::UltraTransferData transferData{osmFile, polygonFile, gtfsStopFile, walkspeedKmPerHour};
 
     // serializing :
     const std::string outputFileName = output_dir + "serialized.binary.graph";

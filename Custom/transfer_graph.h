@@ -14,8 +14,16 @@ TransferGraph buildTransferGraph(
 
 struct UltraTransferData {
 
-    UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopfile);
+    UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopfile, float walkspeedKmPerHour_);
+
     TransferGraph transferGraph;
+
+private:
+    std::vector<my::Stop> stops;
+    float walkspeedKmPerHour;
+    std::vector<my::Edge> edges;
+    std::vector<my::Edge> edgesWithStops;
+    std::vector<my::StopWithClosestNode> stopsWithClosestNode;
 };
 
 }
