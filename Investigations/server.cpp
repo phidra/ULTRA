@@ -56,27 +56,27 @@ int main(int argc, char** argv) {
     auto stopmap = myserver::load_stopfile(stopfile_stream);
     std::cout << "Number of loaded stops = " << stopmap.size() << std::endl;
 
-    /* int SOURCE = 435; */
-    /* int TARGET = 120; */
-    u_int32_t SOURCE = 4350;
-    u_int32_t TARGET = 1200;
-    int DEPARTURE_TIME = 36000;
+    /* /1* int SOURCE = 435; *1/ */
+    /* /1* int TARGET = 120; *1/ */
+    /* u_int32_t SOURCE = 4350; */
+    /* u_int32_t TARGET = 1200; */
+    /* int DEPARTURE_TIME = 36000; */
 
-    if (!data.isStop(Vertex{SOURCE}) || !data.isStop(Vertex{TARGET})) {
-        std::cout << "For now, we can only handle journeys between stops :" << std::endl;
-        std::cout << "Is SOURCE a stop ? " << data.isStop(Vertex{SOURCE}) << std::endl;
-        std::cout << "Is TARGET a stop ? " << data.isStop(Vertex{TARGET}) << std::endl;
-        return 1;
-    }
+    /* if (!data.isStop(Vertex{SOURCE}) || !data.isStop(Vertex{TARGET})) { */
+    /*     std::cout << "For now, we can only handle journeys between stops :" << std::endl; */
+    /*     std::cout << "Is SOURCE a stop ? " << data.isStop(Vertex{SOURCE}) << std::endl; */
+    /*     std::cout << "Is TARGET a stop ? " << data.isStop(Vertex{TARGET}) << std::endl; */
+    /*     return 1; */
+    /* } */
 
-    auto legs = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET));
-    std::cout << std::endl;
-    std::cout << "JOURNEY = " << SOURCE << "   -->   " << TARGET << std::endl;
-    std::cout << "LEGS" << std::endl;
-    for (auto leg : legs) {
-        std::cout << leg.as_string() << std::endl;
-    }
-    std::cout << std::endl;
+    /* auto legs = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET)); */
+    /* std::cout << std::endl; */
+    /* std::cout << "JOURNEY = " << SOURCE << "   -->   " << TARGET << std::endl; */
+    /* std::cout << "LEGS" << std::endl; */
+    /* for (auto leg : legs) { */
+    /*     std::cout << leg.as_string() << std::endl; */
+    /* } */
+    /* std::cout << std::endl; */
 
     // ideally, we'd like to have a stopmap with stop infos (name, id, ...)
     // for now, we build a stopmap from the transferGraph, which has very few infos on stops :
@@ -98,11 +98,11 @@ int main(int argc, char** argv) {
     std::cout << "How many stops in the coarse stopmap : " << coarse_stopmap.size() << std::endl;
     std::cout << std::endl;
 
-    // FIXME : temporarily dumping legs as geojson :
-    rapidjson::Document doc(rapidjson::kObjectType);
-    rapidjson::Document::AllocatorType& a = doc.GetAllocator();
-    auto geojson = myserver::legs_to_geojson(legs, coarse_stopmap, a);
-    myserver::dump_to_file(geojson, "/tmp/journey.geojson");
+    /* // FIXME : temporarily dumping legs as geojson : */
+    /* rapidjson::Document doc(rapidjson::kObjectType); */
+    /* rapidjson::Document::AllocatorType& a = doc.GetAllocator(); */
+    /* auto geojson = myserver::legs_to_geojson(legs, coarse_stopmap, a); */
+    /* myserver::dump_to_file(geojson, "/tmp/journey.geojson"); */
 
 
     httplib::Server svr;
