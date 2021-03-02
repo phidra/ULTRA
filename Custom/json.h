@@ -13,7 +13,7 @@ rapidjson::Value stop_to_coordinates(RAPTOR::Stop const& stop, rapidjson::Docume
     return json_location;
 }
 
-void dump_journey(std::ostream& out, RAPTOR::Data& data, std::vector<StopId> path) {
+void dump_journey(std::ostream& out, RAPTOR::Data& data, std::vector<::StopId> path) {
     rapidjson::Document doc(rapidjson::kObjectType);
     rapidjson::Document::AllocatorType& a = doc.GetAllocator();
     doc.AddMember("type", "FeatureCollection", a);

@@ -20,7 +20,7 @@ struct UltraGtfsData {
     std::vector<size_t> firstStopIdOfRoute;
     std::vector<size_t> firstStopEventOfRoute;
     std::vector<RAPTOR::RouteSegment> routeSegments;
-    std::vector<StopId> stopIds;
+    std::vector<::StopId> stopIds;
     std::vector<RAPTOR::StopEvent> stopEvents;
     std::vector<RAPTOR::Stop> stopData;
     std::vector<RAPTOR::Route> routeData;

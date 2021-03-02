@@ -56,11 +56,11 @@ static vector<RAPTOR::Stop> build_stopData(vector<my::StopID> const& rankedStops
     return stopData;
 }
 
-static pair<vector<StopId>, vector<size_t>> build_stopIdsRelated(
+static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
     vector<RAPTOR::Route> const& routeData,
     unordered_map<my::StopID, size_t> const& stopToRank) {
     vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
-    vector<StopId> stopIds;
+    vector<::StopId> stopIds;
 
     size_t currentRouteFirstStop = 0;
     size_t routeRank;
@@ -68,7 +68,7 @@ static pair<vector<StopId>, vector<size_t>> build_stopIdsRelated(
         my::RouteID routeId = routeData[routeRank].name;
         vector<my::StopID> stopsOfCurrentRoute = my::routeToStops(routeId);
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
-                  [&stopToRank](my::StopID const& stopid) { return StopId{static_cast<u_int32_t>(stopToRank.at(stopid))}; });
+                  [&stopToRank](my::StopID const& stopid) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopid))}; });
 
         firstStopIdOfRoute[routeRank] = currentRouteFirstStop;
         currentRouteFirstStop += stopsOfCurrentRoute.size();
@@ -228,7 +228,7 @@ bool my::UltraGtfsData::checkSerializationIdempotence() const {
     vector<size_t> freshFirstStopIdOfRoute;
     vector<size_t> freshFirstStopEventOfRoute;
     vector<RAPTOR::RouteSegment> freshRouteSegments;
-    vector<StopId> freshStopIds;
+    vector<::StopId> freshStopIds;
     vector<RAPTOR::StopEvent> freshStopEvents;
     vector<RAPTOR::Stop> freshStopData;
     vector<RAPTOR::Route> freshRouteData;
