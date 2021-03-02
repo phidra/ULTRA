@@ -107,8 +107,8 @@ TransferGraph _computeTransferGraph(
             auto addedEdge = transferGraph.addEdge(currentVertex, Vertex{target_vertex_rank});
             Geometry::Point currentVertexLatlon{Construct::LatLongTag{}, edge.node_from.lat(), edge.node_from.lon()};
             Geometry::Point targetVertexLatlon{Construct::LatLongTag{}, edge.node_to.location.lat(), edge.node_to.location.lon()};
-            transferGraph.setVertexAttributes(currentVertex, currentVertexLatlon);  // FIXME: could be done only once
-            transferGraph.setVertexAttributes(currentVertex, targetVertexLatlon);   // FIXME: could be done only once
+            transferGraph.setVertexAttributes(currentVertex, currentVertexLatlon);  // FIXME: could probably be done only once (EDIT : but not for stops)
+            transferGraph.setVertexAttributes(Vertex{target_vertex_rank}, targetVertexLatlon);  // FIXME: could probably be done only once (EDIT : but not for stops)
 
             // FIXME: weight in graph is an int -> travel-time is converted in deciseconds :
             auto used_weight = 10 * edge.weight;
