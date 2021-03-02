@@ -24,7 +24,7 @@ rapidjson::Value stop_to_coordinates(RAPTOR::Stop const& stop, rapidjson::Docume
     return json_location;
 }
 
-void dump_journey(std::ostream& out, RAPTOR::Data& data, std::vector<StopId> path) {
+void dump_journey(std::ostream& out, RAPTOR::Data& data, std::vector<::StopId> path) {
     rapidjson::Document doc(rapidjson::kObjectType);
     rapidjson::Document::AllocatorType& a = doc.GetAllocator();
     doc.AddMember("type", "FeatureCollection", a);
@@ -164,8 +164,8 @@ int main(int argc, char** argv) {
         for (int segment_index = *begin_segments_for_this_stop; segment_index != *end_segments_for_this_stop;
              ++segment_index) {
             RAPTOR::RouteSegment& seg = data.routeSegments[segment_index];
-            const StopId* routeStopsArray = data.stopArrayOfRoute(seg.routeId);
-            StopId matching_stop = routeStopsArray[seg.stopIndex];
+            const ::StopId* routeStopsArray = data.stopArrayOfRoute(seg.routeId);
+            ::StopId matching_stop = routeStopsArray[seg.stopIndex];
             if (matching_stop != stop_id) {
                 throw "ERROR";
             }
