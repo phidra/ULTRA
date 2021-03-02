@@ -59,6 +59,12 @@ int main(int argc, char** argv) {
         walkspeedKmPerHour,
         argv[0]);
 
+    std::cout << "Number of edges in original graph : " << transferData.edges.size() << std::endl;
+    std::cout << "nb edges (including added stops) = " << transferData.edgesWithStops.size() << std::endl;
+    std::cout << "nb stops = " << transferData.stopsWithClosestNode.size() << std::endl;
+    std::cout << "The transferGraph has these vertices : " << transferData.transferGraph.numVertices() << std::endl;
+    std::cout << "The transferGraph has these edges    : " << transferData.transferGraph.numEdges() << std::endl;
+
 
     my::UltraGtfsData binaryData{gtfsFolder};
 

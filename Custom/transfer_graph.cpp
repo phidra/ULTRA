@@ -149,28 +149,17 @@ my::UltraTransferData::UltraTransferData(
 
     std::ifstream stopFileStream{gtfsStopFile};
     if (!stopFileStream.good()) {
-        std::cerr << "ERROR: unable to read gtfsStopFile : '" << gtfsStopFile << "'\n";
-        std::cerr << "\n";
-        raise(42);   // FIXME
+        throw my::BadStopFile(gtfsStopFile);
     }
 
-
-    // parse gtfsStopFile early, in order to fail early if needed :
+    // parse stops early, in order to fail early if needed :
     stops = my::parse_gtfs_stops(gtfsStopFile.string().c_str(), stopFileStream);
 
-    std::cout << "Building edges from OSM graph..." << std::endl;
     edges = my::osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
-    std::cout << "Number of edges in original graph : " << edges.size() << std::endl;
 
     // extend graph with stop-edges :
     std::tie(edgesWithStops,stopsWithClosestNode) = my::extend_graph(stops, edges, walkspeedKmPerHour);
-    std::cout << "nb edges (including added stops) = " << edgesWithStops.size() << std::endl;
-    std::cout << "nb stops = " << stopsWithClosestNode.size() << std::endl;
-
-
     transferGraph = my::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
-    std::cout << "The transferGraph has these vertices : " << transferGraph.numVertices() << std::endl;
-    std::cout << "The transferGraph has these edges    : " << transferGraph.numEdges() << std::endl;
 }
 
 void my::UltraTransferData::dumpIntermediary(std::string const& outputDir) const {

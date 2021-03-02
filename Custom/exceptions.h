@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+namespace myserver {
+
 struct InconsistentLegDurations : public std::exception {
     InconsistentLegDurations(int start_time_,
                              int departure_time_,
@@ -37,3 +39,5 @@ struct InconsistentLegDurations : public std::exception {
     int traveling_duration;
     std::string error_msg;
 };
+
+}
