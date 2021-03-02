@@ -14,9 +14,6 @@
 #include "../Custom/Common/autodeletefile.h"
 
 
-// note : ULTRA code is not safe to use in multiple translation units,
-// thus all the code must be exposed in this header...
-
 namespace my {
 
 std::pair<std::vector<my::NodeId>, std::unordered_map<my::NodeId, size_t>>
