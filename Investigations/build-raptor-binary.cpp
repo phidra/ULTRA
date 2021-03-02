@@ -66,6 +66,7 @@ int main(int argc, char** argv) {
     std::cout << "The transferGraph has these vertices : " << transferData.transferGraph.numVertices() << std::endl;
     std::cout << "The transferGraph has these edges    : " << transferData.transferGraph.numEdges() << std::endl;
 
+    transferData.dumpIntermediary(outputDir + "INTERMEDIARY/");
 
     my::UltraGtfsData binaryData{gtfsFolder};
 

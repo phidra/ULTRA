@@ -20,7 +20,6 @@ void build_index(myserver::StopMap stops) {
 }
 
 tuple<string, double, double, float> get_closest_stop(double lon, double lat) {
-    /* return {"coucou", 4.1, 4.2, 4.3}; */
     vector<RtreeValue> closest_stops;
     BgPoint point{lon, lat};
     rtree.query(boost::geometry::index::nearest(point, 1), back_inserter(closest_stops));
