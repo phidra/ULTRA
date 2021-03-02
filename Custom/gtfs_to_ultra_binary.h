@@ -26,6 +26,9 @@ struct UltraGtfsData {
     std::vector<RAPTOR::Route> routeData;
     bool implicitDepartureBufferTimes;
     bool implicitArrivalBufferTimes;
+
+    // mirroring RAPTOR::Data serialization :
+    void serialize(const std::string& fileName) const;
 };
 
 }  // namespace my

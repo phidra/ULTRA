@@ -176,6 +176,19 @@ void my::UltraTransferData::dumpIntermediary(std::string const& outputDir) const
     my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
 }
 
+bool my::UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph const& right) {
+    // we only check the stats :
+    std::ostringstream statsLeft_stream;
+    left.printAnalysis(statsLeft_stream);
+    const std::string statsLeft = statsLeft_stream.str();
+
+    std::ostringstream statsRight_stream;
+    right.printAnalysis(statsRight_stream);
+    const std::string statsRight = statsRight_stream.str();
+
+    return (statsLeft == statsRight);
+}
+
 bool my::UltraTransferData::checkSerializationIdempotence() const {
     my::AutoDeleteTempFile tmpfile;
 
@@ -185,16 +198,7 @@ bool my::UltraTransferData::checkSerializationIdempotence() const {
     TransferGraph freshTransferGraph;
     freshTransferGraph.readBinary(tmpfile.file);
 
-    // we only check the stats :
-    std::ostringstream stats1_stream;
-    transferGraph.printAnalysis(stats1_stream);
-    const std::string stats1 = stats1_stream.str();
-
-    std::ostringstream stats2_stream;
-    freshTransferGraph.printAnalysis(stats2_stream);
-    const std::string stats2 = stats2_stream.str();
-
-    return (stats1 == stats2);
+    return my::UltraTransferData::areApproxEqual(transferGraph, freshTransferGraph);
 }
 
 }

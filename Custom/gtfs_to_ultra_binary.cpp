@@ -297,5 +297,9 @@ bool my::UltraGtfsData::checkSerializationIdempotence() const {
     );
 }
 
+void UltraGtfsData::serialize(const std::string& fileName) const {
+    IO::serialize(fileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
+}
+
 }  // namespace my
 

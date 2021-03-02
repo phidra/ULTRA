@@ -17,6 +17,7 @@ struct UltraTransferData {
 
     UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopfile, float walkspeedKmPerHour_);
     void dumpIntermediary(std::string const& outputDir) const;
+    static bool areApproxEqual(TransferGraph const& left, TransferGraph const& right);
     bool checkSerializationIdempotence() const;
 
     float walkspeedKmPerHour;

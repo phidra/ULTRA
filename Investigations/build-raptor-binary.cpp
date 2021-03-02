@@ -3,6 +3,7 @@
 
 #include "../Custom/transfer_graph.h"
 #include "../Custom/gtfs_to_ultra_binary.h"
+#include "../DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {
     std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <gtfsStopFile>  <outputDir>" << std::endl;
@@ -67,6 +68,22 @@ int main(int argc, char** argv) {
 
 
     my::UltraGtfsData binaryData{gtfsFolder};
+
+    // serializing data like RAPTOR::Data does :
+    const std::string raptorDataFileName = outputDir + "raptor.binary";
+
+    // For the record, here is the serialization code in RAPTOR::Data :
+    /* inline void serialize(const std::string& fileName) const noexcept { */
+    /*     IO::serialize(fileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes); */
+    /*     transferGraph.writeBinary(fileName + ".graph"); */
+    /* } */
+    binaryData.serialize(raptorDataFileName);
+    transferData.transferGraph.writeBinary(raptorDataFileName + ".graph");
+
+    // checking that we can unserialize it, and find no mismatch :
+    auto unserialized = RAPTOR::Data::FromBinary(raptorDataFileName);
+    bool areApproxEqual = my::UltraTransferData::areApproxEqual(transferData.transferGraph, unserialized.transferGraph);
+    std::cout << "La serialization est-elle idempotente pour le transferGraph ? " << std::boolalpha << areApproxEqual << std::endl;
 
     return 0;
 }
