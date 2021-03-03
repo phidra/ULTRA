@@ -25,14 +25,18 @@ WORKDIR="${this_script_parent}/WORKDIR_build_raptor_binary"
 mkdir -p "$WORKDIR/INPUT"
 POLYGON_FILE="$WORKDIR/INPUT/bordeaux_polygon.geojson"
 OSM_FILE="$WORKDIR/INPUT/aquitaine-latest.osm.pbf"
-GTFS_DATA="$WORKDIR/INPUT/gtfs/"
+GTFS_DATA="$WORKDIR/INPUT/gtfs"
+mkdir -p "$GTFS_DATA"
 
 # cp "${this_script_parent}/data/bordeaux_polygon_TEST.geojson" "$POLYGON_FILE"
 cp "${this_script_parent}/data/bordeaux_polygon.geojson" "$POLYGON_FILE"
 cp "${this_script_parent}/DOWNLOADED_DATA/osm_bordeaux/aquitaine-latest.osm.pbf" "$OSM_FILE"
-cp -R "${this_script_parent}/DOWNLOADED_DATA/gtfs_bordeaux" "$GTFS_DATA"
+cp -R "${this_script_parent}/DOWNLOADED_DATA/gtfs_bordeaux/"* "$GTFS_DATA"
 echo "Using data from WORKDIR = $WORKDIR"
 echo ""
+
+# preprocessing GTFS to use parent stations :
+#mv "$GTFS_DATA/
 
 set -o xtrace
 "${BUILD_DIR}/bin/build-raptor-binary" \
