@@ -35,12 +35,12 @@ static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& fee
     return *tripPtr;
 }
 
-static vector<RAPTOR::Route> build_routeData(map<my::RouteID, set<my::TripID>> const& routeToTrips) {
+static vector<RAPTOR::Route> build_routeData(vector<RouteID> const& rankedRoutes) {
     vector<RAPTOR::Route> routeData;
-    routeData.reserve(routeToTrips.size());
+    routeData.reserve(rankedRoutes.size());
     // note : The route name is NOT its rank, but its id, i.e. the concatenation of its stops
-    transform(routeToTrips.begin(), routeToTrips.end(), back_inserter(routeData),
-              [](auto& routeToTrip) { return RAPTOR::Route(routeToTrip.first); });
+    transform(rankedRoutes.begin(), rankedRoutes.end(), back_inserter(routeData),
+              [](auto& routeID) { return RAPTOR::Route(routeID); });
     return routeData;
 }
 
@@ -197,7 +197,7 @@ static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::UltraGtfsData&
     //  - a route (or a stop) can be identified with its RouteID/StopID or its rank
     //  - the conversion between ID<->rank is done with the above structures
 
-    toFill.routeData = build_routeData(routeToTrips);
+    toFill.routeData = build_routeData(rankedRoutes);
     toFill.stopData = build_stopData(rankedStops, feed);
     std::tie(toFill.stopIds, toFill.firstStopIdOfRoute) = build_stopIdsRelated(toFill.routeData, stopToRank);
     std::tie(toFill.stopEvents, toFill.firstStopEventOfRoute) = build_stopEventsRelated(toFill.routeData, routeToTrips, feed);
