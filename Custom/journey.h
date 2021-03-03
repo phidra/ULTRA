@@ -108,7 +108,9 @@ inline std::vector<Leg> build_legs(Vertex source,
         int start_time = label.parentDepartureTime;
         int departure_time = label.parentDepartureTime;
         int arrival_time = label.arrivalTime;
-        std::cout << "\tleg FROM=" << label.parent << " (" << raptorData.stopData[label.parent] << ") TO=" << stop << "(" << raptorData.stopData[stop] << ")" << std::endl;
+        std::cout << "\tleg ";
+        std::cout << "FROM=" << label.parent << " (" << raptorData.stopData[label.parent] << ", at " << label.parentDepartureTime << ") ";
+        std::cout << "TO=" << stop << "(" << raptorData.stopData[stop] << ", at " << label.arrivalTime << ")" << std::endl;
         return {is_walk, departure_id, arrival_id, start_time, departure_time, arrival_time};
     };
 

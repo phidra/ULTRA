@@ -182,11 +182,17 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
 static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::UltraGtfsData& toFill) {
     // prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
+    bool isPartitionConsistent = my::checkRoutePartitionConsistency(feed, routeToTrips);
+    if (!isPartitionConsistent) {
+        ostringstream oss;
+        oss << "ERROR : number of trips after partitioning by route is not the same than number of trips in feed (=" << feed.getTrips().size() << ")";
+        throw runtime_error(oss.str());
+    }
     auto[rankedRoutes, routeToRank] = rankRoutes(routeToTrips);
     auto[rankedStops, stopToRank] = rankStops(routeToTrips);
 
     // from now on :
-    //  - routes of GTFS data are not used anymore (they are replaced with a partition of stops, cf. prepare_gtfs.h)
+    //  - routes of GTFS data are not used anymore (they are replaced with a partition of trips by routes
     //  - only the stops that appear in at least one trip are used
     //  - a route (or a stop) can be identified with its RouteID/StopID or its rank
     //  - the conversion between ID<->rank is done with the above structures

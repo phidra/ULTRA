@@ -1,3 +1,5 @@
+#include <numeric>
+
 #include "gtfs_processing.h"
 
 using namespace std;
@@ -47,6 +49,18 @@ map<RouteID, set<TripID>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& 
         routeToTrips[thisRouteId].emplace(tripId);
     }
     return routeToTrips;
+}
+
+bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteID, set<TripID>> const& partition) {
+    // checks that the agregation of the trips of all routes have the same number of trips than feed
+    auto nbTripsInFeed = feed.getTrips().size();
+    int nbTripsInPartitions = std::accumulate(
+        partition.cbegin(),
+        partition.cend(),
+        0,
+        [](int acc, auto const& routeToTrips) { return acc + routeToTrips.second.size(); }
+    );
+    return nbTripsInFeed == nbTripsInPartitions;
 }
 
 pair<vector<RouteID>, unordered_map<RouteID, size_t>> rankRoutes(

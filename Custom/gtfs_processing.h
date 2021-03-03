@@ -39,4 +39,6 @@ std::map<RouteID, std::set<TripID>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Fe
 std::pair<std::vector<RouteID>, std::unordered_map<RouteID, size_t>> rankRoutes(std::map<RouteID, std::set<TripID>> const& routeToTrips);
 std::pair<std::vector<StopID>, std::unordered_map<StopID, size_t>> rankStops(std::map<RouteID, std::set<TripID>> const& routeToTrips);
 
+bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, std::map<RouteID, std::set<TripID>> const& partition);
+
 }

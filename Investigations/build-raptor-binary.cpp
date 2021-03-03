@@ -67,11 +67,7 @@ int main(int argc, char** argv) {
     std::cout << "The transferGraph has these edges    : " << transferData.transferGraph.numEdges() << std::endl;
 
     const std::filesystem::path intermediaryDir = outputDir + "INTERMEDIARY/";
-    bool created = std::filesystem::create_directory(intermediaryDir);
-    if (!created) {
-        std::cout << "ERROR : unable to dump create directory where to dump intermediary transfer data : " << intermediaryDir << std::endl;
-        exit(3);
-    }
+    std::filesystem::create_directory(intermediaryDir);
     transferData.dumpIntermediary(intermediaryDir);
 
     my::UltraGtfsData binaryData{gtfsFolder};
