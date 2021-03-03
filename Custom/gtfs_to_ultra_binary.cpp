@@ -204,9 +204,9 @@ static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::UltraGtfsData&
     std::tie(toFill.routeSegments, toFill.firstRouteSegmentOfStop) =
         convert_routeSegmentsRelated(toFill.routeData, stopToRank, routeToRank, routeToTrips);
 
-    // FIXME : stub ?
-    toFill.implicitDepartureBufferTimes = false;
-    toFill.implicitArrivalBufferTimes = false;
+    // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
+    toFill.implicitDepartureBufferTimes = true;
+    toFill.implicitArrivalBufferTimes = true;
 }
 
 
