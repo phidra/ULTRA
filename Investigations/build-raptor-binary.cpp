@@ -6,7 +6,7 @@
 #include "../DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {
-    std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <gtfsStopFile>  <outputDir>" << std::endl;
+    std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <outputDir>" << std::endl;
     exit(0);
 }
 
@@ -32,22 +32,22 @@ my::UltraTransferData buildTransferData(
 
 
 int main(int argc, char** argv) {
-    if (argc < 6)
+    if (argc < 5)
         usage(argv[0]);
 
     const std::string gtfsFolder = argv[1];
     const std::string osmFile = argv[2];
     const std::string polygonFile = argv[3];
-    auto gtfsStopFile = argv[4];
-    std::string outputDir = argv[5];
+    std::string outputDir = argv[4];
     if (outputDir.back() != '/') {
         outputDir.push_back('/');
     }
+    auto gtfsStopFile = gtfsFolder + (gtfsFolder.back() != '/' ? "/stops.txt" : "stops.txt");
 
     std::cout << "GTFS FOLDER      = " << gtfsFolder << std::endl;
+    std::cout << "GTFS STOPFILE    = " << gtfsStopFile << std::endl;
     std::cout << "OSMFILE          = " << osmFile << std::endl;
     std::cout << "POLYGONFILE      = " << polygonFile << std::endl;
-    std::cout << "STOPFILE         = " << gtfsStopFile << std::endl;
     std::cout << "OUTPUT_DIR       = " << outputDir << std::endl;
     std::cout << std::endl;
 

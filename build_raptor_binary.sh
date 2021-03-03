@@ -25,19 +25,18 @@ WORKDIR="${this_script_parent}/WORKDIR_build_raptor_binary"
 mkdir -p "$WORKDIR/INPUT"
 POLYGON_FILE="$WORKDIR/INPUT/bordeaux_polygon.geojson"
 OSM_FILE="$WORKDIR/INPUT/aquitaine-latest.osm.pbf"
-STOPS_FILE="$WORKDIR/INPUT/bordeaux_stops.txt"
+GTFS_DATA="$WORKDIR/INPUT/gtfs/"
 
 # cp "${this_script_parent}/data/bordeaux_polygon_TEST.geojson" "$POLYGON_FILE"
 cp "${this_script_parent}/data/bordeaux_polygon.geojson" "$POLYGON_FILE"
 cp "${this_script_parent}/DOWNLOADED_DATA/osm_bordeaux/aquitaine-latest.osm.pbf" "$OSM_FILE"
-cp "${this_script_parent}/DOWNLOADED_DATA/gtfs_bordeaux/stops.txt" "$STOPS_FILE"
+cp -R "${this_script_parent}/DOWNLOADED_DATA/gtfs_bordeaux" "$GTFS_DATA"
 echo "Using data from WORKDIR = $WORKDIR"
 echo ""
 
 set -o xtrace
 "${BUILD_DIR}/bin/build-raptor-binary" \
-    "DOWNLOADED_DATA/gtfs_bordeaux" \
+    "$GTFS_DATA" \
     "$OSM_FILE" \
     "$POLYGON_FILE" \
-    "$STOPS_FILE" \
     "$WORKDIR"
