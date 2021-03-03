@@ -35,8 +35,14 @@ cp -R "${this_script_parent}/DOWNLOADED_DATA/gtfs_bordeaux/"* "$GTFS_DATA"
 echo "Using data from WORKDIR = $WORKDIR"
 echo ""
 
-# preprocessing GTFS to use parent stations :
-#mv "$GTFS_DATA/
+# preprocessing GTFS data to use parent stations :
+mv "$GTFS_DATA/stops.txt" "$GTFS_DATA/original_stops.txt"
+mv "$GTFS_DATA/stop_times.txt" "$GTFS_DATA/original_stop_times.txt"
+"${this_script_parent}/use_parent_stations.py" \
+    "$GTFS_DATA/original_stops.txt" \
+    "$GTFS_DATA/original_stop_times.txt" \
+    "$GTFS_DATA/stops.txt" \
+    "$GTFS_DATA/stop_times.txt"
 
 set -o xtrace
 "${BUILD_DIR}/bin/build-raptor-binary" \
