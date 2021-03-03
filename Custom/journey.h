@@ -20,6 +20,19 @@ struct EarliestArrivalLabel {
         RouteId routeId;
         Edge transferId;
     };
+
+    std::string as_string() const {
+        std::ostringstream oss;
+        oss << "[";
+        oss << "arrivalTime=" << arrivalTime << "|";
+        oss << "parentDepartureTime=" << parentDepartureTime << "|";
+        oss << "parent=" << parent << "|";
+        oss << "usesRoute=" << usesRoute << "|";
+        oss << "routeId=" << routeId << "|";
+        oss << "transferId=" << transferId << "|";
+        oss << "]";
+        return oss.str();
+    }
 };
 using Round = std::vector<EarliestArrivalLabel>;
 
@@ -70,13 +83,19 @@ inline std::vector<Leg> build_legs(Vertex source,
 
     auto[last_stop, last_walk_distance, last_stop_label] = _find_optimal_last_stop(data, initialTransfers, rounds);
 
-    // for now, we only allow journeys from/to as top -> targetVertex is necessary a stop, and last_walk_distance is
-    // necessary 0 :
+    // for now, we only allow journeys from/to a stop -> targetVertex is necessary a stop
+    // (but last_walk_distance is not necessarily 0, if a more optimal stop + final walk exist)
+    // if last_walk_distance is INFTY, we couldn't find a suitable last_stop :
+    if (last_walk_distance == INFTY) {
+        std::cout << "ERROR : last_walk_distance is INFTY, returning empty legs." << std::endl;
+        return {};
+    }
     assert(last_walk_distance == 0);
     assert(last_stop == target);
 
     std::vector<Leg> legs;
 
+    std::cout << "About to reconstruct (backward) journey from source=" << source << " to target=" << target << " (using last_stop=" << last_stop << ")" << std::endl;
     auto currentStop = Vertex(last_stop);
     auto currentStopLabel = get_best_label(currentStop, rounds);
 
@@ -89,8 +108,7 @@ inline std::vector<Leg> build_legs(Vertex source,
         int start_time = label.parentDepartureTime;
         int departure_time = label.parentDepartureTime;
         int arrival_time = label.arrivalTime;
-        std::cout << "DEPARTURE = " << label.parent << "   " << raptorData.stopData[label.parent] << std::endl;
-        std::cout << "ARRIVAL   = " << stop << "   " << raptorData.stopData[stop] << std::endl;
+        std::cout << "\tleg FROM=" << label.parent << " (" << raptorData.stopData[label.parent] << ") TO=" << stop << "(" << raptorData.stopData[stop] << ")" << std::endl;
         return {is_walk, departure_id, arrival_id, start_time, departure_time, arrival_time};
     };
 

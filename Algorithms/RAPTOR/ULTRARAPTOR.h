@@ -72,6 +72,7 @@ public:
 
 
     inline std::vector<myserver::Leg> run(const Vertex source, const int departureTime, const Vertex target, const size_t maxRounds = 50) noexcept {
+        std::cout << "Processing request FROM " << source << " (" << data.stopData[source] << ") TO " << target << " (" << data.stopData[target] << ") AT " << departureTime << std::endl;
         debugger.start();
         debugger.startInitialization();
         clear();
