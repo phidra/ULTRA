@@ -27,6 +27,8 @@ _rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWith
         nodeToRank.insert({stop.id, rankedNodes.size() - 1});
     });
 
+    // NOTE : here, rankedNodes must contain the stops in the same order that the input rankedNodes.
+
     // then we can rank the other nodes :
     for (auto edge: edgesWithStops) {
         if (nodeToRank.find(edge.node_from.id) == nodeToRank.end()) {
@@ -42,7 +44,7 @@ _rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWith
 }
 
 std::vector<my::Edge> _revertEdgesIfNecessary(std::vector<my::Edge> const& edges, std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
-    // to build the ULTRA transfer graph, we need that all the edges are in so-caled "proper" order
+    // to build the ULTRA transfer graph, we need that all the edges are in so-called "proper" order
     // that is : they must go from higher rank node to lower rank node
     // This is not the case by default in the edges.
     // This functions ensures it : in the output, all the edges are in "proper" order.
