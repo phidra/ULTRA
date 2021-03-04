@@ -13,11 +13,11 @@ inline void usage(const std::string programName) noexcept {
 my::UltraTransferData buildTransferData(
     std::filesystem::path osmFile,
     std::filesystem::path polygonFile,
-    std::filesystem::path gtfsStopFile,
+    std::vector<RAPTOR::Stop> const& stopData,
     float walkspeedKmPerHour,
     std::string programName) {
     try {
-        my::UltraTransferData transferData{osmFile, polygonFile, gtfsStopFile, walkspeedKmPerHour};
+        my::UltraTransferData transferData{osmFile, polygonFile, stopData, walkspeedKmPerHour};
         return transferData;
     } catch (std::exception& e) {
         std::cout << "EXCEPTION: " << e.what() << std::endl;
@@ -42,21 +42,21 @@ int main(int argc, char** argv) {
     if (outputDir.back() != '/') {
         outputDir.push_back('/');
     }
-    auto gtfsStopFile = gtfsFolder + (gtfsFolder.back() != '/' ? "/stops.txt" : "stops.txt");
 
     std::cout << "GTFS FOLDER      = " << gtfsFolder << std::endl;
-    std::cout << "GTFS STOPFILE    = " << gtfsStopFile << std::endl;
     std::cout << "OSMFILE          = " << osmFile << std::endl;
     std::cout << "POLYGONFILE      = " << polygonFile << std::endl;
     std::cout << "OUTPUT_DIR       = " << outputDir << std::endl;
     std::cout << std::endl;
 
     constexpr const float walkspeedKmPerHour = 4.7;
+    my::UltraGtfsData binaryData{gtfsFolder};
+
 
     my::UltraTransferData transferData = buildTransferData(
         osmFile,
         polygonFile,
-        gtfsStopFile,
+        binaryData.stopData,
         walkspeedKmPerHour,
         argv[0]);
 
@@ -70,16 +70,9 @@ int main(int argc, char** argv) {
     std::filesystem::create_directory(intermediaryDir);
     transferData.dumpIntermediary(intermediaryDir);
 
-    my::UltraGtfsData binaryData{gtfsFolder};
 
     // serializing data like RAPTOR::Data does :
     const std::string raptorDataFileName = outputDir + "raptor.binary";
-
-    // For the record, here is the serialization code in RAPTOR::Data :
-    /* inline void serialize(const std::string& fileName) const noexcept { */
-    /*     IO::serialize(fileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes); */
-    /*     transferGraph.writeBinary(fileName + ".graph"); */
-    /* } */
     binaryData.serialize(raptorDataFileName);
     transferData.transferGraph.writeBinary(raptorDataFileName + ".graph");
 

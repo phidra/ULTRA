@@ -15,6 +15,9 @@
 #include "../Custom/Handlers/journey_handler.h"
 #include "../Custom/Snapping/snapping.h"
 
+using std::cout;
+using std::endl;
+
 inline void usage() noexcept {
     std::cout << "Usage: ultra-server  <port>  <RAPTOR binary>  <bucketCH-basename>  <stopfile>\n";
     std::cout << "\n";
@@ -56,31 +59,10 @@ int main(int argc, char** argv) {
     auto stopmap = myserver::load_stopfile(stopfile_stream);
     std::cout << "Number of loaded stops = " << stopmap.size() << std::endl;
 
-    /* /1* int SOURCE = 435; *1/ */
-    /* /1* int TARGET = 120; *1/ */
-    /* u_int32_t SOURCE = 4350; */
-    /* u_int32_t TARGET = 1200; */
-    /* int DEPARTURE_TIME = 36000; */
-
-    /* if (!data.isStop(Vertex{SOURCE}) || !data.isStop(Vertex{TARGET})) { */
-    /*     std::cout << "For now, we can only handle journeys between stops :" << std::endl; */
-    /*     std::cout << "Is SOURCE a stop ? " << data.isStop(Vertex{SOURCE}) << std::endl; */
-    /*     std::cout << "Is TARGET a stop ? " << data.isStop(Vertex{TARGET}) << std::endl; */
-    /*     return 1; */
-    /* } */
-
-    /* auto legs = algorithm.run(Vertex(SOURCE), DEPARTURE_TIME, Vertex(TARGET)); */
-    /* std::cout << std::endl; */
-    /* std::cout << "JOURNEY = " << SOURCE << "   -->   " << TARGET << std::endl; */
-    /* std::cout << "LEGS" << std::endl; */
-    /* for (auto leg : legs) { */
-    /*     std::cout << leg.as_string() << std::endl; */
-    /* } */
-    /* std::cout << std::endl; */
-
     // ideally, we'd like to have a stopmap with stop infos (name, id, ...)
     // for now, we build a stopmap from the transferGraph, which has very few infos on stops :
     // this "coarse" stopmap only has rank and coordinates of the stops.
+    // EDIT : actually, we can get the name from raptorData.
     auto numStops = data.numberOfStops();
     std::cout << "How many stops in the transferGraph : " << numStops << std::endl;
     myserver::StopMap coarse_stopmap;
@@ -89,7 +71,7 @@ int main(int argc, char** argv) {
 
         // as we have no further info on stops in ULTRA data, for now, id and name are identical to the rank :
         std::string id = std::to_string(stopRank);
-        std::string name = std::to_string(stopRank);
+        std::string name = data.stopData[stopRank].name;
         coarse_stopmap.emplace(make_pair(id, myserver::Stop{id, name, coords.longitude, coords.latitude}));
     }
     std::cout << std::endl;
@@ -97,13 +79,6 @@ int main(int argc, char** argv) {
 
     std::cout << "How many stops in the coarse stopmap : " << coarse_stopmap.size() << std::endl;
     std::cout << std::endl;
-
-    /* // FIXME : temporarily dumping legs as geojson : */
-    /* rapidjson::Document doc(rapidjson::kObjectType); */
-    /* rapidjson::Document::AllocatorType& a = doc.GetAllocator(); */
-    /* auto geojson = myserver::legs_to_geojson(legs, coarse_stopmap, a); */
-    /* myserver::dump_to_file(geojson, "/tmp/journey.geojson"); */
-
 
     httplib::Server svr;
 
@@ -137,7 +112,6 @@ int main(int argc, char** argv) {
 
     svr.listen("0.0.0.0", port);
     std::cerr << "Exiting" << std::endl;
-
 
     return 0;
 }

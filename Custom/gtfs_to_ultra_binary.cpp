@@ -199,9 +199,9 @@ static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::UltraGtfsData&
 
     toFill.routeData = build_routeData(rankedRoutes);
     toFill.stopData = build_stopData(rankedStops, feed);
-    std::tie(toFill.stopIds, toFill.firstStopIdOfRoute) = build_stopIdsRelated(toFill.routeData, stopToRank);
-    std::tie(toFill.stopEvents, toFill.firstStopEventOfRoute) = build_stopEventsRelated(toFill.routeData, routeToTrips, feed);
-    std::tie(toFill.routeSegments, toFill.firstRouteSegmentOfStop) =
+    tie(toFill.stopIds, toFill.firstStopIdOfRoute) = build_stopIdsRelated(toFill.routeData, stopToRank);
+    tie(toFill.stopEvents, toFill.firstStopEventOfRoute) = build_stopEventsRelated(toFill.routeData, routeToTrips, feed);
+    tie(toFill.routeSegments, toFill.firstRouteSegmentOfStop) =
         convert_routeSegmentsRelated(toFill.routeData, stopToRank, routeToRank, routeToTrips);
 
     // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
@@ -303,7 +303,7 @@ bool my::UltraGtfsData::checkSerializationIdempotence() const {
     );
 }
 
-void UltraGtfsData::serialize(const std::string& fileName) const {
+void UltraGtfsData::serialize(const string& fileName) const {
     IO::serialize(fileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
 }
 

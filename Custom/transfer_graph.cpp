@@ -142,18 +142,21 @@ TransferGraph buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, st
 my::UltraTransferData::UltraTransferData(
     std::filesystem::path osmFile,
     std::filesystem::path polygonFile,
-    std::filesystem::path gtfsStopFile,
+    std::vector<RAPTOR::Stop> const& raptor_stops,
     float walkspeedKmPerHour_) :
     walkspeedKmPerHour{walkspeedKmPerHour_},
     polygon{get_polygon(polygonFile)} {
 
-    std::ifstream stopFileStream{gtfsStopFile};
-    if (!stopFileStream.good()) {
-        throw my::BadStopFile(gtfsStopFile);
+    std::vector<my::Stop> stops;
+    for (int stopRank = 0; stopRank < raptor_stops.size(); ++stopRank) {
+        auto const& stop = raptor_stops[stopRank];
+        stops.emplace_back(
+            stop.coordinates.longitude,
+            stop.coordinates.latitude,
+            std::to_string(stopRank),
+            stop.name
+        );
     }
-
-    // parse stops early, in order to fail early if needed :
-    stops = my::parse_gtfs_stops(gtfsStopFile.string().c_str(), stopFileStream);
 
     edges = my::osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
 
@@ -161,6 +164,7 @@ my::UltraTransferData::UltraTransferData(
     std::tie(edgesWithStops,stopsWithClosestNode) = my::extend_graph(stops, edges, walkspeedKmPerHour);
     transferGraph = my::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
 }
+
 
 void my::UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
     std::ofstream originalGraphStream(outputDir + "original_graph.geojson");

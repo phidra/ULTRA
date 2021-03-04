@@ -4,6 +4,7 @@
 #include <filesystem>
 
 #include "../DataStructures/Graph/Graph.h"
+#include "../DataStructures/RAPTOR/Entities/Stop.h"
 #include "Common/graphtypes.h"
 #include "Common/polygon.h"
 
@@ -15,7 +16,7 @@ TransferGraph buildTransferGraph(
 
 struct UltraTransferData {
 
-    UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::filesystem::path gtfsStopfile, float walkspeedKmPerHour_);
+    UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::vector<RAPTOR::Stop> const& stops, float walkspeedKmPerHour_);
     void dumpIntermediary(std::string const& outputDir) const;
     static bool areApproxEqual(TransferGraph const& left, TransferGraph const& right);
     bool checkSerializationIdempotence() const;
