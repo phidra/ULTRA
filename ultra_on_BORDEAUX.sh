@@ -39,7 +39,7 @@ EOF
 
 # STEP 0 = input data :
 #==========
-INPUT_DATA="${this_script_parent}/WORKDIR_build_raptor_binary"
+INPUT_DATA="${this_script_parent}/WORKDIR_build_raptor_binary_BORDEAUX"
 
 
 # STEP 1 = BuildCoreCH 
