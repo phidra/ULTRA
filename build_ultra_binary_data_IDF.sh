@@ -44,6 +44,13 @@ mv "$GTFS_DATA/stop_times.txt" "$GTFS_DATA/original_stop_times.txt"
     "$GTFS_DATA/stops.txt" \
     "$GTFS_DATA/stop_times.txt"
 
+# preprocessing GTFS data to remove transfers between unknown stops :
+mv "$GTFS_DATA/transfers.txt" "$GTFS_DATA/original_transfers.txt"
+"${this_script_parent}/Scripts/remove_invalid_transfers.py" \
+    "$GTFS_DATA/original_transfers.txt" \
+    "$GTFS_DATA/stops.txt" \
+    "$GTFS_DATA/transfers.txt"
+
 set -o xtrace
 "${BUILD_DIR}/bin/build-ultra-binary-data" \
     "$GTFS_DATA" \
