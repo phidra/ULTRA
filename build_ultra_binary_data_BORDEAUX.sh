@@ -22,7 +22,7 @@ make -j -C "$BUILD_DIR" osm_bordeaux gtfs_bordeaux
 make -j -C "$BUILD_DIR" build-raptor-binary
 popd
 
-WORKDIR="${this_script_parent}/WORKDIR_build_raptor_binary_BORDEAUX"
+WORKDIR="${this_script_parent}/WORKDIR_build_ultra_binary_data_BORDEAUX"
 mkdir -p "$WORKDIR/INPUT"
 POLYGON_FILE="$WORKDIR/INPUT/bordeaux_polygon.geojson"
 OSM_FILE="$WORKDIR/INPUT/aquitaine-latest.osm.pbf"

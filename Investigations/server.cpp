@@ -19,7 +19,7 @@ using std::cout;
 using std::endl;
 
 inline void usage() noexcept {
-    std::cout << "Usage: ultra-server  <port>  <RAPTOR binary>  <bucketCH-basename>  <stopfile>\n";
+    std::cout << "Usage: ultra-server  <port>  <RAPTOR binary>  <bucketCH-basename>\n";
     std::cout << "\n";
     std::cout << "This is a BLOCKING server -> do NOT use in anything remotely close to production !\n";
     std::cout << std::endl;
@@ -29,7 +29,7 @@ inline void usage() noexcept {
 using ShortcutRAPTOR = RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>;
 
 int main(int argc, char** argv) {
-    if (argc < 5)
+    if (argc < 4)
         usage();
     int port = 0;
     try {
@@ -42,11 +42,9 @@ int main(int argc, char** argv) {
     std::cerr << "Listening to port " << port << std::endl;
     const std::string raptorFile = argv[2];
     const std::string bucketChBasename = argv[3];
-    const std::string stopfile_path = argv[4];
 
     std::cout << "raptorFile            = " << raptorFile << std::endl;
     std::cout << "bucketChBasename      = " << bucketChBasename << std::endl;
-    std::cout << "stopfile_path         = " << stopfile_path << std::endl;
 
     RAPTOR::Data data = RAPTOR::Data::FromBinary(raptorFile);
     data.useImplicitDepartureBufferTimes();
@@ -55,14 +53,10 @@ int main(int argc, char** argv) {
     CH::CH bucketCH(bucketChBasename);
     ShortcutRAPTOR algorithm(data, bucketCH);
 
-    std::ifstream stopfile_stream(stopfile_path);
-    auto stopmap = myserver::load_stopfile(stopfile_stream);
-    std::cout << "Number of loaded stops = " << stopmap.size() << std::endl;
-
-    // ideally, we'd like to have a stopmap with stop infos (name, id, ...)
+    // ideally, we'd like to have a stopmap with detailed stop infos (name, id, ...)
     // for now, we build a stopmap from the transferGraph, which has very few infos on stops :
     // this "coarse" stopmap only has rank and coordinates of the stops.
-    // EDIT : actually, we can get the name from raptorData.
+    // EDIT : actually, we can get at least the name from raptorData.
     auto numStops = data.numberOfStops();
     std::cout << "How many stops in the transferGraph : " << numStops << std::endl;
     myserver::StopMap coarse_stopmap;

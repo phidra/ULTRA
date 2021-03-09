@@ -22,7 +22,7 @@ make -j -C "$BUILD_DIR" osm_idf gtfs_idf
 make -j -C "$BUILD_DIR" build-raptor-binary
 popd
 
-WORKDIR="${this_script_parent}/WORKDIR_build_raptor_binary_IDF"
+WORKDIR="${this_script_parent}/WORKDIR_build_ultra_binary_data_IDF"
 mkdir -p "$WORKDIR/INPUT"
 POLYGON_FILE="$WORKDIR/INPUT/idf_polygon.geojson"
 OSM_FILE="$WORKDIR/INPUT/ile-de-france-latest.osm.pbf"
