@@ -50,7 +50,6 @@ file(GLOB_RECURSE CUSTOM_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_
 include(cppgtfs.cmake)
 
 include(converter.cmake)
-include(gtfs-checker.cmake)
 include(server.cmake)
 include(build-raptor-binary.cmake)
 
@@ -59,5 +58,4 @@ include(bordeaux-data-osm.cmake)
 include(idf-data-gtfs.cmake)
 include(idf-data-osm.cmake)
 
-add_dependencies(${GTFSCHECKER} gtfs_bordeaux)
 add_dependencies(${CONVERTER} gtfs_bordeaux)
