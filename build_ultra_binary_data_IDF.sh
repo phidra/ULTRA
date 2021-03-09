@@ -19,7 +19,7 @@ mkdir -p "$BUILD_DIR"
 conan install --install-folder="$BUILD_DIR" . --profile="conanprofile.txt"
 cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
 make -j -C "$BUILD_DIR" osm_idf gtfs_idf
-make -j -C "$BUILD_DIR" build-raptor-binary
+make -j -C "$BUILD_DIR" build-ultra-binary-data
 popd
 
 WORKDIR="${this_script_parent}/WORKDIR_build_ultra_binary_data_IDF"
@@ -45,7 +45,7 @@ mv "$GTFS_DATA/stop_times.txt" "$GTFS_DATA/original_stop_times.txt"
     "$GTFS_DATA/stop_times.txt"
 
 set -o xtrace
-"${BUILD_DIR}/bin/build-raptor-binary" \
+"${BUILD_DIR}/bin/build-ultra-binary-data" \
     "$GTFS_DATA" \
     "$OSM_FILE" \
     "$POLYGON_FILE" \
