@@ -15,13 +15,13 @@ this_script_parent="$(realpath "$(dirname "$0")" )"
 make -C Runnables
 
 # working directory :
-WORKDIR="${this_script_parent}/WORKDIR"
+WORKDIR="${this_script_parent}/WORKDIR_BORDEAUX"
 echo "Using WORKDIR = $WORKDIR"
 mkdir -p "$WORKDIR"
 
 # STEP 0 = input data :
 #==========
-INPUT_DATA="${this_script_parent}/WORKDIR_build_raptor_binary_BORDEAUX"
+INPUT_DATA="${this_script_parent}/WORKDIR_build_ultra_binary_data_BORDEAUX"
 
 
 # STEP 1 = BuildCoreCH 

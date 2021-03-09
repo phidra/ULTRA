@@ -23,7 +23,7 @@ popd
 
 
 # run server :
-WORKDIR="${this_script_parent}/WORKDIR"
+WORKDIR="${this_script_parent}/WORKDIR_BORDEAUX"
 PORT="8080"
 echo "Using data from WORKDIR = $WORKDIR"
 "${BUILD_DIR}/bin/ultra-server" \
