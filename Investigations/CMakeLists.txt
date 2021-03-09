@@ -50,7 +50,6 @@ file(GLOB_RECURSE CUSTOM_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_
 include(cppgtfs.cmake)
 
 include(converter.cmake)
-include(binary-analyzer.cmake)
 include(gtfs-checker.cmake)
 include(server.cmake)
 include(build-raptor-binary.cmake)
