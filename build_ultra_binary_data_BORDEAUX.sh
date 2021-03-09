@@ -39,7 +39,7 @@ echo ""
 # preprocessing GTFS data to use parent stations :
 mv "$GTFS_DATA/stops.txt" "$GTFS_DATA/original_stops.txt"
 mv "$GTFS_DATA/stop_times.txt" "$GTFS_DATA/original_stop_times.txt"
-"${this_script_parent}/use_parent_stations.py" \
+"${this_script_parent}/Scripts/use_parent_stations.py" \
     "$GTFS_DATA/original_stops.txt" \
     "$GTFS_DATA/original_stop_times.txt" \
     "$GTFS_DATA/stops.txt" \
