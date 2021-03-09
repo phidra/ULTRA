@@ -19,24 +19,6 @@ WORKDIR="${this_script_parent}/WORKDIR"
 echo "Using WORKDIR = $WORKDIR"
 mkdir -p "$WORKDIR"
 
-cat << EOF
-
-WARNING : for now, parameters are just "guessed", i.e. they are not particularly chosen :
-The first value that can run the binary is used.
-
-NOTE : rough time needed to run pipeline on KIT's complete test data :
-
-STEP 1 = BuildCoreCH
-    Building CH took 2m 5s 639ms
-STEP 2 = ComputeShortcuts
-    Took 1h 34m 27s 111ms
-STEP 3 = BuildBucketCH
-    Building CH took 1m 44s 36ms
-STEP 4 = RunRAPTORQueries (pour 10 queries)
-    ~10 secondes (surtout le temps de charger les graphes)
-
-EOF
-
 # STEP 0 = input data :
 #==========
 INPUT_DATA="${this_script_parent}/WORKDIR_build_raptor_binary_BORDEAUX"
