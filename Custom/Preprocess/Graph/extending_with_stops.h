@@ -5,7 +5,7 @@
 #include "../../Common/types.h"
 #include "../../Common/graphtypes.h"
 
-namespace my {
+namespace my::preprocess {
 
 std::pair<std::vector<Edge>, std::vector<StopWithClosestNode>> extend_graph(std::vector<Stop> const& stops,
                                                                            std::vector<Edge> const& edges,

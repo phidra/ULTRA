@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace my {
+namespace my::preprocess {
 
 vector<Stop> parse_gtfs_stops(const char* gtfs_stopfile, istream& stopfile_stream) {
     // clang-format off

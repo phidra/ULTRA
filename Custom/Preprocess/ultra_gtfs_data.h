@@ -8,7 +8,7 @@
 #include "../../DataStructures/RAPTOR/Entities/RouteSegment.h"
 #include "../../Helpers/Types.h"
 
-namespace my {
+namespace my::preprocess {
 
 //From a given GTFS feed, builds the RAPTOR binary expected by ULTRA :
 struct UltraGtfsData {
@@ -31,4 +31,4 @@ struct UltraGtfsData {
     void serialize(const std::string& fileName) const;
 };
 
-}  // namespace my
+}

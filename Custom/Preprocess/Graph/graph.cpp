@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace my {
+namespace my::preprocess {
 
 float geometry_length_in_meters(Polyline const& geometry) {
     // precondition = polyline has at least 2 points

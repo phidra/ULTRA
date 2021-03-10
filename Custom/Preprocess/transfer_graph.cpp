@@ -14,7 +14,7 @@
 #include "../Common/autodeletefile.h"
 
 
-namespace my {
+namespace my::preprocess {
 
 std::pair<std::vector<my::NodeId>, std::unordered_map<my::NodeId, size_t>>
 _rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWithClosestNode> const& stops) {
@@ -241,7 +241,7 @@ TransferGraph buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, st
 }
 
 
-my::UltraTransferData::UltraTransferData(
+my::preprocess::UltraTransferData::UltraTransferData(
     std::filesystem::path osmFile,
     std::filesystem::path polygonFile,
     std::vector<RAPTOR::Stop> const& raptor_stops,
@@ -260,15 +260,15 @@ my::UltraTransferData::UltraTransferData(
         );
     }
 
-    edges = my::osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
+    edges = my::preprocess::osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
 
     // extend graph with stop-edges :
-    std::tie(edgesWithStops,stopsWithClosestNode) = my::extend_graph(stops, edges, walkspeedKmPerHour);
-    transferGraph = my::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
+    std::tie(edgesWithStops,stopsWithClosestNode) = my::preprocess::extend_graph(stops, edges, walkspeedKmPerHour);
+    transferGraph = my::preprocess::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
 }
 
 
-void my::UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
+void my::preprocess::UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
     std::ofstream originalGraphStream(outputDir + "original_graph.geojson");
     my::dump_geojson_graph(originalGraphStream, edges);
 
@@ -282,7 +282,7 @@ void my::UltraTransferData::dumpIntermediary(std::string const& outputDir) const
     my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
 }
 
-bool my::UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph const& right) {
+bool my::preprocess::UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph const& right) {
     // we only check the stats :
     std::ostringstream statsLeft_stream;
     left.printAnalysis(statsLeft_stream);
@@ -295,7 +295,7 @@ bool my::UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGr
     return (statsLeft == statsRight);
 }
 
-bool my::UltraTransferData::checkSerializationIdempotence() const {
+bool my::preprocess::UltraTransferData::checkSerializationIdempotence() const {
     my::AutoDeleteTempFile tmpfile;
 
     transferGraph.writeBinary(tmpfile.file);
@@ -304,7 +304,7 @@ bool my::UltraTransferData::checkSerializationIdempotence() const {
     TransferGraph freshTransferGraph;
     freshTransferGraph.readBinary(tmpfile.file);
 
-    return my::UltraTransferData::areApproxEqual(transferGraph, freshTransferGraph);
+    return my::preprocess::UltraTransferData::areApproxEqual(transferGraph, freshTransferGraph);
 }
 
 }

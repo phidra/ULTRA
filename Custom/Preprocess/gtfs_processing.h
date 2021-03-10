@@ -8,7 +8,7 @@
 
 // this code process GTFS feed to ease conversion to ULTRA binary format
 
-namespace my {
+namespace my::preprocess {
 
 // About the word "route" :
 //  - what science papers calls "route" is a particular group of stops

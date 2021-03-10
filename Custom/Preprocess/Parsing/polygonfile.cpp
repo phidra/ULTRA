@@ -7,7 +7,8 @@
 #include "polygonfile.h"
 
 using namespace std;
-using namespace my;
+
+namespace my::preprocess {
 
 struct IllFormattedPolygonException : public std::exception {
     IllFormattedPolygonException(string description) : msg{string("Ill-formatted polygon file : ") + description} {}
@@ -109,4 +110,6 @@ BgPolygon get_polygon(string polygonfile_path) {
 
     auto points = parse_polygonfile(polygonfile_stream);
     return create_polygon(points);
+}
+
 }

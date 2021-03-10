@@ -12,9 +12,9 @@ using namespace std;
 
 // This code helps to build the RAPTOR binary expected by ULTRA, from a given GTFS feed.
 
-namespace my {
+namespace my::preprocess {
 
-static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, my::StopID const& stopId) {
+static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::StopID const& stopId) {
     auto stopPtr = feed.getStops().get(stopId);
     if (stopPtr == 0) {
         ostringstream oss;
@@ -25,7 +25,7 @@ static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& fee
     return *stopPtr;
 }
 
-static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& feed, my::TripID const& tripId) {
+static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::TripID const& tripId) {
     auto tripPtr = feed.getTrips().get(tripId);
     if (tripPtr == 0) {
         ostringstream oss;
@@ -44,11 +44,11 @@ static vector<RAPTOR::Route> build_routeData(vector<RouteID> const& rankedRoutes
     return routeData;
 }
 
-static vector<RAPTOR::Stop> build_stopData(vector<my::StopID> const& rankedStops,
+static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::StopID> const& rankedStops,
                                                 ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::Stop> stopData(rankedStops.size());
     for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
-        my::StopID stopId = rankedStops[rank];
+        my::preprocess::StopID stopId = rankedStops[rank];
         Stop const& stop = getStop(feed, stopId);
         Geometry::Point location{Construct::LatLongTag{}, stop.getLat(), stop.getLng()};
         stopData[rank] = RAPTOR::Stop{stop.getName(), location};
@@ -58,17 +58,17 @@ static vector<RAPTOR::Stop> build_stopData(vector<my::StopID> const& rankedStops
 
 static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
     vector<RAPTOR::Route> const& routeData,
-    unordered_map<my::StopID, size_t> const& stopToRank) {
+    unordered_map<my::preprocess::StopID, size_t> const& stopToRank) {
     vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
     vector<::StopId> stopIds;
 
     size_t currentRouteFirstStop = 0;
     size_t routeRank;
     for (routeRank = 0; routeRank < routeData.size(); ++routeRank) {
-        my::RouteID routeId = routeData[routeRank].name;
-        vector<my::StopID> stopsOfCurrentRoute = my::routeToStops(routeId);
+        my::preprocess::RouteID routeId = routeData[routeRank].name;
+        vector<my::preprocess::StopID> stopsOfCurrentRoute = my::preprocess::routeToStops(routeId);
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
-                  [&stopToRank](my::StopID const& stopid) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopid))}; });
+                  [&stopToRank](my::preprocess::StopID const& stopid) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopid))}; });
 
         firstStopIdOfRoute[routeRank] = currentRouteFirstStop;
         currentRouteFirstStop += stopsOfCurrentRoute.size();
@@ -84,7 +84,7 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
 
 static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     vector<RAPTOR::Route> const& routeData,
-    map<my::RouteID, set<my::TripID>> const& routeToTrips,
+    map<my::preprocess::RouteID, set<my::preprocess::TripID>> const& routeToTrips,
     ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::StopEvent> stopEvents;
     vector<size_t> firstStopEventOfRoute(routeData.size() + 1);
@@ -92,7 +92,7 @@ static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     size_t currentRouteFirstStopEvent = 0;
     size_t routeRank;
     for (routeRank = 0; routeRank < routeData.size(); ++routeRank) {
-        my::RouteID routeId = routeData[routeRank].name;
+        my::preprocess::RouteID routeId = routeData[routeRank].name;
 
         size_t nbStopEventsInThisRoute = 0;
 
@@ -127,24 +127,24 @@ static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
 
 static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
     vector<RAPTOR::Route> const& routeData,
-    unordered_map<my::StopID, size_t> const& stopToRank,
-    unordered_map<my::RouteID, size_t> const& routeToRank,
-    map<my::RouteID, set<my::TripID>> const& routeToTrips) {
+    unordered_map<my::preprocess::StopID, size_t> const& stopToRank,
+    unordered_map<my::preprocess::RouteID, size_t> const& routeToRank,
+    map<my::preprocess::RouteID, set<my::preprocess::TripID>> const& routeToTrips) {
     // building an intermediate structure that associates a stopRank to all its routes
     // for a given stop, this structures stores some pairs {route + stop index in this route}
 
     auto nb_stops = stopToRank.size();
-    vector<vector<pair<my::RouteID, int>>> routesUsingAStop(nb_stops);
+    vector<vector<pair<my::preprocess::RouteID, int>>> routesUsingAStop(nb_stops);
 
     for (auto& route : routeData) {
-        my::RouteID routeId = route.name;
-        vector<my::StopID> stopsOfThisRoute = my::routeToStops(routeId);
+        my::preprocess::RouteID routeId = route.name;
+        vector<my::preprocess::StopID> stopsOfThisRoute = my::preprocess::routeToStops(routeId);
 
         for (size_t stopIndex = 0; stopIndex < stopsOfThisRoute.size(); ++stopIndex) {
-            my::StopID const& stopId = stopsOfThisRoute[stopIndex];
+            my::preprocess::StopID const& stopId = stopsOfThisRoute[stopIndex];
             size_t stopRank = stopToRank.at(stopId);
 
-            vector<pair<my::RouteID, int>>& routesUsingThisStop = routesUsingAStop[stopRank];
+            vector<pair<my::preprocess::RouteID, int>>& routesUsingThisStop = routesUsingAStop[stopRank];
             routesUsingThisStop.emplace_back(routeId, stopIndex);
         }
     }
@@ -179,10 +179,10 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::UltraGtfsData& toFill) {
+static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::UltraGtfsData& toFill) {
     // prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
-    bool isPartitionConsistent = my::checkRoutePartitionConsistency(feed, routeToTrips);
+    bool isPartitionConsistent = my::preprocess::checkRoutePartitionConsistency(feed, routeToTrips);
     if (!isPartitionConsistent) {
         ostringstream oss;
         oss << "ERROR : number of trips after partitioning by route is not the same than number of trips in feed (=" << feed.getTrips().size() << ")";
@@ -210,7 +210,7 @@ static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::UltraGtfsData&
 }
 
 
-my::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
+my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     ad::cppgtfs::Parser parser;
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfsFolder);
@@ -218,12 +218,12 @@ my::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
 }
 
 
-void my::UltraGtfsData::dump(string const& filename) const {
+void my::preprocess::UltraGtfsData::dump(string const& filename) const {
     IO::serialize(filename, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
 }
 
 
-bool my::UltraGtfsData::checkSerializationIdempotence() const {
+bool my::preprocess::UltraGtfsData::checkSerializationIdempotence() const {
     my::AutoDeleteTempFile tmpfile;
 
     // serializing in a temporary file :
@@ -307,5 +307,4 @@ void UltraGtfsData::serialize(const string& fileName) const {
     IO::serialize(fileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
 }
 
-}  // namespace my
-
+}

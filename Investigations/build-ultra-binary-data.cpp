@@ -10,14 +10,14 @@ inline void usage(const std::string programName) noexcept {
     exit(0);
 }
 
-my::UltraTransferData buildTransferData(
+my::preprocess::UltraTransferData buildTransferData(
     std::filesystem::path osmFile,
     std::filesystem::path polygonFile,
     std::vector<RAPTOR::Stop> const& stopData,
     float walkspeedKmPerHour,
     std::string programName) {
     try {
-        my::UltraTransferData transferData{osmFile, polygonFile, stopData, walkspeedKmPerHour};
+        my::preprocess::UltraTransferData transferData{osmFile, polygonFile, stopData, walkspeedKmPerHour};
         return transferData;
     } catch (std::exception& e) {
         std::cout << "EXCEPTION: " << e.what() << std::endl;
@@ -50,10 +50,10 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     constexpr const float walkspeedKmPerHour = 4.7;
-    my::UltraGtfsData binaryData{gtfsFolder};
+    my::preprocess::UltraGtfsData binaryData{gtfsFolder};
 
 
-    my::UltraTransferData transferData = buildTransferData(
+    my::preprocess::UltraTransferData transferData = buildTransferData(
         osmFile,
         polygonFile,
         binaryData.stopData,
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 
     // checking that we can unserialize it, and find no mismatch :
     auto unserialized = RAPTOR::Data::FromBinary(raptorDataFileName);
-    bool areApproxEqual = my::UltraTransferData::areApproxEqual(transferData.transferGraph, unserialized.transferGraph);
+    bool areApproxEqual = my::preprocess::UltraTransferData::areApproxEqual(transferData.transferGraph, unserialized.transferGraph);
     std::cout << "La serialization est-elle idempotente pour le transferGraph ? " << std::boolalpha << areApproxEqual << std::endl;
 
     return 0;

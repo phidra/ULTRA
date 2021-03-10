@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace my {
+namespace my::preprocess {
 
 static RouteID build_route_id(ad::cppgtfs::gtfs::Trip const& trip) {
     if (trip.getStopTimes().size() < 2) {
@@ -112,4 +112,4 @@ pair<vector<StopID>, unordered_map<StopID, size_t>> rankStops(
     return {rankedStops, stopToRank};
 }
 
-}  // namespace my
+}

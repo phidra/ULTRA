@@ -8,7 +8,7 @@
 #include "../Common/graphtypes.h"
 #include "../Common/polygon.h"
 
-namespace my {
+namespace my::preprocess {
 
 TransferGraph buildTransferGraph(
     std::vector<my::Edge> const& edgesWithStops,

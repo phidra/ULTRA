@@ -7,7 +7,7 @@
 #include "../../Common/types.h"
 #include "../../Common/polygon.h"
 
-namespace my {
+namespace my::preprocess {
 
 static BgPolygon DEFAULT_POLYGON{};  // by default = no polygon
 

@@ -5,7 +5,7 @@
 
 #include "../../Common/types.h"
 
-namespace my {
+namespace my::preprocess {
 
 struct BadStopFile : public std::exception {
     std::string msg;

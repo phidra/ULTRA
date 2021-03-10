@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace my {
+namespace my::preprocess {
 
 void FillingHandler::way(const osmium::Way& way) noexcept {
     if (!is_way_interesting(way))
