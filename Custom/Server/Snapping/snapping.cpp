@@ -2,6 +2,8 @@
 
 #include "snapping.h"
 
+namespace myserver {
+
 using namespace std;
 using BgDegree = boost::geometry::cs::spherical_equatorial<boost::geometry::degree>;
 using BgPoint = boost::geometry::model::point<double, 2, BgDegree>;
@@ -27,4 +29,6 @@ tuple<string, double, double, float> get_closest_stop(double lon, double lat) {
     auto closest_stop_loc = closest_stops.front().first;
     auto distance = boost::geometry::distance(closest_stop_loc, BgPoint{lon, lat}, HAVERSINE);
     return make_tuple(closest_stop_id, get<0>(closest_stop_loc), get<1>(closest_stop_loc), distance);
+}
+
 }

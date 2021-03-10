@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
         coarse_stopmap.emplace(make_pair(id, myserver::Stop{id, name, coords.longitude, coords.latitude}));
     }
     std::cout << std::endl;
-    build_index(coarse_stopmap);
+    myserver::build_index(coarse_stopmap);
 
     std::cout << "How many stops in the coarse stopmap : " << coarse_stopmap.size() << std::endl;
     std::cout << std::endl;
