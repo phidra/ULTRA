@@ -8,10 +8,9 @@
 
 #include "exceptions.h"
 #include "journey_handler.h"
-#include "../Dumping/json_helper.h"
+#include "../json_helper.h"
 #include "../legs.h"
-#include "../stopmap.h"
-#include "../Dumping/duration_helper.h"
+#include "../../Common/duration_helper.h"
 #include "../Snapping/snapping.h"
 
 using namespace std;
@@ -65,7 +64,7 @@ struct JourneyParams {
         params.AddMember("dstlat", rapidjson::Value(dstlat), a);
         params.AddMember("dst_snap_distance", rapidjson::Value(dst_snap_distance), a);
         params.AddMember("departure_time", rapidjson::Value(departure_time), a);
-        params.AddMember("departure_time_str", rapidjson::Value().SetString(format_time(departure_time).c_str(), a), a);
+        params.AddMember("departure_time_str", rapidjson::Value().SetString(my::format_time(departure_time).c_str(), a), a);
         return params;
     }
     string srcid, srcname;
@@ -252,9 +251,9 @@ bool compute_journey(JourneyParams const& jparams, rapidjson::Value& response_fi
     response_field.AddMember("error_msg", rapidjson::Value().SetString(raptor_error_msg.c_str(), a), a);
     response_field.AddMember("computing_time_microseconds", computing_time_microseconds, a);
     response_field.AddMember("EAT", eat, a);
-    response_field.AddMember("EAT_str", rapidjson::Value().SetString(format_time(eat).c_str(), a), a);
+    response_field.AddMember("EAT_str", rapidjson::Value().SetString(my::format_time(eat).c_str(), a), a);
     response_field.AddMember("journey_duration", journey_duration, a);
-    response_field.AddMember("journey_duration_str", rapidjson::Value().SetString(format_duration(journey_duration).c_str(), a), a);
+    response_field.AddMember("journey_duration_str", rapidjson::Value().SetString(my::format_duration(journey_duration).c_str(), a), a);
     response_field.AddMember("printed_journey", rapidjson::Value().SetString(printed_journey.c_str(), a), a);
     response_field.AddMember("legs", legs_to_json(legs, stops, a), a);
 

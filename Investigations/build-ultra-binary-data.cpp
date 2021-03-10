@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "../Custom/transfer_graph.h"
-#include "../Custom/gtfs_to_ultra_binary.h"
+#include "../Custom/Preprocess/transfer_graph.h"
+#include "../Custom/Preprocess/ultra_gtfs_data.h"
 #include "../DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {

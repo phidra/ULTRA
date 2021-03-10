@@ -4,7 +4,7 @@
 #include <rapidjson/ostreamwrapper.h>
 
 #include "json_helper.h"
-#include "duration_helper.h"
+#include "../Common/duration_helper.h"
 
 using namespace std;
 
@@ -68,17 +68,17 @@ rapidjson::Value leg_to_json(Leg const& leg, StopMap const& stops, rapidjson::Do
     json_leg.AddMember("arrival_name", rapidjson::Value().SetString(arrival_name.c_str(), a), a);
     json_leg.AddMember("arrival_location", stop_to_coordinates(leg.arrival_id, stops, a), a);
     json_leg.AddMember("start_time", leg.start_time, a);
-    json_leg.AddMember("start_time_str", rapidjson::Value().SetString(format_time(leg.start_time).c_str(), a), a);
+    json_leg.AddMember("start_time_str", rapidjson::Value().SetString(my::format_time(leg.start_time).c_str(), a), a);
     json_leg.AddMember("departure_time", leg.departure_time, a);
-    json_leg.AddMember("departure_time_str", rapidjson::Value().SetString(format_time(leg.departure_time).c_str(), a), a);
+    json_leg.AddMember("departure_time_str", rapidjson::Value().SetString(my::format_time(leg.departure_time).c_str(), a), a);
     json_leg.AddMember("arrival_time", leg.arrival_time, a);
-    json_leg.AddMember("arrival_time_str", rapidjson::Value().SetString(format_time(leg.arrival_time).c_str(), a), a);
+    json_leg.AddMember("arrival_time_str", rapidjson::Value().SetString(my::format_time(leg.arrival_time).c_str(), a), a);
     json_leg.AddMember("full_duration", leg.get_full_duration(), a);
-    json_leg.AddMember("full_duration_str", rapidjson::Value().SetString(format_duration(leg.get_full_duration()).c_str(), a), a);
+    json_leg.AddMember("full_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_full_duration()).c_str(), a), a);
     json_leg.AddMember("waiting_duration", leg.get_waiting_duration(), a);
-    json_leg.AddMember("waiting_duration_str", rapidjson::Value().SetString(format_duration(leg.get_waiting_duration()).c_str(), a), a);
+    json_leg.AddMember("waiting_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_waiting_duration()).c_str(), a), a);
     json_leg.AddMember("traveling_duration", leg.get_traveling_duration(), a);
-    json_leg.AddMember("traveling_duration_str", rapidjson::Value().SetString(format_duration(leg.get_traveling_duration()).c_str(), a), a);
+    json_leg.AddMember("traveling_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_traveling_duration()).c_str(), a), a);
 
     // intermediary stops :
     rapidjson::Value json_stops(rapidjson::kArrayType);
@@ -124,17 +124,17 @@ rapidjson::Value leg_to_geojson_polyline(Leg const& leg, StopMap const& stops, r
     auto arrival_name = stopid_to_stopname(leg.arrival_id, stops, "UNKNOWN-NAME");
     properties.AddMember("arrival_name", rapidjson::Value().SetString(arrival_name.c_str(), a), a);
     properties.AddMember("start_time", leg.start_time, a);
-    properties.AddMember("start_time_str", rapidjson::Value().SetString(format_time(leg.start_time).c_str(), a), a);
+    properties.AddMember("start_time_str", rapidjson::Value().SetString(my::format_time(leg.start_time).c_str(), a), a);
     properties.AddMember("departure_time", leg.departure_time, a);
-    properties.AddMember("departure_time_str", rapidjson::Value().SetString(format_time(leg.departure_time).c_str(), a), a);
+    properties.AddMember("departure_time_str", rapidjson::Value().SetString(my::format_time(leg.departure_time).c_str(), a), a);
     properties.AddMember("arrival_time", leg.arrival_time, a);
-    properties.AddMember("arrival_time_str", rapidjson::Value().SetString(format_time(leg.arrival_time).c_str(), a), a);
+    properties.AddMember("arrival_time_str", rapidjson::Value().SetString(my::format_time(leg.arrival_time).c_str(), a), a);
     properties.AddMember("full_duration", leg.get_full_duration(), a);
-    properties.AddMember("full_duration_str", rapidjson::Value().SetString(format_duration(leg.get_full_duration()).c_str(), a), a);
+    properties.AddMember("full_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_full_duration()).c_str(), a), a);
     properties.AddMember("waiting_duration", leg.get_waiting_duration(), a);
-    properties.AddMember("waiting_duration_str", rapidjson::Value().SetString(format_duration(leg.get_waiting_duration()).c_str(), a), a);
+    properties.AddMember("waiting_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_waiting_duration()).c_str(), a), a);
     properties.AddMember("traveling_duration", leg.get_traveling_duration(), a);
-    properties.AddMember("traveling_duration_str", rapidjson::Value().SetString(format_duration(leg.get_traveling_duration()).c_str(), a), a);
+    properties.AddMember("traveling_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_traveling_duration()).c_str(), a), a);
 
     // geometry :
     rapidjson::Value geometry(rapidjson::kObjectType);

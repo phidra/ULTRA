@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../Algorithms/RAPTOR/ULTRARAPTOR.h"
-#include "../stopmap.h"
+#include "../../../Algorithms/RAPTOR/ULTRARAPTOR.h"
+#include "../../Common/stopmap.h"
 
 namespace httplib {
     struct Request;

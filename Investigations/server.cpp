@@ -5,15 +5,11 @@
 #include <httplib.h>
 
 #include "../Algorithms/RAPTOR/ULTRARAPTOR.h"
-
 #include "../DataStructures/RAPTOR/Data.h"
-#include "../Custom/json.h"
-#include "../Custom/Parsing/geojson_stops.h"
-#include "../Custom/Parsing/gtfs_stops.h"
-#include "../Custom/Dumping/json_helper.h"
-#include "../Custom/Handlers/echo_handler.h"
-#include "../Custom/Handlers/journey_handler.h"
-#include "../Custom/Snapping/snapping.h"
+
+#include "../Custom/Server/Snapping/snapping.h"
+#include "../Custom/Server/Handlers/echo_handler.h"
+#include "../Custom/Server/Handlers/journey_handler.h"
 
 using std::cout;
 using std::endl;

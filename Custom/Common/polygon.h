@@ -13,5 +13,5 @@ using BgPolygon = boost::geometry::model::polygon<BgPoint, false /* CounterClock
 BgPolygon create_polygon(std::vector<std::pair<double, double>> const& points);
 bool is_inside(BgPolygon const& polygon, double lon, double lat);
 bool is_empty(BgPolygon const& polygon);
-}
 
+}

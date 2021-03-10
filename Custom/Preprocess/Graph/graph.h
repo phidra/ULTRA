@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "../Common/graphtypes.h"
-#include "../Common/polygon.h"
+#include "../../Common/graphtypes.h"
+#include "../../Common/polygon.h"
 
 namespace my {
 

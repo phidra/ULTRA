@@ -4,8 +4,8 @@
 
 #include <rapidjson/document.h>
 
-#include "../legs.h"
-#include "../stopmap.h"
+#include "legs.h"
+#include "../Common/stopmap.h"
 
 namespace myserver {
 

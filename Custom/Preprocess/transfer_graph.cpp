@@ -3,16 +3,15 @@
 
 #include "transfer_graph.h"
 
-#include "../DataStructures/RAPTOR/Data.h"
-#include "../DataStructures/Geometry/Point.h"
-#include "../DataStructures/Graph/Classes/StaticGraph.h"
-#include "../Custom/Parsing/polygonfile.h"
-#include "../Custom/Parsing/gtfs_stops.h"
-#include "../Custom/Graph/extending_with_stops.h"
-#include "../Custom/Graph/graph.h"
-#include "../Custom/transfer_graph.h"
-#include "../Custom/Dumping/geojson.h"
-#include "../Custom/Common/autodeletefile.h"
+#include "../../DataStructures/RAPTOR/Data.h"
+#include "../../DataStructures/Geometry/Point.h"
+#include "../../DataStructures/Graph/Classes/StaticGraph.h"
+#include "Parsing/polygonfile.h"
+#include "Parsing/gtfs_stops.h"
+#include "Graph/extending_with_stops.h"
+#include "Graph/graph.h"
+#include "../Common/geojson.h"
+#include "../Common/autodeletefile.h"
 
 
 namespace my {

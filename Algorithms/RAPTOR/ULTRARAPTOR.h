@@ -35,9 +35,8 @@
 #include "Debugger.h"
 
 
-
-#include "../../Custom/legs.h"
-#include "../../Custom/journey.h"
+#include "../../Custom/Server/legs.h"
+#include "../../Custom/Server/journey.h"
 
 namespace RAPTOR {
 

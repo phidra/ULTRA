@@ -3,10 +3,10 @@
 #include <vector>
 #include <filesystem>
 
-#include "../DataStructures/Graph/Graph.h"
-#include "../DataStructures/RAPTOR/Entities/Stop.h"
-#include "Common/graphtypes.h"
-#include "Common/polygon.h"
+#include "../../DataStructures/Graph/Graph.h"
+#include "../../DataStructures/RAPTOR/Entities/Stop.h"
+#include "../Common/graphtypes.h"
+#include "../Common/polygon.h"
 
 namespace my {
 

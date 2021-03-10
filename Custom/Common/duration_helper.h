@@ -6,6 +6,8 @@
 #include <tuple>
 #include <cassert>
 
+namespace my {
+
 inline std::tuple<int, int, int> dispatch(int duration) {
     int nb_hours = duration / 3600;
     int duration_without_hours = duration - (nb_hours*3600);
@@ -57,4 +59,6 @@ inline std::string format_duration(int duration) {
     }
 
     return oss.str();
+}
+
 }
