@@ -6,14 +6,14 @@ using namespace std;
 
 namespace my::preprocess {
 
-static RouteID build_route_id(ad::cppgtfs::gtfs::Trip const& trip) {
+static RouteLabel buildRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
     if (trip.getStopTimes().size() < 2) {
         ostringstream oss;
         oss << "ERROR : route is too small (" << trip.getStopTimes().size() << ") of trip : " << trip.getId();
         throw runtime_error(oss.str());
     }
 
-    RouteID routeId{};
+    RouteLabel routeId{};
 
     // precondition : getStopTimes return stops in order
     for (auto const& stoptime : trip.getStopTimes()) {
@@ -26,7 +26,7 @@ static RouteID build_route_id(ad::cppgtfs::gtfs::Trip const& trip) {
     return routeId.substr(0, routeId.size() - 1);
 }
 
-vector<StopID> routeToStops(RouteID const& route) {
+vector<StopID> routeToStops(RouteLabel const& route) {
     vector<StopID> stops;
     string token;
     istringstream iss(route);
@@ -36,22 +36,22 @@ vector<StopID> routeToStops(RouteID const& route) {
     return stops;
 }
 
-map<RouteID, set<TripID>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
+map<RouteLabel, set<TripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
     // ULTRA uses "scientific" routes, but feed only has GTFS routes.
-    // This functions partitions trips amongst their (scientific) route.
-    // Two trips will have the same route IF they have excatly the same stops.
+    // This functions partitions trips amongst their (scientific) route, identified by its label.
+    // Two trips will have the same route label IF they have excatly the same sequence of stops.
 
-    map<RouteID, set<TripID>> routeToTrips;
+    map<RouteLabel, set<TripLabel>> routeToTrips;
 
     for (auto const & [ tripId, tripPtr ] : feed.getTrips()) {
         auto& trip = *(tripPtr);
-        RouteID thisRouteId = build_route_id(trip);
+        RouteLabel thisRouteId = buildRouteLabel(trip);
         routeToTrips[thisRouteId].emplace(tripId);
     }
     return routeToTrips;
 }
 
-bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteID, set<TripID>> const& partition) {
+bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<TripLabel>> const& partition) {
     // checks that the agregation of the trips of all routes have the same number of trips than feed
     auto nbTripsInFeed = feed.getTrips().size();
     int nbTripsInPartitions = std::accumulate(
@@ -63,18 +63,18 @@ bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<Rou
     return nbTripsInFeed == nbTripsInPartitions;
 }
 
-pair<vector<RouteID>, unordered_map<RouteID, size_t>> rankRoutes(
-    map<RouteID, set<TripID>> const& routeToTrips) {
+pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> rankRoutes(
+    map<RouteLabel, set<TripLabel>> const& routeToTrips) {
     // this function ranks the partitioned routes
     // i.e. each route has an arbitrary rank from 0 to N-1 (where N is the number of routes)
     // (this rank allows routes to be stored in a vector)
 
     size_t routeRank = 0;
-    vector<RouteID> rankedRoutes;
-    unordered_map<RouteID, size_t> routeToRank;
+    vector<RouteLabel> rankedRoutes;
+    unordered_map<RouteLabel, size_t> routeToRank;
 
     for (auto ite = routeToTrips.cbegin(); ite != routeToTrips.cend(); ++ite) {
-        RouteID const& routeId = ite->first;
+        RouteLabel const& routeId = ite->first;
         rankedRoutes.push_back(routeId);
         routeToRank.insert({routeId, routeRank++});
     }
@@ -86,7 +86,7 @@ pair<vector<RouteID>, unordered_map<RouteID, size_t>> rankRoutes(
 }
 
 pair<vector<StopID>, unordered_map<StopID, size_t>> rankStops(
-    map<RouteID, set<TripID>> const& routeToTrips) {
+    map<RouteLabel, set<TripLabel>> const& routeToTrips) {
     // this function ranks the stops (stops not used in routes are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)
     // (this rank allows stops to be stored in a vector)

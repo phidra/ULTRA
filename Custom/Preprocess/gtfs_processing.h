@@ -25,20 +25,15 @@ namespace my::preprocess {
 //  - StopID -> this is a prepared GTFS structure (built by this code)
 
 // this is the "scientific" route used in ULTRA code :
-using RouteID = std::string;
-// this is the id of a "route" in the GTFS data (barely used in ULTRA code) :
-using GtfsRouteID = std::string;
-
-using TripID = std::string;
-using RouteId = std::string;
-
+using RouteLabel = std::string;
+using TripLabel = std::string;
 using StopID = std::string;
 
-std::vector<StopID> routeToStops(RouteID const& route);
-std::map<RouteID, std::set<TripID>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed);
-std::pair<std::vector<RouteID>, std::unordered_map<RouteID, size_t>> rankRoutes(std::map<RouteID, std::set<TripID>> const& routeToTrips);
-std::pair<std::vector<StopID>, std::unordered_map<StopID, size_t>> rankStops(std::map<RouteID, std::set<TripID>> const& routeToTrips);
+std::vector<StopID> routeToStops(RouteLabel const& route);
+std::map<RouteLabel, std::set<TripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed);
+std::pair<std::vector<RouteLabel>, std::unordered_map<RouteLabel, size_t>> rankRoutes(std::map<RouteLabel, std::set<TripLabel>> const& routeToTrips);
+std::pair<std::vector<StopID>, std::unordered_map<StopID, size_t>> rankStops(std::map<RouteLabel, std::set<TripLabel>> const& routeToTrips);
 
-bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, std::map<RouteID, std::set<TripID>> const& partition);
+bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, std::map<RouteLabel, std::set<TripLabel>> const& partition);
 
 }
