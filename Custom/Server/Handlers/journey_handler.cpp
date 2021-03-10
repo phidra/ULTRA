@@ -17,6 +17,8 @@ using namespace std;
 
 using ALGO = RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>;
 
+namespace myserver {
+
 struct UnknownStation : public std::exception {
     std::string msg;
     UnknownStation(std::string const& station_id) : msg{std::string("Unknown station '") + station_id + "'"} {}
@@ -304,5 +306,7 @@ void handle_journey_between_locations(const httplib::Request& req, httplib::Resp
     } else {
         finalize_response(res, doc, 500, "raptor encountered an error");
     }
+
+}
 
 }

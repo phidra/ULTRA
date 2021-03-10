@@ -77,13 +77,13 @@ int main(int argc, char** argv) {
 
     // journey between stops :
     auto f1 = [&algorithm, &coarse_stopmap](const httplib::Request& req, httplib::Response& res) {
-        handle_journey_between_stops(req, res, algorithm, coarse_stopmap);
+        myserver::handle_journey_between_stops(req, res, algorithm, coarse_stopmap);
     };
     svr.Get("/journey_between_stops", f1);
 
     // journey between locations :
     auto f2 = [&algorithm, &coarse_stopmap](const httplib::Request& req, httplib::Response& res) {
-        handle_journey_between_locations(req, res, algorithm, coarse_stopmap);
+        myserver::handle_journey_between_locations(req, res, algorithm, coarse_stopmap);
     };
     svr.Get("/journey_between_locations", f2);
 
