@@ -26,8 +26,8 @@ static RouteLabel buildRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
     return routeId.substr(0, routeId.size() - 1);
 }
 
-vector<StopID> routeToStops(RouteLabel const& route) {
-    vector<StopID> stops;
+vector<StopLabel> routeToStops(RouteLabel const& route) {
+    vector<StopLabel> stops;
     string token;
     istringstream iss(route);
     while (getline(iss, token, '+')) {
@@ -85,24 +85,24 @@ pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> rankRoutes(
     return {rankedRoutes, routeToRank};
 }
 
-pair<vector<StopID>, unordered_map<StopID, size_t>> rankStops(
+pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> rankStops(
     map<RouteLabel, set<TripLabel>> const& routeToTrips) {
     // this function ranks the stops (stops not used in routes are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)
     // (this rank allows stops to be stored in a vector)
 
     // first, identify the stops that are used by at least one partitioned route :
-    set<StopID> usefulStops;
+    set<StopLabel> usefulStops;
     for (auto & [ route_id, _ ] : routeToTrips) {
-        vector<StopID> thisRouteStops = routeToStops(route_id);
+        vector<StopLabel> thisRouteStops = routeToStops(route_id);
         usefulStops.insert(thisRouteStops.begin(), thisRouteStops.end());
     }
 
     // then, rank them :
-    vector<StopID> rankedStops(usefulStops.begin(), usefulStops.end());
-    unordered_map<StopID, size_t> stopToRank;
+    vector<StopLabel> rankedStops(usefulStops.begin(), usefulStops.end());
+    unordered_map<StopLabel, size_t> stopToRank;
     for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
-        StopID stopid = rankedStops[rank];
+        StopLabel stopid = rankedStops[rank];
         stopToRank.insert({stopid, rank});
     }
 

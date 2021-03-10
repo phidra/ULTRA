@@ -14,7 +14,7 @@ using namespace std;
 
 namespace my::preprocess {
 
-static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::StopID const& stopId) {
+static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::StopLabel const& stopId) {
     auto stopPtr = feed.getStops().get(stopId);
     if (stopPtr == 0) {
         ostringstream oss;
@@ -44,11 +44,11 @@ static vector<RAPTOR::Route> build_routeData(vector<RouteLabel> const& rankedRou
     return routeData;
 }
 
-static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::StopID> const& rankedStops,
+static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::StopLabel> const& rankedStops,
                                                 ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::Stop> stopData(rankedStops.size());
     for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
-        my::preprocess::StopID stopId = rankedStops[rank];
+        my::preprocess::StopLabel stopId = rankedStops[rank];
         Stop const& stop = getStop(feed, stopId);
         Geometry::Point location{Construct::LatLongTag{}, stop.getLat(), stop.getLng()};
         stopData[rank] = RAPTOR::Stop{stop.getName(), location};
@@ -58,7 +58,7 @@ static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::StopID> const&
 
 static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
     vector<RAPTOR::Route> const& routeData,
-    unordered_map<my::preprocess::StopID, size_t> const& stopToRank) {
+    unordered_map<my::preprocess::StopLabel, size_t> const& stopToRank) {
     vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
     vector<::StopId> stopIds;
 
@@ -66,9 +66,9 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
     size_t routeRank;
     for (routeRank = 0; routeRank < routeData.size(); ++routeRank) {
         my::preprocess::RouteLabel routeId = routeData[routeRank].name;
-        vector<my::preprocess::StopID> stopsOfCurrentRoute = my::preprocess::routeToStops(routeId);
+        vector<my::preprocess::StopLabel> stopsOfCurrentRoute = my::preprocess::routeToStops(routeId);
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
-                  [&stopToRank](my::preprocess::StopID const& stopid) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopid))}; });
+                  [&stopToRank](my::preprocess::StopLabel const& stopid) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopid))}; });
 
         firstStopIdOfRoute[routeRank] = currentRouteFirstStop;
         currentRouteFirstStop += stopsOfCurrentRoute.size();
@@ -127,7 +127,7 @@ static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
 
 static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
     vector<RAPTOR::Route> const& routeData,
-    unordered_map<my::preprocess::StopID, size_t> const& stopToRank,
+    unordered_map<my::preprocess::StopLabel, size_t> const& stopToRank,
     unordered_map<my::preprocess::RouteLabel, size_t> const& routeToRank,
     map<my::preprocess::RouteLabel, set<my::preprocess::TripLabel>> const& routeToTrips) {
     // building an intermediate structure that associates a stopRank to all its routes
@@ -138,10 +138,10 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
 
     for (auto& route : routeData) {
         my::preprocess::RouteLabel routeId = route.name;
-        vector<my::preprocess::StopID> stopsOfThisRoute = my::preprocess::routeToStops(routeId);
+        vector<my::preprocess::StopLabel> stopsOfThisRoute = my::preprocess::routeToStops(routeId);
 
         for (size_t stopIndex = 0; stopIndex < stopsOfThisRoute.size(); ++stopIndex) {
-            my::preprocess::StopID const& stopId = stopsOfThisRoute[stopIndex];
+            my::preprocess::StopLabel const& stopId = stopsOfThisRoute[stopIndex];
             size_t stopRank = stopToRank.at(stopId);
 
             vector<pair<my::preprocess::RouteLabel, int>>& routesUsingThisStop = routesUsingAStop[stopRank];
@@ -194,7 +194,7 @@ static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::Ul
     // from now on :
     //  - routes of GTFS data are not used anymore (they are replaced with a partition of trips by routes
     //  - only the stops that appear in at least one trip are used
-    //  - a route (or a stop) can be identified with its RouteLabel/StopID or its rank
+    //  - a route (or a stop) can be identified with its RouteLabel/StopLabel or its rank
     //  - the conversion between ID<->rank is done with the above structures
 
     toFill.routeData = build_routeData(rankedRoutes);
