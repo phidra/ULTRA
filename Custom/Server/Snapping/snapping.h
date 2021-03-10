@@ -3,7 +3,7 @@
 #include <string>
 #include <tuple>
 
-#include "../../Common/stopmap.h"
+#include "../stopmap.h"
 
 void build_index(myserver::StopMap);
 
