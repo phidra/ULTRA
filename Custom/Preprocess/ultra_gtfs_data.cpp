@@ -14,11 +14,11 @@ using namespace std;
 
 namespace my::preprocess {
 
-static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::StopLabel const& stopId) {
-    auto stopPtr = feed.getStops().get(stopId);
+static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::StopLabel const& stopLabel) {
+    auto stopPtr = feed.getStops().get(stopLabel);
     if (stopPtr == 0) {
         ostringstream oss;
-        oss << "ERROR : unable to get stop with id '" << stopId << "' (stopPtr is 0)";
+        oss << "ERROR : unable to get stop with label '" << stopLabel << "' (stopPtr is 0)";
         throw runtime_error(oss.str());
     }
 
@@ -48,8 +48,8 @@ static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::StopLabel> con
                                                 ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::Stop> stopData(rankedStops.size());
     for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
-        my::preprocess::StopLabel stopId = rankedStops[rank];
-        Stop const& stop = getStop(feed, stopId);
+        my::preprocess::StopLabel stopLabel = rankedStops[rank];
+        Stop const& stop = getStop(feed, stopLabel);
         Geometry::Point location{Construct::LatLongTag{}, stop.getLat(), stop.getLng()};
         stopData[rank] = RAPTOR::Stop{stop.getName(), location};
     }
@@ -68,7 +68,7 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
         my::preprocess::RouteLabel routeId = routeData[routeRank].name;
         vector<my::preprocess::StopLabel> stopsOfCurrentRoute = my::preprocess::routeToStops(routeId);
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
-                  [&stopToRank](my::preprocess::StopLabel const& stopid) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopid))}; });
+                  [&stopToRank](my::preprocess::StopLabel const& stopLabel) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopLabel))}; });
 
         firstStopIdOfRoute[routeRank] = currentRouteFirstStop;
         currentRouteFirstStop += stopsOfCurrentRoute.size();
@@ -141,8 +141,8 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
         vector<my::preprocess::StopLabel> stopsOfThisRoute = my::preprocess::routeToStops(routeId);
 
         for (size_t stopIndex = 0; stopIndex < stopsOfThisRoute.size(); ++stopIndex) {
-            my::preprocess::StopLabel const& stopId = stopsOfThisRoute[stopIndex];
-            size_t stopRank = stopToRank.at(stopId);
+            my::preprocess::StopLabel const& stopLabel = stopsOfThisRoute[stopIndex];
+            size_t stopRank = stopToRank.at(stopLabel);
 
             vector<pair<my::preprocess::RouteLabel, int>>& routesUsingThisStop = routesUsingAStop[stopRank];
             routesUsingThisStop.emplace_back(routeId, stopIndex);

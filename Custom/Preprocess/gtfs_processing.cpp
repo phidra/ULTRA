@@ -102,8 +102,8 @@ pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> rankStops(
     vector<StopLabel> rankedStops(usefulStops.begin(), usefulStops.end());
     unordered_map<StopLabel, size_t> stopToRank;
     for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
-        StopLabel stopid = rankedStops[rank];
-        stopToRank.insert({stopid, rank});
+        StopLabel stoplabel = rankedStops[rank];
+        stopToRank.insert({stoplabel, rank});
     }
 
     // Here :
