@@ -6,21 +6,19 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
-BUILD_DIR="$this_script_parent/_build"
-CMAKE_ROOT_DIR="$this_script_parent/Investigations"
+BUILD_DIR="$this_script_parent/_build_preprocess"
+CMAKE_ROOT_DIR="$this_script_parent/MyCustomUsage"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
 
 echo "To build from scratch :  rm -rf '$BUILD_DIR'"
 # rm -rf "$BUILD_DIR"
 
-pushd "$CMAKE_ROOT_DIR"
 mkdir -p "$BUILD_DIR"
-conan install --install-folder="$BUILD_DIR" . --profile="conanprofile.txt"
+conan install --install-folder="$BUILD_DIR" "$CMAKE_ROOT_DIR" --profile="$CMAKE_ROOT_DIR/conanprofile.txt"
 cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
 make -j -C "$BUILD_DIR" osm_bordeaux gtfs_bordeaux
 make -j -C "$BUILD_DIR" build-ultra-binary-data
-popd
 
 WORKDIR="${this_script_parent}/WORKDIR_build_ultra_binary_data_BORDEAUX"
 mkdir -p "$WORKDIR/INPUT"
@@ -29,7 +27,6 @@ OSM_FILE="$WORKDIR/INPUT/aquitaine-latest.osm.pbf"
 GTFS_DATA="$WORKDIR/INPUT/gtfs"
 mkdir -p "$GTFS_DATA"
 
-# cp "${this_script_parent}/data/bordeaux_polygon_TEST.geojson" "$POLYGON_FILE"
 cp "${this_script_parent}/data/bordeaux_polygon.geojson" "$POLYGON_FILE"
 cp "${this_script_parent}/DOWNLOADED_DATA/osm_bordeaux/aquitaine-latest.osm.pbf" "$OSM_FILE"
 cp -R "${this_script_parent}/DOWNLOADED_DATA/gtfs_bordeaux/"* "$GTFS_DATA"

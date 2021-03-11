@@ -1,2 +1,2 @@
-add_executable(serverbin server.cpp)
-target_link_libraries(serverbin serverlib)
+add_executable(ultra-server server.cpp)
+target_link_libraries(ultra-server serverlib)

@@ -6,21 +6,19 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
-BUILD_DIR="$this_script_parent/_build"
-CMAKE_ROOT_DIR="$this_script_parent/Investigations"
+BUILD_DIR="$this_script_parent/_build_preprocess"
+CMAKE_ROOT_DIR="$this_script_parent/MyCustomUsage"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
 
 echo "To build from scratch :  rm -rf '$BUILD_DIR'"
 # rm -rf "$BUILD_DIR"
 
-pushd "$CMAKE_ROOT_DIR"
 mkdir -p "$BUILD_DIR"
-conan install --install-folder="$BUILD_DIR" . --profile="conanprofile.txt"
+conan install --install-folder="$BUILD_DIR" "$CMAKE_ROOT_DIR" --profile="$CMAKE_ROOT_DIR/conanprofile.txt"
 cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
 make -j -C "$BUILD_DIR" osm_idf gtfs_idf
 make -j -C "$BUILD_DIR" build-ultra-binary-data
-popd
 
 WORKDIR="${this_script_parent}/WORKDIR_build_ultra_binary_data_IDF"
 mkdir -p "$WORKDIR/INPUT"
