@@ -10,8 +10,8 @@
 #include "journey_handler.h"
 #include "../json_helper.h"
 #include "../legs.h"
-#include "../../Common/duration_helper.h"
 #include "../Snapping/snapping.h"
+#include "Common/duration_helper.h"
 
 using namespace std;
 

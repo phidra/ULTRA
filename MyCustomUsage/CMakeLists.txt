@@ -22,6 +22,7 @@ include(CMake/cppgtfs.cmake)
 
 add_subdirectory(Common)
 add_subdirectory(Preprocess)
+add_subdirectory(Server)
 add_subdirectory(Mains)
 
 # include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)

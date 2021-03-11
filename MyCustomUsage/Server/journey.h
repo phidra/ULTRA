@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Algorithms/RAPTOR/InitialTransfers.h"
-#include "../../DataStructures/RAPTOR/Data.h"
-#include "../../Helpers/Types.h"
+#include "Algorithms/RAPTOR/InitialTransfers.h"
+#include "DataStructures/RAPTOR/Data.h"
+#include "Helpers/Types.h"
 #include "legs.h"
 
 namespace myserver {

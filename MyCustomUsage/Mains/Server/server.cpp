@@ -4,12 +4,12 @@
 
 #include <httplib.h>
 
-#include "../Algorithms/RAPTOR/ULTRARAPTOR.h"
-#include "../DataStructures/RAPTOR/Data.h"
+#include "Algorithms/RAPTOR/ULTRARAPTOR.h"
+#include "DataStructures/RAPTOR/Data.h"
 
-#include "../Custom/Server/Snapping/snapping.h"
-#include "../Custom/Server/Handlers/echo_handler.h"
-#include "../Custom/Server/Handlers/journey_handler.h"
+#include "Server/Snapping/snapping.h"
+#include "Server/Handlers/echo_handler.h"
+#include "Server/Handlers/journey_handler.h"
 
 using std::cout;
 using std::endl;
