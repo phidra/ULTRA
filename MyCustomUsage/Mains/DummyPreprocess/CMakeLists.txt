@@ -1,2 +1,0 @@
-add_executable(dummypreprocess dummypreprocess.cpp)
-target_link_libraries(dummypreprocess preprocess)
