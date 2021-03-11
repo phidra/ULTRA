@@ -8,3 +8,5 @@ It contains custom code that :
 - STEP 2 = runs the preprocessing phase of ULTRA
 - STEP 3 = wraps the query phase of ULTRA in a basic http server
 - STEP 4 = provides a basic web-based viewer, that is a client to the http server
+
+The code in this repo is for exploration/testing purposes. For lots of reasons, it is absolutely not suitable for anything remotely close to production.
