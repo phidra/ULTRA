@@ -8,6 +8,7 @@ this_script_parent="$(realpath "$(dirname "$0")" )"
 
 BUILD_DIR="$this_script_parent/_build"
 CMAKE_ROOT_DIR="$this_script_parent/MyCustomUsage"
+SCRIPTS_DIR="$this_script_parent/MyCustomUsage/Scripts"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
 
@@ -36,7 +37,7 @@ echo ""
 # preprocessing GTFS data to use parent stations :
 mv "$GTFS_DATA/stops.txt" "$GTFS_DATA/original_stops.txt"
 mv "$GTFS_DATA/stop_times.txt" "$GTFS_DATA/original_stop_times.txt"
-"${this_script_parent}/Scripts/use_parent_stations.py" \
+"${SCRIPTS_DIR}/use_parent_stations.py" \
     "$GTFS_DATA/original_stops.txt" \
     "$GTFS_DATA/original_stop_times.txt" \
     "$GTFS_DATA/stops.txt" \

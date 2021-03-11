@@ -44,7 +44,7 @@ EOF
 
 # STEP 0 = download data :
 #==========
-"${this_script_parent}"/Scripts/download_KIT_data.sh
+"${this_script_parent}"/MyCustomUsage/Scripts/download_KIT_data.sh
 DOWNLOADED_DATA="${this_script_parent}/DOWNLOADED_DATA/complete"
 
 

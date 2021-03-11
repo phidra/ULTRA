@@ -87,12 +87,10 @@ int main(int argc, char** argv) {
     };
     svr.Get("/journey_between_locations", f2);
 
-    // Serving a viewer, which files are located in "src/Static/viewer". This assumes that :
-    //      program binary is in :  src/_build/bin/
-    //      viewer folder is in :   src/Static/viewer/
     std::filesystem::path program_path{argv[0]};
+    // Serving a viewer (this depends on a suitable organization of the folders in the repo) :
     auto src_path = program_path.parent_path().parent_path().parent_path();
-    auto viewer_path = src_path / "Static" / "viewer";
+    auto viewer_path = src_path / "MyCustomUsage" / "Static" / "viewer";
     std::cerr << "Serving viewer from folder : " << viewer_path << std::endl;
     auto ret = svr.set_mount_point("/viewer", viewer_path.string().c_str());
     if (!ret) {
