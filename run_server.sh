@@ -6,7 +6,7 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
-BUILD_DIR="$this_script_parent/_build_server"
+BUILD_DIR="$this_script_parent/_build"
 CMAKE_ROOT_DIR="$this_script_parent/MyCustomUsage"
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
