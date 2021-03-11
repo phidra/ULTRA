@@ -98,6 +98,9 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    std::cerr << "You can request the server with an URL similar to this one :" << std::endl;
+    std::cerr << "    http://localhost:8080/viewer?mapcenter=44.835665%2C-0.604935&mapzoom=12&src=44.792556%2C-0.588112&dst=44.826169%2C-0.622787&time=83700" << std::endl;
+
     svr.listen("0.0.0.0", port);
     std::cerr << "Exiting" << std::endl;
 
