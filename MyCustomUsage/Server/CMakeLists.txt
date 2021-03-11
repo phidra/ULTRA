@@ -1,3 +1,9 @@
+# this lib depends on :
+#   - the cmake target 'common' (we could get rid of this dependency, only needed for duration_helper)
+#   - some ULTRA code (Algorithms / DataStructures / Helpers) which has to be includable
+#   - rapidjson (already included via common)
+#   - cpp-httplib (used via conan, see below)
+
 set(SERVER_SOURCES
     json_helper.cpp
     Snapping/snapping.cpp
@@ -18,12 +24,5 @@ target_include_directories(serverlib PUBLIC "${ULTRA_INCLUDE_DIR}")
 target_include_directories(serverlib PUBLIC "${CONAN_INCLUDE_DIRS_CPP-HTTPLIB}")
 
 target_link_libraries(serverlib PUBLIC common)
-target_link_libraries(serverlib PUBLIC -pthread)  # needed by cpp-httplib
-
-# this lib depends on :
-
-# rapidjson (but included in Common anyway)
-# common
-# NOTE : la dépendance à Common ne concerne que duration_helper...
-#        ... et celui-ci n'est de toutes façons nécessaire QUE pour serverlib
-#        je pourrai donc n'avoir que deux modules de code indépendants : Preprocess et Server
+set(CPPHTTPLIB_LINK_DEPS -pthread)
+target_link_libraries(serverlib PUBLIC "${CPPHTTPLIB_LINK_DEPS}")

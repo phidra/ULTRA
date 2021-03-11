@@ -1,3 +1,12 @@
+# this lib depends on :
+#   - the cmake target 'ad_cppgtfs' (for the library cppgtfs)
+#   - the cmake target 'common'
+#   - some ULTRA code (DataStructures / Helpers) which has to be includable
+#   - BoostGeometry (expected to be available in system libs)
+#   - libosmium (expected to be available in system libs)
+#   - rapidjson (used via conan, see below)
+#   - fast-cpp-csv-parser (used via conan, see below) (we could probably get rid of this dependency, and use the csv parser from cppgtfs)
+
 set(PREPROCESS_SOURCES
     gtfs_processing.cpp
     Graph/extending_with_stops.cpp
@@ -11,7 +20,7 @@ set(PREPROCESS_SOURCES
 
 add_library(preprocess STATIC "${PREPROCESS_SOURCES}")
 
-# to allow this kind of inclusion (#include "Preprocess/Graph/osmparsing.h"), we use parent directory as include dir :
+# to allow that the inclusion is prefixed by "Preprocess" (#include "Preprocess/Graph/osmparsing.h"), we use parent directory as include dir :
 get_filename_component(PREPROCESS_PARENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" DIRECTORY)
 
 # we also need to be able to include ULTRA code, which is included from one level above :
@@ -23,17 +32,6 @@ target_include_directories(preprocess PRIVATE "${CONAN_INCLUDE_DIRS_FAST-CPP-CSV
 target_include_directories(preprocess PUBLIC "${CPPGTFS_INCLUDE_DIR}")
 target_link_libraries(preprocess PUBLIC common)
 target_link_libraries(preprocess PRIVATE ad_cppgtfs)
-target_link_libraries(preprocess PRIVATE bz2 z expat -pthread)
 
-# this lib depends on :
-
-# TODO :
-
-# cppgtfs
-# ULTRA DataStructures
-# ULTRA Helpers
-# Common
-# BoostGeometry
-# libosmium
-# rapidjson
-# fast-cpp-csv-parser (header-only), (d'ailleurs, je pourrai peut-être supprimer cette dépendance, et utiliser le parser CSV de cppgtfs ?)
+set(LIBOSMIUM_LINK_DEPS bz2 z expat -pthread)
+target_link_libraries(preprocess PRIVATE "${LIBOSMIUM_LINK_DEPS}")
