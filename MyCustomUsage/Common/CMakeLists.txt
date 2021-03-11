@@ -1,6 +1,3 @@
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
-
 add_library(common STATIC geojson.cpp polygon.cpp)
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
