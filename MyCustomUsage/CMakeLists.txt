@@ -18,53 +18,17 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
-include(CMake/cppgtfs.cmake)
+include(cppgtfs.cmake)
 
 add_subdirectory(Common)
 add_subdirectory(Preprocess)
 add_subdirectory(Server)
 add_subdirectory(Mains)
 
-# include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-# conan_basic_setup()
+# NOTE : if needed, also toggle compilation flags used by ULTRA
+# cf. https://github.com/phidra/ULTRA/blob/eed8bb61dc15f2ab306a5ecfd8c24f2b5562e017/Runnables/Makefile#L5
 
-
-# set(COMMON_COMPILE_OPTIONS
-#     -fopenmp
-#     -pipe
-# )
-# set(RELEASE_COMPILE_OPTIONS
-#     -ffast-math
-#     -ftree-vectorize
-#     -Wfatal-errors
-# )
-# set(OPTIMIZATION_COMPILE_OPTIONS
-#     -march=native
-# )
-# set(DEBUG_COMPILE_OPTIONS
-#     -rdynamic
-#     -Wpedantic
-#     -pedantic-errors
-#     -Wparentheses
-#     -Wfatal-errors
-#     -D_GLIBCXX_DEBUG
-#     -g
-#     -fno-omit-frame-pointer
-# )
-# add_compile_options(
-#     ${COMMON_COMPILE_OPTIONS}
-#     ${OPTIMIZATION_COMPILE_OPTIONS}
-#     ${RELEASE_COMPILE_OPTIONS}
-# )
-
-# file(GLOB_RECURSE CUSTOM_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/../Custom/*.cpp")
-
-# include(cppgtfs.cmake)
-
-# include(server.cmake)
-# include(build-ultra-binary-data.cmake)
-
-# include(bordeaux-data-gtfs.cmake)
-# include(bordeaux-data-osm.cmake)
-# include(idf-data-gtfs.cmake)
-# include(idf-data-osm.cmake)
+include(bordeaux-data-gtfs.cmake)
+include(bordeaux-data-osm.cmake)
+include(idf-data-gtfs.cmake)
+include(idf-data-osm.cmake)
