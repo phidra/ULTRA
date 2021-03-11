@@ -10,10 +10,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-infinite-recu
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
-project(ultra)
+project(my-custom-ultra-usage)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
-add_subdirectory("${CMAKE_SOURCE_DIR}/../Custom/Common" "${CMAKE_BINARY_DIR}/Common")
-include(dummy.cmake)
+
+add_subdirectory(Common)
+add_subdirectory(Mains)
+
+# add_subdirectory("${CMAKE_SOURCE_DIR}/../Custom/Common" "${CMAKE_BINARY_DIR}/Common")
+# include(dummy.cmake)
 
 # include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 # conan_basic_setup()
