@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+
 #include <osmium/osm/location.hpp>
 #include <osmium/osm/types.hpp>
 

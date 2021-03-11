@@ -15,3 +15,5 @@ DOWNLOADED_DATA
 WORKDIR*
 
 .clangd
+
+*NOGIT*
