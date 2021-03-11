@@ -24,9 +24,6 @@ add_subdirectory(Common)
 add_subdirectory(Preprocess)
 add_subdirectory(Mains)
 
-# add_subdirectory("${CMAKE_SOURCE_DIR}/../Custom/Common" "${CMAKE_BINARY_DIR}/Common")
-# include(dummy.cmake)
-
 # include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 # conan_basic_setup()
 

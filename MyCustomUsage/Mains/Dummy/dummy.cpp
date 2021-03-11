@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "geojson.h"
-#include "polygon.h"
+#include "Common/geojson.h"
+#include "Common/polygon.h"
 
 using namespace std;
 

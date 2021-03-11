@@ -2,11 +2,11 @@
 
 #include <vector>
 
-#include "../../DataStructures/RAPTOR/Entities/Stop.h"
-#include "../../DataStructures/RAPTOR/Entities/Route.h"
-#include "../../DataStructures/RAPTOR/Entities/StopEvent.h"
-#include "../../DataStructures/RAPTOR/Entities/RouteSegment.h"
-#include "../../Helpers/Types.h"
+#include "DataStructures/RAPTOR/Entities/Stop.h"
+#include "DataStructures/RAPTOR/Entities/Route.h"
+#include "DataStructures/RAPTOR/Entities/StopEvent.h"
+#include "DataStructures/RAPTOR/Entities/RouteSegment.h"
+#include "Helpers/Types.h"
 
 namespace my::preprocess {
 

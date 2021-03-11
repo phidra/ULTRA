@@ -1,7 +1,7 @@
 #pragma once
 
 #include <istream>
-#include "../../Common/polygon.h"
+#include "Common/polygon.h"
 
 namespace my::preprocess {
 

@@ -3,15 +3,15 @@
 
 #include "transfer_graph.h"
 
-#include "../../DataStructures/RAPTOR/Data.h"
-#include "../../DataStructures/Geometry/Point.h"
-#include "../../DataStructures/Graph/Classes/StaticGraph.h"
-#include "Parsing/polygonfile.h"
-#include "Parsing/gtfs_stops.h"
-#include "Graph/extending_with_stops.h"
-#include "Graph/graph.h"
-#include "../Common/geojson.h"
-#include "../Common/autodeletefile.h"
+#include "DataStructures/RAPTOR/Data.h"
+#include "DataStructures/Geometry/Point.h"
+#include "DataStructures/Graph/Classes/StaticGraph.h"
+#include "Preprocess/Parsing/polygonfile.h"
+#include "Preprocess/Parsing/gtfs_stops.h"
+#include "Preprocess/Graph/extending_with_stops.h"
+#include "Preprocess/Graph/graph.h"
+#include "Common/geojson.h"
+#include "Common/autodeletefile.h"
 
 
 namespace my::preprocess {

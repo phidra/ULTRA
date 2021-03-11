@@ -1,2 +1,3 @@
 add_subdirectory(Dummy)
 add_subdirectory(DummyPreprocess)
+add_subdirectory(BuildUltraBinaryData)

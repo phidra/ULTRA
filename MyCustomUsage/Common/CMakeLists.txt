@@ -1,5 +1,9 @@
 add_library(common STATIC geojson.cpp polygon.cpp)
-target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+include(CMakePrintHelpers)
+
+# to allow this kind of inclusion (#include "Common/geojson.h"), we use parent directory as include dir :
+get_filename_component(COMMON_PARENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" DIRECTORY)
+target_include_directories(common PUBLIC "${COMMON_PARENT_DIR}")
 
 # this lib depends on :
 #   - BoostGeometry (expected to be available in system libs)

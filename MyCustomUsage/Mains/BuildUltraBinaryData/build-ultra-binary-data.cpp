@@ -1,9 +1,10 @@
 #include <iostream>
 #include <string>
 
-#include "../Custom/Preprocess/transfer_graph.h"
-#include "../Custom/Preprocess/ultra_gtfs_data.h"
-#include "../DataStructures/RAPTOR/Data.h"
+#include "Preprocess/transfer_graph.h"
+#include "Preprocess/ultra_gtfs_data.h"
+
+#include "DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {
     std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <outputDir>" << std::endl;

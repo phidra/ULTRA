@@ -4,8 +4,8 @@
 #include <map>
 #include <osmium/handler.hpp>
 
-#include "../../Common/types.h"
-#include "../../Common/polygon.h"
+#include "Common/types.h"
+#include "Common/polygon.h"
 
 namespace my::preprocess {
 

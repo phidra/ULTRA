@@ -4,7 +4,7 @@
 
 #include "ultra_gtfs_data.h"
 #include "gtfs_processing.h"
-#include "../Common/autodeletefile.h"
+#include "Common/autodeletefile.h"
 
 #include "ad/cppgtfs/Parser.h"
 
