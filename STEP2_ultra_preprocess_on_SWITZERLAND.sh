@@ -7,6 +7,8 @@ set -o pipefail
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
 
+# NOTE : as we will download an ULTRA binary from KIT's website, there is no STEP1 for SWITZERLAND
+# (this differs from BORDEAUX/IDF, where we have to build the ULTRA binary in a STEP1)
 
 # if needed :
 # make -C Runnables clean
