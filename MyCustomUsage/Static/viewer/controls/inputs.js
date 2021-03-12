@@ -24,11 +24,42 @@ L.Control.Inputs = L.Control.extend({
         this._centerOnBordeaux = L.DomUtil.create("button", "", this._div);
         this._centerOnBordeaux.innerHTML = "BORDEAUX";
 
+        this._timeSetterContainer = L.DomUtil.create("div", "", this._div);
+        this._timePlusContainer = L.DomUtil.create("div", "", this._timeSetterContainer);
+        this._timeMinusContainer = L.DomUtil.create("div", "", this._timeSetterContainer);
+
+        this._plus1hour = L.DomUtil.create("button", "", this._timePlusContainer);
+        this._plus1hour.innerHTML = "+ 1h";
+        this._plus15min = L.DomUtil.create("button", "", this._timePlusContainer);
+        this._plus15min.innerHTML = "+ 15m";
+        this._plus5min = L.DomUtil.create("button", "", this._timePlusContainer);
+        this._plus5min.innerHTML = "+ 5m";
+        this._plus1min = L.DomUtil.create("button", "", this._timePlusContainer);
+        this._plus1min.innerHTML = "+ 1m";
+        this._minus1hour = L.DomUtil.create("button", "", this._timeMinusContainer);
+        this._minus1hour.innerHTML = "- 1h";
+        this._minus15min = L.DomUtil.create("button", "", this._timeMinusContainer);
+        this._minus15min.innerHTML = "- 15m";
+        this._minus5min = L.DomUtil.create("button", "", this._timeMinusContainer);
+        this._minus5min.innerHTML = "- 5m";
+        this._minus1min = L.DomUtil.create("button", "", this._timeMinusContainer);
+        this._minus1min.innerHTML = "- 1m";
+
         return this._div;
     },
 
     setDepartureTimeChangedHandler(handler) {
         this._textInput.onblur = handler;
+
+        this._plus1hour.onclick = (e) => { this.addSeconds(3600); handler(e); };
+        this._plus15min.onclick = (e) => { this.addSeconds(900); handler(e); };
+        this._plus5min.onclick = (e) => { this.addSeconds(300); handler(e); };
+        this._plus1min.onclick = (e) => { this.addSeconds(60); handler(e); };
+
+        this._minus1hour.onclick = (e) => { this.addSeconds(-3600); handler(e); };
+        this._minus15min.onclick = (e) => { this.addSeconds(-900); handler(e); };
+        this._minus5min.onclick = (e) => { this.addSeconds(-300); handler(e); };
+        this._minus1min.onclick = (e) => { this.addSeconds(-60); handler(e); };
     },
 
     setCenterOnParisHandler(handler) {
@@ -52,6 +83,10 @@ L.Control.Inputs = L.Control.extend({
 
     setValueAsNbSeconds: function(value) {
         this._textInput.value = seconds_to_timestring(value);
+    },
+
+    addSeconds: function(nb_added_seconds) {
+        this.setValueAsNbSeconds(this.valueAsNbSeconds() + nb_added_seconds);
     },
 });
 
