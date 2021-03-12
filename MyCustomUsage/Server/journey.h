@@ -124,6 +124,32 @@ inline std::vector<Leg> build_legs(Vertex source,
 
     // as journey was rebuilt backward, we put it back in proper order :
     std::reverse(legs.begin(), legs.end());
+
+    // it is still unclear if having last_stop != target is a bug or no
+    // while this is clarified, we manually add a last walking leg in those situation, to display a proper route in viewer
+    if (last_stop != target) {
+        auto distance_from_stop_to_target = initialTransfers.getBackwardDistance(Vertex(last_stop));
+
+        auto leg_of_last_stop = *legs.crbegin();
+        auto arrival_at_last_stop = leg_of_last_stop.arrival_time;
+
+        bool is_walk = true;
+        std::string departure_id = std::to_string(last_stop);
+        std::string arrival_id = std::to_string(target);
+        int start_time = leg_of_last_stop.arrival_time;
+        int departure_time = start_time;
+        int arrival_time = start_time + distance_from_stop_to_target;
+
+        legs.emplace_back(
+            is_walk,
+            departure_id,
+            arrival_id,
+            start_time,
+            departure_time,
+            arrival_time
+        );
+    }
+
     return legs;
 }
 
