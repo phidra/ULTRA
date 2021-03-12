@@ -88,7 +88,7 @@ public:
         }
 
         debugger.done();
-        auto journey = myserver::build_legs(source, target, data, initialTransfers, rounds);
+        auto journey = myserver::build_legs(source, target, departureTime, data, initialTransfers, rounds);
         return journey;
     }
 

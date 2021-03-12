@@ -76,6 +76,7 @@ inline std::tuple<::StopId, int, myserver::EarliestArrivalLabel> _find_optimal_l
 
 inline std::vector<Leg> build_legs(Vertex source,
                                    Vertex target,
+                                   const int requestedDepartureTime,
                                    RAPTOR::Data const& data,
                                    RAPTOR::BucketCHInitialTransfers const& initialTransfers,
                                    std::vector<Round> const& rounds) {
@@ -105,8 +106,8 @@ inline std::vector<Leg> build_legs(Vertex source,
         bool is_walk = !label.usesRoute;
         std::string departure_id = std::to_string(label.parent);
         std::string arrival_id = std::to_string(stop);
-        int start_time = label.parentDepartureTime;
         int departure_time = label.parentDepartureTime;
+        int start_time = departure_time;
         int arrival_time = label.arrivalTime;
         std::cout << "\tleg ";
         std::cout << "FROM=" << label.parent << " (" << raptorData.stopData[label.parent] << ", at " << label.parentDepartureTime << ") ";
@@ -151,6 +152,22 @@ inline std::vector<Leg> build_legs(Vertex source,
             departure_time,
             arrival_time
         );
+    }
+
+    // setting the wait_time of all legs.
+    // first leg's wait_time is the difference between the requested departure_time and the leg's departure_time :
+    auto& first_leg = legs.front();
+    first_leg.start_time = requestedDepartureTime;
+    assert(first_leg.start_time <= first_leg.departure_time);
+
+    // for the other leg, the wait_time is the difference between the previous leg's arrival_time and the current leg's departure_time :
+    if (legs.size() > 1) {
+        for (size_t i_leg = 1; i_leg < legs.size(); ++i_leg) {
+            auto const& left_leg = legs[i_leg-1];
+            auto& right_leg = legs[i_leg];
+            right_leg.start_time = left_leg.arrival_time;
+            assert(right_leg.start_time <= right_leg.departure_time);
+        }
     }
 
     return legs;

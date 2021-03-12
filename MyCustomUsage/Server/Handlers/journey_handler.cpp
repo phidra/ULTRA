@@ -222,7 +222,7 @@ bool compute_journey(JourneyParams const& jparams, rapidjson::Value& response_fi
     vector<myserver::Leg> legs;
     string printed_journey;
     bool is_raptor_ok = false;
-    float walkspeed_km_per_hour = 99;
+    float walkspeed_km_per_hour = 9999;
     string raptor_error_msg = "";
     try {
         before = chrono::high_resolution_clock::now();
@@ -233,9 +233,8 @@ bool compute_journey(JourneyParams const& jparams, rapidjson::Value& response_fi
         legs = algo.run(Vertex(SOURCE), jparams.departure_time, Vertex(TARGET));
 
         // STUBS :
-        eat = 42;
-        printed_journey = "STUB";
-        walkspeed_km_per_hour = 9999;
+        auto last_leg = *legs.rbegin();
+        eat = last_leg.arrival_time;
         is_raptor_ok = true;
     } catch (UnknownStation e) {
         raptor_error_msg = e.what();
@@ -256,7 +255,6 @@ bool compute_journey(JourneyParams const& jparams, rapidjson::Value& response_fi
     response_field.AddMember("EAT_str", rapidjson::Value().SetString(my::format_time(eat).c_str(), a), a);
     response_field.AddMember("journey_duration", journey_duration, a);
     response_field.AddMember("journey_duration_str", rapidjson::Value().SetString(my::format_duration(journey_duration).c_str(), a), a);
-    response_field.AddMember("printed_journey", rapidjson::Value().SetString(printed_journey.c_str(), a), a);
     response_field.AddMember("legs", legs_to_json(legs, stops, a), a);
 
     // dumping legs as geojson :
