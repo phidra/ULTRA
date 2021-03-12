@@ -139,6 +139,9 @@ inline std::vector<Leg> build_legs(Vertex source,
         int start_time = leg_of_last_stop.arrival_time;
         int departure_time = start_time;
         int arrival_time = start_time + distance_from_stop_to_target;
+        std::cout << "\tMANUAL LAST leg ";
+        std::cout << "FROM=" << last_stop << " (" << raptorData.stopData[last_stop] << ", at " << start_time << ") ";
+        std::cout << "TO=" << target << "(" << raptorData.stopData[target] << ", at " << arrival_time << ")" << std::endl;
 
         legs.emplace_back(
             is_walk,
