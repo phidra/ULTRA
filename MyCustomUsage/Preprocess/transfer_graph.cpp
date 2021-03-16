@@ -182,8 +182,8 @@ buildTransferGraphStructures(
             auto node_to_rank = nodeToRank.at(edge.node_to.id);
             edgeAttrs.set(ToVertex, ::Edge{edge_counter}, Vertex{node_to_rank});
 
-            auto travel_time = edge.weight;
-            edgeAttrs.set(TravelTime, ::Edge{edge_counter}, 10*travel_time + 1);
+            auto travel_time = edge.weight;  // FIXME : there is a slight rounding mistake here
+            edgeAttrs.set(TravelTime, ::Edge{edge_counter}, travel_time);
             ++edge_counter;
         }
     }
