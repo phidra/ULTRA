@@ -16,10 +16,23 @@ static RouteLabel buildRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
     RouteLabel routeId{};
 
     // precondition : getStopTimes return stops in order
+#ifndef NDEBUG
+    int previousDepartureTime = -1;
+#endif
+
     for (auto const& stoptime : trip.getStopTimes()) {
         auto stop = *(stoptime.getStop());
         routeId.append(stop.getId());
         routeId.append("+");
+
+#ifndef NDEBUG
+        // verifying that stop times are properly ordered :
+        int currentDepartureTime = stoptime.getDepartureTime().seconds();
+        if (currentDepartureTime <= previousDepartureTime) {
+            throw runtime_error( "ERROR : stoptimes are not properly ordered !");
+        }
+        previousDepartureTime = currentDepartureTime;
+#endif
     }
 
     // remove final '+' :
@@ -36,25 +49,30 @@ vector<StopLabel> routeToStops(RouteLabel const& route) {
     return stops;
 }
 
-map<RouteLabel, set<TripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
+map<RouteLabel, set<OrderedTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
     // ULTRA uses "scientific" routes, but feed only has GTFS routes.
     // This functions partitions trips amongst their (scientific) route, identified by its label.
     // Two trips will have the same route label IF they have excatly the same sequence of stops.
 
-    map<RouteLabel, set<TripLabel>> routeToTrips;
+    map<RouteLabel, set<OrderedTripLabel>> routeToTrips;
 
     for (auto const & [ tripId, tripPtr ] : feed.getTrips()) {
         auto& trip = *(tripPtr);
+
+        // in the set, all the trips of a given route are ordered by their departure times
+        int tripDepartureTimeSeconds = trip.getStopTimes().begin()->getDepartureTime().seconds();
+
         RouteLabel thisRouteId = buildRouteLabel(trip);
-        routeToTrips[thisRouteId].emplace(tripId);
+        routeToTrips[thisRouteId].emplace(tripDepartureTimeSeconds, tripId);
     }
+
     return routeToTrips;
 }
 
-bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<TripLabel>> const& partition) {
+bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<OrderedTripLabel>> const& partition) {
     // checks that the agregation of the trips of all routes have the same number of trips than feed
     auto nbTripsInFeed = feed.getTrips().size();
-    int nbTripsInPartitions = std::accumulate(
+    int nbTripsInPartitions = accumulate(
         partition.cbegin(),
         partition.cend(),
         0,
@@ -64,7 +82,7 @@ bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<Rou
 }
 
 pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> rankRoutes(
-    map<RouteLabel, set<TripLabel>> const& routeToTrips) {
+    map<RouteLabel, set<OrderedTripLabel>> const& routeToTrips) {
     // this function ranks the partitioned routes
     // i.e. each route has an arbitrary rank from 0 to N-1 (where N is the number of routes)
     // (this rank allows routes to be stored in a vector)
@@ -86,7 +104,7 @@ pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> rankRoutes(
 }
 
 pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> rankStops(
-    map<RouteLabel, set<TripLabel>> const& routeToTrips) {
+    map<RouteLabel, set<OrderedTripLabel>> const& routeToTrips) {
     // this function ranks the stops (stops not used in routes are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)
     // (this rank allows stops to be stored in a vector)

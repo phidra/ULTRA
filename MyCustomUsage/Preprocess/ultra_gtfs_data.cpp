@@ -84,7 +84,7 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
 
 static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     vector<RAPTOR::Route> const& routeData,
-    map<my::preprocess::RouteLabel, set<my::preprocess::TripLabel>> const& routeToTrips,
+    map<my::preprocess::RouteLabel, set<my::preprocess::OrderedTripLabel>> const& routeToTrips,
     ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::StopEvent> stopEvents;
     vector<size_t> firstStopEventOfRoute(routeData.size() + 1);
@@ -98,7 +98,7 @@ static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
 
         // each route "contains" (=is associated with) several trips :
         auto const& tripsOfCurrentRoute = routeToTrips.at(routeId);
-        for (auto& tripId : tripsOfCurrentRoute) {
+        for (auto& [_, tripId] : tripsOfCurrentRoute) {
             auto& trip = getTrip(feed, tripId);
 
             // each trip contains a range of stopevents :
@@ -128,8 +128,7 @@ static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
 static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
     vector<RAPTOR::Route> const& routeData,
     unordered_map<my::preprocess::StopLabel, size_t> const& stopToRank,
-    unordered_map<my::preprocess::RouteLabel, size_t> const& routeToRank,
-    map<my::preprocess::RouteLabel, set<my::preprocess::TripLabel>> const& routeToTrips) {
+    unordered_map<my::preprocess::RouteLabel, size_t> const& routeToRank) {
     // building an intermediate structure that associates a stopRank to all its routes
     // for a given stop, this structures stores some pairs {route + stop index in this route}
 
@@ -202,7 +201,7 @@ static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::Ul
     tie(toFill.stopIds, toFill.firstStopIdOfRoute) = build_stopIdsRelated(toFill.routeData, stopToRank);
     tie(toFill.stopEvents, toFill.firstStopEventOfRoute) = build_stopEventsRelated(toFill.routeData, routeToTrips, feed);
     tie(toFill.routeSegments, toFill.firstRouteSegmentOfStop) =
-        convert_routeSegmentsRelated(toFill.routeData, stopToRank, routeToRank, routeToTrips);
+        convert_routeSegmentsRelated(toFill.routeData, stopToRank, routeToRank);
 
     // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
     toFill.implicitDepartureBufferTimes = true;
