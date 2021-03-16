@@ -3,7 +3,7 @@
 from pathlib import Path
 import sys
 import csv
-from typing import TextIO, Dict, Tuple
+from typing import TextIO, Dict, Tuple, cast, Sequence
 import textwrap
 
 Stop2Parent = Dict[str, str]
@@ -65,7 +65,8 @@ def step1_use_parents_in_stops(in_stops: TextIO, out_stops: TextIO) -> Stop2Pare
     stop2parent = dict()
 
     reader = csv.DictReader(in_stops)
-    writer = csv.DictWriter(out_stops, reader.fieldnames, dialect="unix", quoting=csv.QUOTE_MINIMAL)
+    fieldnames = cast(Sequence[str], reader.fieldnames)
+    writer = csv.DictWriter(out_stops, fieldnames, dialect="unix", quoting=csv.QUOTE_MINIMAL)
     writer.writeheader()
 
     for row in reader:
@@ -92,7 +93,8 @@ def step2_use_parents_in_stop_times(in_stop_times: TextIO, out_stop_times: TextI
     # 23358248-2020-TRAM_A1-Lun-Mer-45 , 05:08:26     , 05:08:26       , 7438    , 2             , 0           , 0             ,                # noqa: E501
 
     reader = csv.DictReader(in_stop_times)
-    writer = csv.DictWriter(out_stop_times, reader.fieldnames, dialect="unix", quoting=csv.QUOTE_MINIMAL)
+    fieldnames = cast(Sequence[str], reader.fieldnames)
+    writer = csv.DictWriter(out_stop_times, fieldnames, dialect="unix", quoting=csv.QUOTE_MINIMAL)
     writer.writeheader()
 
     for row in reader:
