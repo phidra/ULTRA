@@ -130,6 +130,13 @@ L.Control.SectionInfo = L.Control.extend({
                 `<button onclick="navigator.clipboard.writeText('${navitia_token}')">copy navitia token to clipboard</button>` +
             '</p>' +
 
+            '<p style="font-size: 110%">' +
+            `<b>custom port </b>:&nbsp;` +
+            `<input id="custom_port_input" style="width: 80px;" type="number" min="1025" max="65535" value="${this.custom_port}" />` +
+            "<br/>" +
+            `<b>link to custom port </b>:&nbsp; <a id="link_to_custom_port"></a>` +
+            '</p>' +
+
             // help :
             '<p>' +
             'CTRL + left-click  to set <span style="color: green;">SOURCE</span> <br/>' +
@@ -139,6 +146,24 @@ L.Control.SectionInfo = L.Control.extend({
             'Patator URLs: 9041 -> 9049 (redirect if needed)<br/>' +
             '</p>'
         );
+
+        // this is not very optimal (bc done again and again for each route), but for now, this will do :
+        function update_link_to_custom_port(new_port) {
+            const link_to_custom_port = document.getElementById("link_to_custom_port");
+            if (link_to_custom_port !== null) {
+                link_to_custom_port.setAttribute("href", `${to_other_port(new_port)}`);
+                link_to_custom_port.innerHTML = `on port ${new_port}`;
+            }
+        };
+        update_link_to_custom_port(this.custom_port, to_other_port(this.custom_port));
+        const custom_port_input = document.getElementById("custom_port_input");
+        if (custom_port_input !== null) {
+            custom_port_input.onchange = (e) => {
+                this.custom_port = custom_port_input.value;
+                this.url_updater({customport: this.custom_port});
+                update_link_to_custom_port(this.custom_port);
+            };
+        }
     },
 
     reset: function() {
@@ -184,6 +209,8 @@ L.Control.SectionInfo = L.Control.extend({
     },
 });
 
-L.control.sectioninfo = function(opts) {
-    return new L.Control.SectionInfo(opts);
+L.control.sectioninfo = function(opts, custom_port) {
+    const toReturn = new L.Control.SectionInfo(opts);
+    toReturn.custom_port = custom_port;
+    return toReturn;
 }

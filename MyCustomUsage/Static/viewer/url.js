@@ -22,7 +22,7 @@ function get_latlng_param(params, key) {
     return [lat, lng];
 }
 
-export function parse_url_params(default_center, default_zoom, default_departure_time) {
+export function parse_url_params(default_center, default_zoom, default_departure_time, default_custom_port) {
     let center = default_center;
     let zoom = default_zoom;
     let src_coords = null;
@@ -32,14 +32,16 @@ export function parse_url_params(default_center, default_zoom, default_departure
     let is_src_in_url = false;
     let is_dst_in_url = false;
     let is_time_in_url = false;
+    let custom_port = default_custom_port;
     try { zoom = get_int_param(params, "mapzoom");                               } catch(e) { console.log(e); }
     try { center = get_latlng_param(params, "mapcenter");                        } catch(e) { console.log(e); }
     try { src_coords = get_latlng_param(params, "src"); is_src_in_url = true;    } catch(e) { console.log(e); }
     try { dst_coords = get_latlng_param(params, "dst"); is_dst_in_url = true;    } catch(e) { console.log(e); }
     try { departure_time = get_int_param(params, "time"); is_time_in_url = true; } catch(e) { console.log(e); }
+    try { custom_port = get_int_param(params, "customport");                     } catch(e) { console.log(e); }
     // if user provided src+dst+time in URL, we should compute and display journey at startup :
     const compute_journey_at_startup = is_src_in_url && is_dst_in_url && is_time_in_url;
-    return [center, zoom, src_coords, dst_coords, departure_time, compute_journey_at_startup];
+    return [center, zoom, src_coords, dst_coords, departure_time, compute_journey_at_startup, custom_port];
 }
 
 export function update_url(updated_params) {
