@@ -9,8 +9,8 @@ message(STATUS "Bordeaux OSM download directory = '${BORDEAUX_OSM_DESTINATION_DI
 # NOTE : it seems that if the target directory exists, the external project is not downloaded again
 
 ExternalProject_Add(
-    osm_bordeaux
-    PREFIX osm_bordeaux
+    download_osm_bordeaux
+    PREFIX download_osm_bordeaux
     URL "${BORDEAUX_OSM_DOWNLOAD_URL}"
     DOWNLOAD_NO_EXTRACT TRUE
     DOWNLOAD_DIR "${BORDEAUX_OSM_DESTINATION_DIRECTORY}"

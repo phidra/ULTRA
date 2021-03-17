@@ -28,7 +28,7 @@ add_subdirectory(Mains)
 # NOTE : if needed, also toggle compilation flags used by ULTRA
 # cf. https://github.com/phidra/ULTRA/blob/eed8bb61dc15f2ab306a5ecfd8c24f2b5562e017/Runnables/Makefile#L5
 
-include(bordeaux-data-gtfs.cmake)
-include(bordeaux-data-osm.cmake)
-include(idf-data-gtfs.cmake)
-include(idf-data-osm.cmake)
+include(download-bordeaux-data-gtfs.cmake)
+include(download-bordeaux-data-osm.cmake)
+include(download-idf-data-gtfs.cmake)
+include(download-idf-data-osm.cmake)

@@ -9,8 +9,8 @@ message(STATUS "IDF OSM download directory = '${IDF_OSM_DESTINATION_DIRECTORY}'"
 # NOTE : it seems that if the target directory exists, the external project is not downloaded again
 
 ExternalProject_Add(
-    osm_idf
-    PREFIX osm_idf
+    download_osm_idf
+    PREFIX download_osm_idf
     URL "${IDF_OSM_DOWNLOAD_URL}"
     DOWNLOAD_NO_EXTRACT TRUE
     DOWNLOAD_DIR "${IDF_OSM_DESTINATION_DIRECTORY}"

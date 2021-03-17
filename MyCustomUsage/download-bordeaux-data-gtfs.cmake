@@ -9,10 +9,10 @@ message(STATUS "Bordeaux GTFS download directory = '${BORDEAUX_GTFS_DESTINATION_
 # NOTE : it seems that if the target directory exists, the external project is not downloaded again
 
 ExternalProject_Add(
-    gtfs_bordeaux
-    PREFIX gtfs_bordeaux
+    download_gtfs_bordeaux
+    PREFIX download_gtfs_bordeaux
     URL "${BORDEAUX_GTFS_DOWNLOAD_URL}"
-    DOWNLOAD_NAME "gtfs_bordeaux.zip"
+    DOWNLOAD_NAME "downloaded_gtfs_bordeaux.zip"
     DOWNLOAD_DIR "${BORDEAUX_GTFS_DESTINATION_DIRECTORY}"
     SOURCE_DIR "${BORDEAUX_GTFS_DESTINATION_DIRECTORY}"
     # we only want to download the archive, thus we disable building :

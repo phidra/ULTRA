@@ -19,8 +19,7 @@ echo "To build from scratch :  rm -rf '$BUILD_DIR'"
 mkdir -p "$BUILD_DIR"
 conan install --install-folder="$BUILD_DIR" "$CMAKE_ROOT_DIR" --profile="$CMAKE_ROOT_DIR/conanprofile.txt"
 cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
-make -j -C "$BUILD_DIR" osm_idf gtfs_idf
-make -j -C "$BUILD_DIR" build-ultra-binary-data
+make -j -C "$BUILD_DIR" download_gtfs_idf download_osm_idf build-ultra-binary-data
 
 WORKDIR="${this_script_parent}/WORKDIR_build_ultra_binary_data_IDF"
 mkdir -p "$WORKDIR/INPUT"
