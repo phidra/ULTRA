@@ -34,7 +34,7 @@ cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
 make -j -C "$BUILD_DIR" download_osm_bordeaux build-ultra-binary-data
 
 
-# === Getting GTFS data :
+# === Putting GTFS data in WORKDIR :
 # There are two possible sources of data for bordeaux GTFS :
 GTFS_DATA_TO_USE="bundled"
 if [ "$GTFS_DATA_TO_USE" == "bundled" ]
@@ -53,7 +53,7 @@ else
 fi
 
 
-# === Getting other data :
+# === Putting other data in WORKDIR :
 cp "${DATA_DIR}/bordeaux_polygon.geojson" "$INPUT_POLYGON_FILE"
 cp "${this_script_parent}/DOWNLOADED_DATA/osm_bordeaux/aquitaine-latest.osm.pbf" "$INPUT_OSM_FILE"
 echo "Using data from WORKDIR = $WORKDIR"
