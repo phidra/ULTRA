@@ -6,6 +6,7 @@ set -o pipefail
 
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
+# === Preparing build
 BUILD_DIR="$this_script_parent/_build"
 CMAKE_ROOT_DIR="$this_script_parent/MyCustomUsage"
 SCRIPTS_DIR="$this_script_parent/MyCustomUsage/Scripts"
@@ -16,6 +17,8 @@ echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
 echo "To build from scratch :  rm -rf '$BUILD_DIR'"
 # rm -rf "$BUILD_DIR"
 
+
+# === Preparing WORKDIR :
 WORKDIR="${this_script_parent}/WORKDIR_build_ultra_binary_data_BORDEAUX"
 INPUT_POLYGON_FILE="$WORKDIR/INPUT/bordeaux_polygon.geojson"
 INPUT_OSM_FILE="$WORKDIR/INPUT/aquitaine-latest.osm.pbf"
@@ -23,11 +26,15 @@ INPUT_GTFS_DATA="$WORKDIR/INPUT/gtfs"
 mkdir -p "$WORKDIR/INPUT"
 mkdir -p "$INPUT_GTFS_DATA"
 
+
+# === Building :
 mkdir -p "$BUILD_DIR"
 conan install --install-folder="$BUILD_DIR" "$CMAKE_ROOT_DIR" --profile="$CMAKE_ROOT_DIR/conanprofile.txt"
 cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
 make -j -C "$BUILD_DIR" download_osm_bordeaux build-ultra-binary-data
 
+
+# === Getting GTFS data :
 # There are two possible sources of data for bordeaux GTFS :
 GTFS_DATA_TO_USE="bundled"
 if [ "$GTFS_DATA_TO_USE" == "bundled" ]
@@ -45,12 +52,14 @@ else
     cp -R "${this_script_parent}/DOWNLOADED_DATA/gtfs_bordeaux/"* "$INPUT_GTFS_DATA"
 fi
 
+
+# === Getting other data :
 cp "${DATA_DIR}/bordeaux_polygon.geojson" "$INPUT_POLYGON_FILE"
 cp "${this_script_parent}/DOWNLOADED_DATA/osm_bordeaux/aquitaine-latest.osm.pbf" "$INPUT_OSM_FILE"
 echo "Using data from WORKDIR = $WORKDIR"
 echo ""
 
-# preprocessing GTFS data to use parent stations :
+# === Preprocessing GTFS data to use parent stations :
 mv "$INPUT_GTFS_DATA/stops.txt" "$INPUT_GTFS_DATA/original_stops.txt"
 mv "$INPUT_GTFS_DATA/stop_times.txt" "$INPUT_GTFS_DATA/original_stop_times.txt"
 "${SCRIPTS_DIR}/use_parent_stations.py" \
@@ -59,6 +68,7 @@ mv "$INPUT_GTFS_DATA/stop_times.txt" "$INPUT_GTFS_DATA/original_stop_times.txt"
     "$INPUT_GTFS_DATA/stops.txt" \
     "$INPUT_GTFS_DATA/stop_times.txt"
 
+# === building ULTRA binary data :
 set -o xtrace
 "${BUILD_DIR}/bin/build-ultra-binary-data" \
     "$INPUT_GTFS_DATA" \
