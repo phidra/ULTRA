@@ -233,9 +233,11 @@ bool compute_journey(JourneyParams const& jparams, rapidjson::Value& response_fi
         legs = algo.run(Vertex(SOURCE), jparams.departure_time, Vertex(TARGET));
 
         // STUBS :
-        auto last_leg = *legs.rbegin();
-        eat = last_leg.arrival_time;
-        is_raptor_ok = true;
+        if (!legs.empty()) {
+            auto last_leg = legs.back();
+            eat = last_leg.arrival_time;
+            is_raptor_ok = true;
+        }
     } catch (UnknownStation e) {
         raptor_error_msg = e.what();
     } catch (...) {
