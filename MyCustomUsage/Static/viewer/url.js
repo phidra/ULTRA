@@ -22,7 +22,7 @@ function get_latlng_param(params, key) {
     return [lat, lng];
 }
 
-export function parse_url_params(default_center, default_zoom, default_departure_time, default_custom_port) {
+export function parse_url_params(default_center, default_zoom, default_departure_time, default_comparison_port) {
     let center = default_center;
     let zoom = default_zoom;
     let src_coords = null;
@@ -32,25 +32,30 @@ export function parse_url_params(default_center, default_zoom, default_departure
     let is_src_in_url = false;
     let is_dst_in_url = false;
     let is_time_in_url = false;
-    let custom_port = default_custom_port;
+    let comparison_port = default_comparison_port;
     try { zoom = get_int_param(params, "mapzoom");                               } catch(e) { console.log(e); }
     try { center = get_latlng_param(params, "mapcenter");                        } catch(e) { console.log(e); }
     try { src_coords = get_latlng_param(params, "src"); is_src_in_url = true;    } catch(e) { console.log(e); }
     try { dst_coords = get_latlng_param(params, "dst"); is_dst_in_url = true;    } catch(e) { console.log(e); }
     try { departure_time = get_int_param(params, "time"); is_time_in_url = true; } catch(e) { console.log(e); }
-    try { custom_port = get_int_param(params, "customport");                     } catch(e) { console.log(e); }
+    try { comparison_port = get_int_param(params, "comparisonport");                     } catch(e) { console.log(e); }
     // if user provided src+dst+time in URL, we should compute and display journey at startup :
     const compute_journey_at_startup = is_src_in_url && is_dst_in_url && is_time_in_url;
-    return [center, zoom, src_coords, dst_coords, departure_time, compute_journey_at_startup, custom_port];
+    return [center, zoom, src_coords, dst_coords, departure_time, compute_journey_at_startup, comparison_port];
 }
 
-export function update_url(updated_params) {
-    let url = new URL(window.location.href);
-    let params = new URLSearchParams(url.search);
+export function get_updated_url(updated_params) {
+    let updated_url = new URL(window.location.href);
+    let params = new URLSearchParams(updated_url.search);
     for (const name in updated_params) {
         params.set(name, updated_params[name]);
     }
-    url.search = params.toString();
+    updated_url.search = params.toString();
+    return updated_url;
+}
+
+export function update_window_url(updated_params) {
     // update URL without reloading page :
-    window.history.replaceState({}, "", url);
+    const updated_url = get_updated_url(updated_params);
+    window.history.replaceState({}, "", updated_url);
 }

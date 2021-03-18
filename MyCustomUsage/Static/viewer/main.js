@@ -2,39 +2,39 @@ import {initMap, on_map_changed} from "./map.js";
 import {initControls} from "./controls/init.js";
 import {create_markers, handle_markers_changed} from "./markers.js";
 import {loadGeojson} from "./geojson.js";
-import {parse_url_params, update_url} from "./url.js";
+import {parse_url_params, update_window_url} from "./url.js";
 
 const PARIS = [48.8495, 2.3568];
 const BORDEAUX = [44.8357, -0.6048];
 const DEFAULT_CENTER = PARIS;
 const DEFAULT_ZOOM = 12;
 const DEFAULT_DEPARTURE_TIME = 51300;
-const DEFAULT_CUSTOM_PORT = 10001;
+const DEFAULT_COMPARISON_PORT = 10001;
 
 
 document.addEventListener("DOMContentLoaded", function() {
 
-    const [center, zoom, src_coords, dst_coords, departure_time, compute_journey_at_startup, custom_port] = parse_url_params(
+    const [center, zoom, src_coords, dst_coords, departure_time, compute_journey_at_startup, comparison_port] = parse_url_params(
         DEFAULT_CENTER,
         DEFAULT_ZOOM,
         DEFAULT_DEPARTURE_TIME,
-        DEFAULT_CUSTOM_PORT,
+        DEFAULT_COMPARISON_PORT,
     );
     console.log(`parsed center = ${center}`);
     console.log(`parsed zoom = ${zoom}`);
     console.log(`parsed src_coords = ${src_coords}`);
     console.log(`parsed dst_coords = ${dst_coords}`);
     console.log(`parsed departure_time = ${departure_time}`);
-    console.log(`parsed custom_port = ${custom_port}`);
+    console.log(`parsed comparison_port = ${comparison_port}`);
 
     const the_map = initMap(center, zoom);
-    const [infoControl, inputsControl] = initControls(the_map, departure_time, custom_port);
+    const [infoControl, inputsControl] = initControls(the_map, departure_time, comparison_port);
     const [src_marker, dst_marker] = create_markers(the_map, src_coords, dst_coords);
 
-    infoControl.url_updater = update_url;
+    infoControl.window_url_updater = update_window_url;
 
     // shorterns call :
-    const handle = (e) => handle_markers_changed(the_map, src_marker, dst_marker, loadGeojson, infoControl, inputsControl, update_url);
+    const handle = (e) => handle_markers_changed(the_map, src_marker, dst_marker, loadGeojson, infoControl, inputsControl, update_window_url);
 
     inputsControl.setDepartureTimeChangedHandler(handle);
     inputsControl.setCenterOnParisHandler((e) => { the_map.setView(PARIS, 12); });
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
     the_map.on("contextmenu", (e) => on_map_ctrl_click(e, dst_marker));
 
     // update URL when map is moved :
-    the_map.on("moveend", (e) => on_map_changed(the_map, update_url));
+    the_map.on("moveend", (e) => on_map_changed(the_map, update_window_url));
 
     if (compute_journey_at_startup) { handle(); }
 });

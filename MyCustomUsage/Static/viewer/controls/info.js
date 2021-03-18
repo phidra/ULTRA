@@ -131,10 +131,10 @@ L.Control.SectionInfo = L.Control.extend({
             '</p>' +
 
             '<p style="font-size: 110%">' +
-            `<b>custom port </b>:&nbsp;` +
-            `<input id="custom_port_input" style="width: 80px;" type="number" min="1025" max="65535" value="${this.custom_port}" />` +
+            `<b>comparison port </b>:&nbsp;` +
+            `<input id="comparison_port_input" style="width: 80px;" type="number" min="1025" max="65535" value="${this.comparison_port}" />` +
             "<br/>" +
-            `<b>link to custom port </b>:&nbsp; <a id="link_to_custom_port"></a>` +
+            `<b>compare with </b>:&nbsp; <a id="link_to_comparison_port"></a>` +
             '</p>' +
 
             // help :
@@ -148,20 +148,21 @@ L.Control.SectionInfo = L.Control.extend({
         );
 
         // this is not very optimal (bc done again and again for each route), but for now, this will do :
-        function update_link_to_custom_port(new_port) {
-            const link_to_custom_port = document.getElementById("link_to_custom_port");
-            if (link_to_custom_port !== null) {
-                link_to_custom_port.setAttribute("href", `${to_other_port(new_port)}`);
-                link_to_custom_port.innerHTML = `on port ${new_port}`;
+        function update_link_to_comparison_port(new_port) {
+            const link_to_comparison_port = document.getElementById("link_to_comparison_port");
+            if (link_to_comparison_port !== null) {
+                const new_url =  `${to_other_port(new_port)}`;
+                link_to_comparison_port.setAttribute("href", new_url);
+                link_to_comparison_port.innerHTML = `port ${new_port}`;
             }
         };
-        update_link_to_custom_port(this.custom_port, to_other_port(this.custom_port));
-        const custom_port_input = document.getElementById("custom_port_input");
-        if (custom_port_input !== null) {
-            custom_port_input.onchange = (e) => {
-                this.custom_port = custom_port_input.value;
-                this.url_updater({customport: this.custom_port});
-                update_link_to_custom_port(this.custom_port);
+        update_link_to_comparison_port(this.comparison_port, to_other_port(this.comparison_port));
+        const comparison_port_input = document.getElementById("comparison_port_input");
+        if (comparison_port_input !== null) {
+            comparison_port_input.onchange = (e) => {
+                this.comparison_port = comparison_port_input.value;
+                this.window_url_updater({comparisonport: this.comparison_port});
+                update_link_to_comparison_port(this.comparison_port);
             };
         }
     },
@@ -209,8 +210,8 @@ L.Control.SectionInfo = L.Control.extend({
     },
 });
 
-L.control.sectioninfo = function(opts, custom_port) {
+L.control.sectioninfo = function(opts, comparison_port) {
     const toReturn = new L.Control.SectionInfo(opts);
-    toReturn.custom_port = custom_port;
+    toReturn.comparison_port = comparison_port;
     return toReturn;
 }

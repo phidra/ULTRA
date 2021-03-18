@@ -17,10 +17,10 @@ export function initMap(center, zoom) {
     return the_map;
 };
 
-export function on_map_changed(the_map, update_url) {
+export function on_map_changed(the_map, update_window_url) {
     let lat = the_map.getCenter().lat.toFixed(6);
     let lng = the_map.getCenter().lng.toFixed(6);
-    update_url({
+    update_window_url({
         mapcenter: [lat, lng],
         mapzoom: the_map.getZoom(),
     });

@@ -37,13 +37,13 @@ export function create_markers(the_map, src, dst) {
 }
 
 
-export function handle_markers_changed(the_map, src_marker, dst_marker, loadGeojson, infoControl, inputsControl, update_url) {
+export function handle_markers_changed(the_map, src_marker, dst_marker, loadGeojson, infoControl, inputsControl, update_window_url) {
     const src_lat = src_marker.getLatLng().lat.toFixed(6);
     const src_lng = src_marker.getLatLng().lng.toFixed(6);
     const dst_lat = dst_marker.getLatLng().lat.toFixed(6);
     const dst_lng = dst_marker.getLatLng().lng.toFixed(6);
     const departure_time = inputsControl.valueAsNbSeconds();
-    update_url({
+    update_window_url({
         src: [src_lat, src_lng],
         dst: [dst_lat, dst_lng],
         time: departure_time,
