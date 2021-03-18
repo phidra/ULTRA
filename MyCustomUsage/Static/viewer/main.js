@@ -2,7 +2,7 @@ import {initMap, on_map_changed} from "./map.js";
 import {initControls} from "./controls/init.js";
 import {create_markers, handle_markers_changed} from "./markers.js";
 import {loadGeojson} from "./geojson.js";
-import {parse_url_params, update_window_url} from "./url.js";
+import {parse_url_params, update_window_url} from "./helpers/url.js";
 
 const PARIS = [48.8495, 2.3568];
 const BORDEAUX = [44.8357, -0.6048];
@@ -30,8 +30,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const the_map = initMap(center, zoom);
     const [infoControl, inputsControl] = initControls(the_map, departure_time, comparison_port);
     const [src_marker, dst_marker] = create_markers(the_map, src_coords, dst_coords);
-
-    infoControl.window_url_updater = update_window_url;
 
     // shorterns call :
     const handle = (e) => handle_markers_changed(the_map, src_marker, dst_marker, loadGeojson, infoControl, inputsControl, update_window_url);

@@ -44,8 +44,8 @@ export function parse_url_params(default_center, default_zoom, default_departure
     return [center, zoom, src_coords, dst_coords, departure_time, compute_journey_at_startup, comparison_port];
 }
 
-export function get_updated_url(updated_params) {
-    let updated_url = new URL(window.location.href);
+export function get_updated_url(base_url, updated_params) {
+    let updated_url = new URL(base_url);
     let params = new URLSearchParams(updated_url.search);
     for (const name in updated_params) {
         params.set(name, updated_params[name]);
@@ -56,6 +56,7 @@ export function get_updated_url(updated_params) {
 
 export function update_window_url(updated_params) {
     // update URL without reloading page :
-    const updated_url = get_updated_url(updated_params);
+    let current_url = new URL(window.location.href);
+    const updated_url = get_updated_url(current_url, updated_params);
     window.history.replaceState({}, "", updated_url);
 }

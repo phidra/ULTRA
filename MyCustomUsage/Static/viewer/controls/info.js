@@ -1,4 +1,5 @@
 import {to_m_per_s} from "../helpers/location_helper.js";
+import {get_updated_url, update_window_url} from "../helpers/url.js";
 
 L.Control.SectionInfo = L.Control.extend({
     onAdd: function(map) {
@@ -147,21 +148,32 @@ L.Control.SectionInfo = L.Control.extend({
             '</p>'
         );
 
-        // this is not very optimal (bc done again and again for each route), but for now, this will do :
+
+        // this is not very optimal (bc done again and again at each request), but for now, this will do :
         function update_link_to_comparison_port(new_port) {
             const link_to_comparison_port = document.getElementById("link_to_comparison_port");
             if (link_to_comparison_port !== null) {
-                const new_url =  `${to_other_port(new_port)}`;
-                link_to_comparison_port.setAttribute("href", new_url);
+                // we want to set the port of the link to the comparison port
+                const partially_updated_url = `${to_other_port(new_port)}`;
+                // more over, to allow to "come back" from the comparison url, we set its own comparison port to our current port :
+                const my_current_port = new URL(window.location.href).port;
+                const fully_updated_url = get_updated_url(partially_updated_url, {comparisonport: my_current_port});
+
+                link_to_comparison_port.setAttribute("href", fully_updated_url);
                 link_to_comparison_port.innerHTML = `port ${new_port}`;
             }
         };
-        update_link_to_comparison_port(this.comparison_port, to_other_port(this.comparison_port));
+        update_link_to_comparison_port(this.comparison_port);
+
+
         const comparison_port_input = document.getElementById("comparison_port_input");
         if (comparison_port_input !== null) {
             comparison_port_input.onchange = (e) => {
+                // when comparison port is changed in the input, we must :
+                //  - update window URL
+                //  - update link to comparison
                 this.comparison_port = comparison_port_input.value;
-                this.window_url_updater({comparisonport: this.comparison_port});
+                update_window_url({comparisonport: this.comparison_port});
                 update_link_to_comparison_port(this.comparison_port);
             };
         }
