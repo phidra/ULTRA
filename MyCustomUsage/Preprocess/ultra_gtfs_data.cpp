@@ -179,12 +179,16 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
 void UltraGtfsData::fromFeed(ad::cppgtfs::gtfs::Feed const& feed) {
     // prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
+
+#ifndef NDEBUG
     bool isPartitionConsistent = my::preprocess::checkRoutePartitionConsistency(feed, routeToTrips);
     if (!isPartitionConsistent) {
         ostringstream oss;
         oss << "ERROR : number of trips after partitioning by route is not the same than number of trips in feed (=" << feed.getTrips().size() << ")";
         throw runtime_error(oss.str());
     }
+#endif
+
     auto[rankedRoutes, routeToRank] = rankRoutes(routeToTrips);
     auto[rankedStops, stopToRank] = rankStops(routeToTrips);
 
