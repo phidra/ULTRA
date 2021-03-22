@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "ultra_gtfs_data.h"
-#include "gtfs_processing.h"
+#include "gtfs_parsed_data.h"
 #include "Common/autodeletefile.h"
 
 using namespace std;
@@ -63,8 +63,8 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
     size_t currentRouteFirstStop = 0;
     size_t routeRank;
     for (routeRank = 0; routeRank < routeData.size(); ++routeRank) {
-        my::preprocess::RouteLabel routeId = routeData[routeRank].name;
-        vector<my::preprocess::StopLabel> stopsOfCurrentRoute = my::preprocess::routeToStops(routeId);
+        my::preprocess::RouteLabel routeLabel = routeData[routeRank].name;
+        vector<my::preprocess::StopLabel> stopsOfCurrentRoute = routeLabel.toStops();
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
                   [&stopToRank](my::preprocess::StopLabel const& stopLabel) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopLabel))}; });
 
@@ -134,15 +134,15 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     vector<vector<pair<my::preprocess::RouteLabel, int>>> routesUsingAStop(nb_stops);
 
     for (auto& route : routeData) {
-        my::preprocess::RouteLabel routeId = route.name;
-        vector<my::preprocess::StopLabel> stopsOfThisRoute = my::preprocess::routeToStops(routeId);
+        my::preprocess::RouteLabel routeLabel = route.name;
+        vector<my::preprocess::StopLabel> stopsOfThisRoute = routeLabel.toStops();
 
         for (size_t stopIndex = 0; stopIndex < stopsOfThisRoute.size(); ++stopIndex) {
             my::preprocess::StopLabel const& stopLabel = stopsOfThisRoute[stopIndex];
             size_t stopRank = stopToRank.at(stopLabel);
 
             vector<pair<my::preprocess::RouteLabel, int>>& routesUsingThisStop = routesUsingAStop[stopRank];
-            routesUsingThisStop.emplace_back(routeId, stopIndex);
+            routesUsingThisStop.emplace_back(routeLabel, stopIndex);
         }
     }
 
@@ -176,46 +176,25 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-void UltraGtfsData::fromFeed(ad::cppgtfs::gtfs::Feed const& feed) {
-    // STEP 1 = prepare GTFS data :
-    auto routeToTrips = partitionTripsInRoutes(feed);
-
-    bool isPartitionConsistent = my::preprocess::checkRoutePartitionConsistency(feed, routeToTrips);
-    if (!isPartitionConsistent) {
-        ostringstream oss;
-        oss << "ERROR : number of trips after partitioning by route is not the same than number of trips in feed (=" << feed.getTrips().size() << ")";
-        throw runtime_error(oss.str());
-    }
-
-    auto[rankedRoutes, routeToRank] = rankRoutes(routeToTrips);
-    auto[rankedStops, stopToRank] = rankStops(routeToTrips);
-
-    // from now on :
-    //  - routes coming from GTFS data are not directly used anymore
-    //  - instead, we use the routes of the partition (see gtfs_preprocessing.cpp comments)
-    //  - only the stops that appear in at least one trip are used
-    //  - a route (or a stop) can be identified with its RouteLabel/StopLabel or its rank
-    //  - the conversion between ID<->rank is done with the above structures
-
-    // STEP 2 = use prepared GTFS data to build ULTRA data :
-    routeData = build_routeData(rankedRoutes);
-    stopData = build_stopData(rankedStops, feed);
-    tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, stopToRank);
-    tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, routeToTrips, feed);
-    tie(routeSegments, firstRouteSegmentOfStop) =
-        convert_routeSegmentsRelated(routeData, stopToRank, routeToRank);
-
-    // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
-    implicitDepartureBufferTimes = true;
-    implicitArrivalBufferTimes = true;
-}
-
 
 my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     ad::cppgtfs::Parser parser;
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfsFolder);
-    fromFeed(feed);
+
+    GtfsParsedData gtfs{feed};
+
+    // STEP 2 = use prepared GTFS data to build ULTRA data :
+    routeData = build_routeData(gtfs.rankedRoutes);
+    stopData = build_stopData(gtfs.rankedStops, feed);
+    tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, gtfs.stopToRank);
+    tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, gtfs.routeToTrips, feed);
+    tie(routeSegments, firstRouteSegmentOfStop) =
+        convert_routeSegmentsRelated(routeData, gtfs.stopToRank, gtfs.routeToRank);
+
+    // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
+    implicitDepartureBufferTimes = true;
+    implicitArrivalBufferTimes = true;
 }
 
 

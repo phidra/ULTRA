@@ -33,8 +33,6 @@ struct UltraGtfsData {
 
     // mirroring RAPTOR::Data serialization :
     void serialize(const std::string& fileName) const;
-
-    void fromFeed(ad::cppgtfs::gtfs::Feed const&);
 };
 
 }

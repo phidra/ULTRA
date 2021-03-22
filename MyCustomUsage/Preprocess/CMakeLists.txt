@@ -8,7 +8,8 @@
 #   - fast-cpp-csv-parser (used via conan, see below) (we could probably get rid of this dependency, and use the csv parser from cppgtfs)
 
 set(PREPROCESS_SOURCES
-    gtfs_processing.cpp
+    route_label.cpp
+    gtfs_parsed_data.cpp
     Graph/extending_with_stops.cpp
     Graph/osmparsing.cpp
     Graph/graph.cpp
