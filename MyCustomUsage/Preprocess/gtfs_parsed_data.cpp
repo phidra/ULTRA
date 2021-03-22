@@ -71,7 +71,7 @@ static pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> _rankRoutes(
     // Here :
     //   - rankedRoutes associates a rank to a route
     //   - routeToRank allows to retrieve the rank of a given route
-    return {rankedRoutes, routeToRank};
+    return {move(rankedRoutes), move(routeToRank)};
 }
 
 static pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> _rankStops(
@@ -98,7 +98,7 @@ static pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> _rankStops(
     // Here :
     //   - rankedStops associates a rank to a stop
     //   - stopToRank allows to retrieve the rank of a given stop
-    return {rankedStops, stopToRank};
+    return {move(rankedStops), move(stopToRank)};
 }
 
 GtfsParsedData::GtfsParsedData(ad::cppgtfs::gtfs::Feed const& feed) {
@@ -113,13 +113,8 @@ GtfsParsedData::GtfsParsedData(ad::cppgtfs::gtfs::Feed const& feed) {
     }
 #endif
 
-    auto[rankedRoutes_, routeToRank_] = _rankRoutes(routeToTrips);
-    rankedRoutes = move(rankedRoutes_);
-    routeToRank = move(routeToRank_);
-
-    auto[rankedStops_, stopToRank_] = _rankStops(routeToTrips);
-    rankedStops = move(rankedStops_);
-    stopToRank = move(stopToRank_);
+    tie(rankedRoutes, routeToRank) = _rankRoutes(routeToTrips);
+    tie(rankedStops, stopToRank) = _rankStops(routeToTrips);
 
     // from now on :
     //  - routes coming from GTFS data are not directly used anymore
