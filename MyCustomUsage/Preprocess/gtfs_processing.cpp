@@ -6,9 +6,11 @@ using namespace std;
 
 namespace my::preprocess {
 
-static RouteLabel buildRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
+static RouteLabel _buildRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
     // build the label of the trip's route (scientific route, see below).
-    // A route label is just the concatenation of its stops.
+    // A route label is just the concatenation of its stop's ids :
+    //     32+33+34+122+123+125+126
+    // precondition : no stopID constains the delimiter '+'
 
     if (trip.getStopTimes().size() < 2) {
         ostringstream oss;
@@ -42,16 +44,6 @@ static RouteLabel buildRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
     return routeId.substr(0, routeId.size() - 1);
 }
 
-vector<StopLabel> routeToStops(RouteLabel const& route) {
-    vector<StopLabel> stops;
-    string token;
-    istringstream iss(route);
-    while (getline(iss, token, '+')) {
-        stops.push_back(token);
-    }
-    return stops;
-}
-
 map<RouteLabel, set<OrderableTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
     // This function partitions the trips of the GTFS feed, according to their stops.
     // All The trips with exactly the same set of stops are grouped into a (scientific) 'route'.
@@ -78,7 +70,7 @@ map<RouteLabel, set<OrderableTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtf
         // in the set, all the trips of a given route are ordered by their departure times
         int tripDepartureTimeSeconds = trip.getStopTimes().begin()->getDepartureTime().seconds();
 
-        RouteLabel thisRouteId = buildRouteLabel(trip);
+        RouteLabel thisRouteId = _buildRouteLabel(trip);
         routeToTrips[thisRouteId].emplace(tripDepartureTimeSeconds, tripId);
     }
 
@@ -101,7 +93,7 @@ pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> rankRoutes(
     map<RouteLabel, set<OrderableTripLabel>> const& routeToTrips) {
     // this function ranks the partitioned routes
     // i.e. each route has an arbitrary rank from 0 to N-1 (where N is the number of routes)
-    // (this rank allows routes to be stored in a vector)
+    // (this rank will be used to store the routes in a vector)
 
     size_t routeRank = 0;
     vector<RouteLabel> rankedRoutes;
@@ -115,17 +107,17 @@ pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> rankRoutes(
 
     // Here :
     //   - rankedRoutes associates a rank to a route
-    //   - routeToRank associates a route to its rank
+    //   - routeToRank allows to retrieve the rank of a given route
     return {rankedRoutes, routeToRank};
 }
 
 pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> rankStops(
     map<RouteLabel, set<OrderableTripLabel>> const& routeToTrips) {
-    // this function ranks the stops (stops not used in routes are ignored)
+    // this function ranks the stops (and filter them : stops not used in at least a route are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)
-    // (this rank allows stops to be stored in a vector)
+    // (this rank will be used to store the stops in a vector)
 
-    // first, identify the stops that are used by at least one partitioned route :
+    // first, identify the stops that are used by at least one route :
     set<StopLabel> usefulStops;
     for (auto & [ route_id, _ ] : routeToTrips) {
         vector<StopLabel> thisRouteStops = routeToStops(route_id);
@@ -142,8 +134,19 @@ pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> rankStops(
 
     // Here :
     //   - rankedStops associates a rank to a stop
-    //   - stopToRank associates a stop to its rank
+    //   - stopToRank allows to retrieve the rank of a given stop
     return {rankedStops, stopToRank};
+}
+
+vector<StopLabel> routeToStops(RouteLabel const& route) {
+    // from a given routeLabel, this functions builds back the list of its stops :
+    vector<StopLabel> stops;
+    string token;
+    istringstream iss(route);
+    while (getline(iss, token, '+')) {
+        stops.push_back(token);
+    }
+    return stops;
 }
 
 }

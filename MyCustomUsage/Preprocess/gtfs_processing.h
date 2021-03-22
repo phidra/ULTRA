@@ -6,7 +6,7 @@
 
 #include "ad/cppgtfs/Parser.h"
 
-// this code process GTFS feed to ease conversion to ULTRA binary format
+// this code processes a GTFS feed to ease the building of an ULTRA binary format
 
 namespace my::preprocess {
 
@@ -22,10 +22,10 @@ using StopLabel = std::string;
 using TripDepartureTime = int;  // departure time is represented in number of seconds
 using OrderableTripLabel = std::pair<TripDepartureTime, TripLabel>;
 
-std::vector<StopLabel> routeToStops(RouteLabel const& route);
 std::map<RouteLabel, std::set<OrderableTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed);
 std::pair<std::vector<RouteLabel>, std::unordered_map<RouteLabel, size_t>> rankRoutes(std::map<RouteLabel, std::set<OrderableTripLabel>> const& routeToTrips);
 std::pair<std::vector<StopLabel>, std::unordered_map<StopLabel, size_t>> rankStops(std::map<RouteLabel, std::set<OrderableTripLabel>> const& routeToTrips);
+std::vector<StopLabel> routeToStops(RouteLabel const& route);
 
 bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, std::map<RouteLabel, std::set<OrderableTripLabel>> const& partition);
 
