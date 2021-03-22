@@ -14,7 +14,7 @@ namespace my::preprocess {
 struct UltraGtfsData {
     UltraGtfsData(std::string const& gtfsFolder);
     void dump(std::string const& filename) const;
-    bool checkSerializationIdempotence() const;
+    bool checkSerializationIdempotence(std::ostream& out) const;
 
     std::vector<size_t> firstRouteSegmentOfStop;
     std::vector<size_t> firstStopIdOfRoute;

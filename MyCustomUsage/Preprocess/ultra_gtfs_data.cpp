@@ -222,7 +222,7 @@ void my::preprocess::UltraGtfsData::dump(string const& filename) const {
 }
 
 
-bool my::preprocess::UltraGtfsData::checkSerializationIdempotence() const {
+bool my::preprocess::UltraGtfsData::checkSerializationIdempotence(ostream& out) const {
     my::AutoDeleteTempFile tmpfile;
 
     // serializing in a temporary file :
@@ -274,18 +274,18 @@ bool my::preprocess::UltraGtfsData::checkSerializationIdempotence() const {
     bool areImplicitArrivalBufferTimesEqual = implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes;
 
 
-    cout << "DETAILS : is serialization + deserialization idempotent ?" << endl;
-    cout << boolalpha;
-    cout << areFirstRouteSegmentOfStopEqual << endl;
-    cout << areFirstStopIdOfRouteEqual << endl;
-    cout << areFirstStopEventOfRouteEqual << endl;
-    cout << areRouteSegmentsEqual << endl;
-    cout << areStopIdsEqual << endl;
-    cout << areStopEventsEqual << endl;
-    cout << areStopDataEqual << endl;
-    cout << areRouteDataEqual << endl;
-    cout << areImplicitDepartureBufferTimesEqual << endl;
-    cout << areImplicitArrivalBufferTimesEqual << endl;
+    out << "DETAILS : is serialization + deserialization idempotent ?" << endl;
+    out << boolalpha;
+    out << areFirstRouteSegmentOfStopEqual << endl;
+    out << areFirstStopIdOfRouteEqual << endl;
+    out << areFirstStopEventOfRouteEqual << endl;
+    out << areRouteSegmentsEqual << endl;
+    out << areStopIdsEqual << endl;
+    out << areStopEventsEqual << endl;
+    out << areStopDataEqual << endl;
+    out << areRouteDataEqual << endl;
+    out << areImplicitDepartureBufferTimesEqual << endl;
+    out << areImplicitArrivalBufferTimesEqual << endl;
 
 
     return (
