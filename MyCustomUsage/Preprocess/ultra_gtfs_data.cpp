@@ -6,8 +6,6 @@
 #include "gtfs_processing.h"
 #include "Common/autodeletefile.h"
 
-#include "ad/cppgtfs/Parser.h"
-
 using namespace std;
 
 // This code helps to build the RAPTOR binary expected by ULTRA, from a given GTFS feed.
@@ -178,7 +176,7 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::UltraGtfsData& toFill) {
+void UltraGtfsData::fromFeed(ad::cppgtfs::gtfs::Feed const& feed) {
     // prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
     bool isPartitionConsistent = my::preprocess::checkRoutePartitionConsistency(feed, routeToTrips);
@@ -196,16 +194,16 @@ static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::Ul
     //  - a route (or a stop) can be identified with its RouteLabel/StopLabel or its rank
     //  - the conversion between ID<->rank is done with the above structures
 
-    toFill.routeData = build_routeData(rankedRoutes);
-    toFill.stopData = build_stopData(rankedStops, feed);
-    tie(toFill.stopIds, toFill.firstStopIdOfRoute) = build_stopIdsRelated(toFill.routeData, stopToRank);
-    tie(toFill.stopEvents, toFill.firstStopEventOfRoute) = build_stopEventsRelated(toFill.routeData, routeToTrips, feed);
-    tie(toFill.routeSegments, toFill.firstRouteSegmentOfStop) =
-        convert_routeSegmentsRelated(toFill.routeData, stopToRank, routeToRank);
+    routeData = build_routeData(rankedRoutes);
+    stopData = build_stopData(rankedStops, feed);
+    tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, stopToRank);
+    tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, routeToTrips, feed);
+    tie(routeSegments, firstRouteSegmentOfStop) =
+        convert_routeSegmentsRelated(routeData, stopToRank, routeToRank);
 
     // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
-    toFill.implicitDepartureBufferTimes = true;
-    toFill.implicitArrivalBufferTimes = true;
+    implicitDepartureBufferTimes = true;
+    implicitArrivalBufferTimes = true;
 }
 
 
@@ -213,7 +211,7 @@ my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     ad::cppgtfs::Parser parser;
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfsFolder);
-    fillFromFeed(feed, *this);
+    fromFeed(feed);
 }
 
 

@@ -8,9 +8,13 @@
 #include "DataStructures/RAPTOR/Entities/RouteSegment.h"
 #include "Helpers/Types.h"
 
+#include "ad/cppgtfs/Parser.h"
+
 namespace my::preprocess {
 
-//From a given GTFS feed, builds the RAPTOR binary expected by ULTRA :
+// From a given GTFS feed, builds the RAPTOR binary data expected by ULTRA.
+// This implementation is tightly coupled to the library used to parse GTFS : cppgtfs
+
 struct UltraGtfsData {
     UltraGtfsData(std::string const& gtfsFolder);
     void dump(std::string const& filename) const;
@@ -29,6 +33,8 @@ struct UltraGtfsData {
 
     // mirroring RAPTOR::Data serialization :
     void serialize(const std::string& fileName) const;
+
+    void fromFeed(ad::cppgtfs::gtfs::Feed const&);
 };
 
 }
