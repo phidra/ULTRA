@@ -7,6 +7,9 @@ using namespace std;
 namespace my::preprocess {
 
 static RouteLabel buildRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
+    // build the label of the trip's route (scientific route, see below).
+    // A route label is just the concatenation of its stops.
+
     if (trip.getStopTimes().size() < 2) {
         ostringstream oss;
         oss << "ERROR : route is too small (" << trip.getStopTimes().size() << ") of trip : " << trip.getId();
@@ -15,11 +18,11 @@ static RouteLabel buildRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
 
     RouteLabel routeId{};
 
-    // precondition : getStopTimes return stops in order
 #ifndef NDEBUG
     int previousDepartureTime = -1;
 #endif
 
+    // precondition : getStopTimes return stops in order
     for (auto const& stoptime : trip.getStopTimes()) {
         auto stop = *(stoptime.getStop());
         routeId.append(stop.getId());
@@ -50,8 +53,21 @@ vector<StopLabel> routeToStops(RouteLabel const& route) {
 }
 
 map<RouteLabel, set<OrderedTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
-    // ULTRA uses "scientific" routes, but feed only has GTFS routes.
-    // This functions partitions trips amongst their (scientific) route, identified by its label.
+    // This function partitions the trips of the GTFS feed, according to their stops.
+    // All The trips with exactly the same set of stops are grouped into a (scientific) 'route'.
+
+    // WARNING : there are two mismatching definitions of the word "route" :
+    //  - what scientific papers calls "route" is a particular set of stops
+    //    in particular, if two trips travel between exactly the same stops, they belong to the same route.
+    //  - what GTFS standard (and thus cppgtfs) calls "route" is just a given structure associated to a trip
+    //    but this association is arbitrary : in GTFS data, two trips can use the same "route" structure
+    //    even if they don't use exactly the same set of stops
+    //
+    // BEWARE : the "routes" returned by cppgtfs are not the scientific ones !
+    //
+    // In general, in ULTRA code (and in code building ULTRA data), the "routes" are the scientific ones.
+    // Particularly, the "routes" returned by the present function are scientific routes.
+    // A route is identified by its label.
     // Two trips will have the same route label IF they have excatly the same sequence of stops.
 
     map<RouteLabel, set<OrderedTripLabel>> routeToTrips;
