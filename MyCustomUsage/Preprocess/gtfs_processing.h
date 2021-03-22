@@ -20,13 +20,13 @@ using StopLabel = std::string;
 // amongst the trips of a given route, we want to order trips by their departure time
 // thus, we use a std::pair to achieve that, as they will compare using the left element of the pair :
 using TripDepartureTime = int;  // departure time is represented in number of seconds
-using OrderedTripLabel = std::pair<TripDepartureTime, TripLabel>;
+using OrderableTripLabel = std::pair<TripDepartureTime, TripLabel>;
 
 std::vector<StopLabel> routeToStops(RouteLabel const& route);
-std::map<RouteLabel, std::set<OrderedTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed);
-std::pair<std::vector<RouteLabel>, std::unordered_map<RouteLabel, size_t>> rankRoutes(std::map<RouteLabel, std::set<OrderedTripLabel>> const& routeToTrips);
-std::pair<std::vector<StopLabel>, std::unordered_map<StopLabel, size_t>> rankStops(std::map<RouteLabel, std::set<OrderedTripLabel>> const& routeToTrips);
+std::map<RouteLabel, std::set<OrderableTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed);
+std::pair<std::vector<RouteLabel>, std::unordered_map<RouteLabel, size_t>> rankRoutes(std::map<RouteLabel, std::set<OrderableTripLabel>> const& routeToTrips);
+std::pair<std::vector<StopLabel>, std::unordered_map<StopLabel, size_t>> rankStops(std::map<RouteLabel, std::set<OrderableTripLabel>> const& routeToTrips);
 
-bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, std::map<RouteLabel, std::set<OrderedTripLabel>> const& partition);
+bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, std::map<RouteLabel, std::set<OrderableTripLabel>> const& partition);
 
 }

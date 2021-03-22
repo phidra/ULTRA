@@ -82,7 +82,7 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
 
 static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     vector<RAPTOR::Route> const& routeData,
-    map<my::preprocess::RouteLabel, set<my::preprocess::OrderedTripLabel>> const& routeToTrips,
+    map<my::preprocess::RouteLabel, set<my::preprocess::OrderableTripLabel>> const& routeToTrips,
     ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::StopEvent> stopEvents;
     vector<size_t> firstStopEventOfRoute(routeData.size() + 1);

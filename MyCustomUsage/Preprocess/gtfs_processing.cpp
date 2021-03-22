@@ -52,7 +52,7 @@ vector<StopLabel> routeToStops(RouteLabel const& route) {
     return stops;
 }
 
-map<RouteLabel, set<OrderedTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
+map<RouteLabel, set<OrderableTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
     // This function partitions the trips of the GTFS feed, according to their stops.
     // All The trips with exactly the same set of stops are grouped into a (scientific) 'route'.
 
@@ -70,7 +70,7 @@ map<RouteLabel, set<OrderedTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs:
     // A route is identified by its label.
     // Two trips will have the same route label IF they have excatly the same sequence of stops.
 
-    map<RouteLabel, set<OrderedTripLabel>> routeToTrips;
+    map<RouteLabel, set<OrderableTripLabel>> routeToTrips;
 
     for (auto const & [ tripId, tripPtr ] : feed.getTrips()) {
         auto& trip = *(tripPtr);
@@ -85,7 +85,7 @@ map<RouteLabel, set<OrderedTripLabel>> partitionTripsInRoutes(ad::cppgtfs::gtfs:
     return routeToTrips;
 }
 
-bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<OrderedTripLabel>> const& partition) {
+bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<OrderableTripLabel>> const& partition) {
     // checks that the agregation of the trips of all routes have the same number of trips than feed
     auto nbTripsInFeed = feed.getTrips().size();
     int nbTripsInPartitions = accumulate(
@@ -98,7 +98,7 @@ bool checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<Rou
 }
 
 pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> rankRoutes(
-    map<RouteLabel, set<OrderedTripLabel>> const& routeToTrips) {
+    map<RouteLabel, set<OrderableTripLabel>> const& routeToTrips) {
     // this function ranks the partitioned routes
     // i.e. each route has an arbitrary rank from 0 to N-1 (where N is the number of routes)
     // (this rank allows routes to be stored in a vector)
@@ -120,7 +120,7 @@ pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> rankRoutes(
 }
 
 pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> rankStops(
-    map<RouteLabel, set<OrderedTripLabel>> const& routeToTrips) {
+    map<RouteLabel, set<OrderableTripLabel>> const& routeToTrips) {
     // this function ranks the stops (stops not used in routes are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)
     // (this rank allows stops to be stored in a vector)
