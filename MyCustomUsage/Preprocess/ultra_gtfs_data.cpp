@@ -177,7 +177,7 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
 }
 
 void UltraGtfsData::fromFeed(ad::cppgtfs::gtfs::Feed const& feed) {
-    // prepare GTFS data :
+    // STEP 1 = prepare GTFS data :
     auto routeToTrips = partitionTripsInRoutes(feed);
 
     bool isPartitionConsistent = my::preprocess::checkRoutePartitionConsistency(feed, routeToTrips);
@@ -191,11 +191,13 @@ void UltraGtfsData::fromFeed(ad::cppgtfs::gtfs::Feed const& feed) {
     auto[rankedStops, stopToRank] = rankStops(routeToTrips);
 
     // from now on :
-    //  - routes of GTFS data are not used anymore (they are replaced with a partition of trips by routes
+    //  - routes coming from GTFS data are not directly used anymore
+    //  - instead, we use the routes of the partition (see gtfs_preprocessing.cpp comments)
     //  - only the stops that appear in at least one trip are used
     //  - a route (or a stop) can be identified with its RouteLabel/StopLabel or its rank
     //  - the conversion between ID<->rank is done with the above structures
 
+    // STEP 2 = use prepared GTFS data to build ULTRA data :
     routeData = build_routeData(rankedRoutes);
     stopData = build_stopData(rankedStops, feed);
     tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, stopToRank);
