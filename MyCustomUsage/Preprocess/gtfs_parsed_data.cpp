@@ -40,7 +40,7 @@ static map<RouteLabel, set<OrderableTripLabel>> _partitionTripsInRoutes(ad::cppg
     return routeToTrips;
 }
 
-static bool _checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<OrderableTripLabel>> const& partition) {
+[[maybe_unused]] static bool _checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<OrderableTripLabel>> const& partition) {
     // checks that the agregation of the trips of all routes have the same number of trips than feed
     auto nbTripsInFeed = feed.getTrips().size();
     int nbTripsInPartitions = accumulate(
