@@ -10,19 +10,7 @@ namespace my::preprocess {
 static map<RouteLabel, set<OrderableTripLabel>> _partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
     // This function partitions the trips of the GTFS feed, according to their stops.
     // All The trips with exactly the same set of stops are grouped into a (scientific) 'route'.
-
-    // WARNING : there are two mismatching definitions of the word "route" :
-    //  - what scientific papers calls "route" is a particular set of stops
-    //    in particular, if two trips travel between exactly the same stops, they belong to the same route.
-    //  - what GTFS standard (and thus cppgtfs) calls "route" is just a given structure associated to a trip
-    //    but this association is arbitrary : in GTFS data, two trips can use the same "route" structure
-    //    even if they don't use exactly the same set of stops
-    //
-    // BEWARE : the "routes" returned by cppgtfs are not the scientific ones !
-    //
-    // In general, in ULTRA code (and in code building ULTRA data), the "routes" are the scientific ones.
-    // Particularly, the "routes" returned by the present function are scientific routes.
-    // A route is identified by its label.
+    // Once partitionned, a (scientific) route is identified by its RouteLabel.
     // Two trips will have the same route label IF they have excatly the same sequence of stops.
 
     map<RouteLabel, set<OrderableTripLabel>> routeToTrips;
