@@ -103,13 +103,6 @@ GtfsParsedData::GtfsParsedData(ad::cppgtfs::gtfs::Feed const& feed) {
 
     tie(rankedRoutes, routeToRank) = _rankRoutes(routeToTrips);
     tie(rankedStops, stopToRank) = _rankStops(routeToTrips);
-
-    // from now on :
-    //  - routes coming from GTFS data are not directly used anymore
-    //  - instead, we use the routes of the partition (see comments)
-    //  - only the stops that appear in at least one trip are used
-    //  - a route (or a stop) can be identified with its RouteLabel/StopLabel or its rank
-    //  - the conversion between ID<->rank is done with the conversion members
 }
 
 }
