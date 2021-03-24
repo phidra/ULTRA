@@ -3,10 +3,8 @@
 #include <algorithm>
 
 #include "ultra_gtfs_data.h"
-#include "gtfs_processing.h"
+#include "gtfs_parsed_data.h"
 #include "Common/autodeletefile.h"
-
-#include "ad/cppgtfs/Parser.h"
 
 using namespace std;
 
@@ -65,8 +63,8 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
     size_t currentRouteFirstStop = 0;
     size_t routeRank;
     for (routeRank = 0; routeRank < routeData.size(); ++routeRank) {
-        my::preprocess::RouteLabel routeId = routeData[routeRank].name;
-        vector<my::preprocess::StopLabel> stopsOfCurrentRoute = my::preprocess::routeToStops(routeId);
+        my::preprocess::RouteLabel routeLabel = routeData[routeRank].name;
+        vector<my::preprocess::StopLabel> stopsOfCurrentRoute = routeLabel.toStops();
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
                   [&stopToRank](my::preprocess::StopLabel const& stopLabel) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopLabel))}; });
 
@@ -84,7 +82,7 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
 
 static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     vector<RAPTOR::Route> const& routeData,
-    map<my::preprocess::RouteLabel, set<my::preprocess::OrderedTripLabel>> const& routeToTrips,
+    map<my::preprocess::RouteLabel, set<my::preprocess::OrderableTripLabel>> const& routeToTrips,
     ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::StopEvent> stopEvents;
     vector<size_t> firstStopEventOfRoute(routeData.size() + 1);
@@ -136,15 +134,15 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     vector<vector<pair<my::preprocess::RouteLabel, int>>> routesUsingAStop(nb_stops);
 
     for (auto& route : routeData) {
-        my::preprocess::RouteLabel routeId = route.name;
-        vector<my::preprocess::StopLabel> stopsOfThisRoute = my::preprocess::routeToStops(routeId);
+        my::preprocess::RouteLabel routeLabel = route.name;
+        vector<my::preprocess::StopLabel> stopsOfThisRoute = routeLabel.toStops();
 
         for (size_t stopIndex = 0; stopIndex < stopsOfThisRoute.size(); ++stopIndex) {
             my::preprocess::StopLabel const& stopLabel = stopsOfThisRoute[stopIndex];
             size_t stopRank = stopToRank.at(stopLabel);
 
             vector<pair<my::preprocess::RouteLabel, int>>& routesUsingThisStop = routesUsingAStop[stopRank];
-            routesUsingThisStop.emplace_back(routeId, stopIndex);
+            routesUsingThisStop.emplace_back(routeLabel, stopIndex);
         }
     }
 
@@ -178,42 +176,25 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-static void fillFromFeed(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::UltraGtfsData& toFill) {
-    // prepare GTFS data :
-    auto routeToTrips = partitionTripsInRoutes(feed);
-    bool isPartitionConsistent = my::preprocess::checkRoutePartitionConsistency(feed, routeToTrips);
-    if (!isPartitionConsistent) {
-        ostringstream oss;
-        oss << "ERROR : number of trips after partitioning by route is not the same than number of trips in feed (=" << feed.getTrips().size() << ")";
-        throw runtime_error(oss.str());
-    }
-    auto[rankedRoutes, routeToRank] = rankRoutes(routeToTrips);
-    auto[rankedStops, stopToRank] = rankStops(routeToTrips);
-
-    // from now on :
-    //  - routes of GTFS data are not used anymore (they are replaced with a partition of trips by routes
-    //  - only the stops that appear in at least one trip are used
-    //  - a route (or a stop) can be identified with its RouteLabel/StopLabel or its rank
-    //  - the conversion between ID<->rank is done with the above structures
-
-    toFill.routeData = build_routeData(rankedRoutes);
-    toFill.stopData = build_stopData(rankedStops, feed);
-    tie(toFill.stopIds, toFill.firstStopIdOfRoute) = build_stopIdsRelated(toFill.routeData, stopToRank);
-    tie(toFill.stopEvents, toFill.firstStopEventOfRoute) = build_stopEventsRelated(toFill.routeData, routeToTrips, feed);
-    tie(toFill.routeSegments, toFill.firstRouteSegmentOfStop) =
-        convert_routeSegmentsRelated(toFill.routeData, stopToRank, routeToRank);
-
-    // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
-    toFill.implicitDepartureBufferTimes = true;
-    toFill.implicitArrivalBufferTimes = true;
-}
-
 
 my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     ad::cppgtfs::Parser parser;
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfsFolder);
-    fillFromFeed(feed, *this);
+
+    GtfsParsedData gtfs{feed};
+
+    // STEP 2 = use prepared GTFS data to build ULTRA data :
+    routeData = build_routeData(gtfs.rankedRoutes);
+    stopData = build_stopData(gtfs.rankedStops, feed);
+    tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, gtfs.stopToRank);
+    tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, gtfs.routeToTrips, feed);
+    tie(routeSegments, firstRouteSegmentOfStop) =
+        convert_routeSegmentsRelated(routeData, gtfs.stopToRank, gtfs.routeToRank);
+
+    // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
+    implicitDepartureBufferTimes = true;
+    implicitArrivalBufferTimes = true;
 }
 
 
@@ -222,7 +203,7 @@ void my::preprocess::UltraGtfsData::dump(string const& filename) const {
 }
 
 
-bool my::preprocess::UltraGtfsData::checkSerializationIdempotence() const {
+bool my::preprocess::UltraGtfsData::checkSerializationIdempotence(ostream& out) const {
     my::AutoDeleteTempFile tmpfile;
 
     // serializing in a temporary file :
@@ -274,18 +255,18 @@ bool my::preprocess::UltraGtfsData::checkSerializationIdempotence() const {
     bool areImplicitArrivalBufferTimesEqual = implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes;
 
 
-    cout << "DETAILS : is serialization + deserialization idempotent ?" << endl;
-    cout << boolalpha;
-    cout << areFirstRouteSegmentOfStopEqual << endl;
-    cout << areFirstStopIdOfRouteEqual << endl;
-    cout << areFirstStopEventOfRouteEqual << endl;
-    cout << areRouteSegmentsEqual << endl;
-    cout << areStopIdsEqual << endl;
-    cout << areStopEventsEqual << endl;
-    cout << areStopDataEqual << endl;
-    cout << areRouteDataEqual << endl;
-    cout << areImplicitDepartureBufferTimesEqual << endl;
-    cout << areImplicitArrivalBufferTimesEqual << endl;
+    out << "DETAILS : is serialization + deserialization idempotent ?" << endl;
+    out << boolalpha;
+    out << areFirstRouteSegmentOfStopEqual << endl;
+    out << areFirstStopIdOfRouteEqual << endl;
+    out << areFirstStopEventOfRouteEqual << endl;
+    out << areRouteSegmentsEqual << endl;
+    out << areStopIdsEqual << endl;
+    out << areStopEventsEqual << endl;
+    out << areStopDataEqual << endl;
+    out << areRouteDataEqual << endl;
+    out << areImplicitDepartureBufferTimesEqual << endl;
+    out << areImplicitArrivalBufferTimesEqual << endl;
 
 
     return (

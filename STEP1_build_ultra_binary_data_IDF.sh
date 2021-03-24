@@ -30,7 +30,7 @@ mkdir -p "$INPUT_GTFS_DATA"
 # === Building :
 mkdir -p "$BUILD_DIR"
 conan install --install-folder="$BUILD_DIR" "$CMAKE_ROOT_DIR" --profile="$CMAKE_ROOT_DIR/conanprofile.txt"
-cmake -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo  -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
 make -j -C "$BUILD_DIR" download_gtfs_idf download_osm_idf build-ultra-binary-data
 
 

@@ -51,13 +51,13 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
 
     constexpr const float walkspeedKmPerHour = 4.7;
-    my::preprocess::UltraGtfsData binaryData{gtfsFolder};
+    my::preprocess::UltraGtfsData gtfsData{gtfsFolder};
 
 
     my::preprocess::UltraTransferData transferData = buildTransferData(
         osmFile,
         polygonFile,
-        binaryData.stopData,
+        gtfsData.stopData,
         walkspeedKmPerHour,
         argv[0]);
 
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 
     // serializing data like RAPTOR::Data does :
     const std::string raptorDataFileName = outputDir + "raptor.binary";
-    binaryData.serialize(raptorDataFileName);
+    gtfsData.serialize(raptorDataFileName);
     transferData.transferGraph.writeBinary(raptorDataFileName + ".graph");
 
     // checking that we can unserialize it, and find no mismatch :
