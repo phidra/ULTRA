@@ -184,7 +184,7 @@ my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
 
     GtfsParsedData gtfs{feed};
 
-    // STEP 2 = use prepared GTFS data to build ULTRA data :
+    // use GTFS parsed data to build ULTRA data :
     routeData = build_routeData(gtfs.rankedRoutes);
     stopData = build_stopData(gtfs.rankedStops, feed);
     tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, gtfs.stopToRank);
