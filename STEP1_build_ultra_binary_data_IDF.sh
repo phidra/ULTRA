@@ -61,9 +61,11 @@ mv "$INPUT_GTFS_DATA/transfers.txt" "$INPUT_GTFS_DATA/original_transfers.txt"
 
 
 # === building ULTRA binary data :
+WALKSPEED_KMH=4.7
 set -o xtrace
 "${BUILD_DIR}/bin/build-ultra-binary-data" \
     "$INPUT_GTFS_DATA" \
     "$INPUT_OSM_FILE" \
     "$INPUT_POLYGON_FILE" \
+    "$WALKSPEED_KMH" \
     "$WORKDIR"

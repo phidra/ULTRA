@@ -7,7 +7,7 @@
 #include "DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {
-    std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <outputDir>" << std::endl;
+    std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <walkspeed km/h>  <outputDir>" << std::endl;
     exit(0);
 }
 
@@ -33,13 +33,14 @@ my::preprocess::UltraTransferData buildTransferData(
 
 
 int main(int argc, char** argv) {
-    if (argc < 5)
+    if (argc < 6)
         usage(argv[0]);
 
     const std::string gtfsFolder = argv[1];
     const std::string osmFile = argv[2];
     const std::string polygonFile = argv[3];
-    std::string outputDir = argv[4];
+    const float walkspeedKmPerHour = std::stof(argv[4]);
+    std::string outputDir = argv[5];
     if (outputDir.back() != '/') {
         outputDir.push_back('/');
     }
@@ -47,10 +48,9 @@ int main(int argc, char** argv) {
     std::cout << "GTFS FOLDER      = " << gtfsFolder << std::endl;
     std::cout << "OSMFILE          = " << osmFile << std::endl;
     std::cout << "POLYGONFILE      = " << polygonFile << std::endl;
+    std::cout << "WALKSPEED KM/H   = " << walkspeedKmPerHour << std::endl;
     std::cout << "OUTPUT_DIR       = " << outputDir << std::endl;
     std::cout << std::endl;
-
-    constexpr const float walkspeedKmPerHour = 4.7;
     my::preprocess::UltraGtfsData gtfsData{gtfsFolder};
 
 
