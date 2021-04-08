@@ -33,7 +33,7 @@ namespace my::preprocess {
 // amongst the trips of a given route, we want to order trips by their departure time
 // thus, we use a std::pair to achieve that, as they will compare using the left element of the pair :
 using TripDepartureTime = int;  // departure time is represented in number of seconds
-using OrderableTripLabel = std::pair<TripDepartureTime, TripLabel>;
+using OrderableTripId = std::pair<TripDepartureTime, std::string>;
 
 
 struct ParsedStop {
@@ -60,7 +60,7 @@ struct ParsedStop {
 struct GtfsParsedData {
     GtfsParsedData(ad::cppgtfs::gtfs::Feed const&);
 
-    std::map<RouteLabel, std::set<OrderableTripLabel>> routeToTrips;
+    std::map<RouteLabel, std::set<OrderableTripId>> routeToTrips;
 
 
     // stops and routes are ranked

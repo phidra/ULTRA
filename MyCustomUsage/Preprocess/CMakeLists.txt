@@ -7,9 +7,10 @@
 #   - rapidjson (used via conan, see below)
 #   - fast-cpp-csv-parser (used via conan, see below) (we could probably get rid of this dependency, and use the csv parser from cppgtfs)
 
+
+add_subdirectory(GtfsParsing)
+
 set(PREPROCESS_SOURCES
-    route_label.cpp
-    gtfs_parsed_data.cpp
     Graph/extending_with_stops.cpp
     Graph/osmparsing.cpp
     Graph/graph.cpp
@@ -30,9 +31,8 @@ get_filename_component(ULTRA_INCLUDE_DIR "${PREPROCESS_PARENT_DIR}" DIRECTORY)
 target_include_directories(preprocess PUBLIC "${PREPROCESS_PARENT_DIR}")
 target_include_directories(preprocess PUBLIC "${ULTRA_INCLUDE_DIR}")
 target_include_directories(preprocess PRIVATE "${CONAN_INCLUDE_DIRS_FAST-CPP-CSV-PARSER}")
-target_include_directories(preprocess PUBLIC "${CPPGTFS_INCLUDE_DIR}")
 target_link_libraries(preprocess PUBLIC common)
-target_link_libraries(preprocess PRIVATE ad_cppgtfs)
+target_link_libraries(preprocess PUBLIC gtfs_parsing)
 
 set(LIBOSMIUM_LINK_DEPS bz2 z expat -pthread)
 target_link_libraries(preprocess PRIVATE "${LIBOSMIUM_LINK_DEPS}")

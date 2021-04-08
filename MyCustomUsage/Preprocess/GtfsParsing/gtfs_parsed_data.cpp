@@ -18,13 +18,13 @@ static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& fee
     return *stopPtr;
 }
 
-static map<RouteLabel, set<OrderableTripLabel>> _partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
+static map<RouteLabel, set<OrderableTripId>> _partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
     // This function partitions the trips of the GTFS feed, according to their stops.
     // All The trips with exactly the same set of stops are grouped into a (scientific) 'route'.
     // Once partitionned, a (scientific) route is identified by its RouteLabel.
     // Two trips will have the same route label IF they have excatly the same sequence of stops.
 
-    map<RouteLabel, set<OrderableTripLabel>> routeToTrips;
+    map<RouteLabel, set<OrderableTripId>> routeToTrips;
 
     for (auto const & [ tripId, tripPtr ] : feed.getTrips()) {
         auto& trip = *(tripPtr);
@@ -39,7 +39,7 @@ static map<RouteLabel, set<OrderableTripLabel>> _partitionTripsInRoutes(ad::cppg
     return routeToTrips;
 }
 
-[[maybe_unused]] static bool _checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<OrderableTripLabel>> const& partition) {
+[[maybe_unused]] static bool _checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, set<OrderableTripId>> const& partition) {
     // checks that the agregation of the trips of all routes have the same number of trips than feed
     auto nbTripsInFeed = feed.getTrips().size();
     int nbTripsInPartitions = accumulate(
@@ -52,7 +52,7 @@ static map<RouteLabel, set<OrderableTripLabel>> _partitionTripsInRoutes(ad::cppg
 }
 
 static pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> _rankRoutes(
-    map<RouteLabel, set<OrderableTripLabel>> const& routeToTrips) {
+    map<RouteLabel, set<OrderableTripId>> const& routeToTrips) {
     // this function ranks the partitioned routes
     // i.e. each route has an arbitrary rank from 0 to N-1 (where N is the number of routes)
     // (this rank will be used to store the routes in a vector)
@@ -74,7 +74,7 @@ static pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> _rankRoutes(
 }
 
 static pair<vector<ParsedStop>, unordered_map<string, size_t>> _rankStops(
-    map<RouteLabel, set<OrderableTripLabel>> const& routeToTrips, ad::cppgtfs::gtfs::Feed const& feed) {
+    map<RouteLabel, set<OrderableTripId>> const& routeToTrips, ad::cppgtfs::gtfs::Feed const& feed) {
 
     // this function ranks the stops (and filter them : stops not used in at least a route are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)

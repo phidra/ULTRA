@@ -1,0 +1,13 @@
+# this lib depends on :
+#   - the cmake target 'ad_cppgtfs' (for the library cppgtfs)
+
+# this does NOT depend on ULTRA
+
+set(GTFSPARSING_SOURCES
+    route_label.cpp
+    gtfs_parsed_data.cpp
+)
+
+add_library(gtfs_parsing STATIC "${GTFSPARSING_SOURCES}")
+target_include_directories(gtfs_parsing PUBLIC "${CPPGTFS_INCLUDE_DIR}")
+target_link_libraries(gtfs_parsing PRIVATE ad_cppgtfs)

@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "ultra_gtfs_data.h"
-#include "gtfs_parsed_data.h"
+#include "GtfsParsing/gtfs_parsed_data.h"
 #include "Common/autodeletefile.h"
 
 using namespace std;
@@ -13,7 +13,7 @@ using namespace std;
 namespace my::preprocess {
 
 
-static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::TripLabel const& tripId) {
+static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& feed, string const& tripId) {
     auto tripPtr = feed.getTrips().get(tripId);
     if (tripPtr == 0) {
         ostringstream oss;
@@ -70,7 +70,7 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
 
 static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     vector<RAPTOR::Route> const& routeData,
-    map<my::preprocess::RouteLabel, set<my::preprocess::OrderableTripLabel>> const& routeToTrips,
+    map<my::preprocess::RouteLabel, set<my::preprocess::OrderableTripId>> const& routeToTrips,
     ad::cppgtfs::gtfs::Feed const& feed) {
     vector<RAPTOR::StopEvent> stopEvents;
     vector<size_t> firstStopEventOfRoute(routeData.size() + 1);

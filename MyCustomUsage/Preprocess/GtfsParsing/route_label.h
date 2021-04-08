@@ -7,10 +7,7 @@
 
 namespace my::preprocess {
 
-// NOTE : to enforce different name than those of ULTRA, we use xxxLabel instead of xxxId
-//  - ::RouteId -> this is an ULTRA structure
-//  - RouteLabel -> this is a my::preprocess GTFS structure (defined by this code)
-using TripLabel = std::string;
+// A RouteLabel is the concatenation of its stop's ids
 struct RouteLabel {
     RouteLabel() = default;
     RouteLabel(std::string const& label_) : label{label_} {}
