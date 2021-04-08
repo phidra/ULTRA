@@ -36,6 +36,25 @@ using TripDepartureTime = int;  // departure time is represented in number of se
 using OrderableTripLabel = std::pair<TripDepartureTime, TripLabel>;
 
 
+struct ParsedStop {
+    std::string name;
+    double latitude;
+    double longitude;
+
+    ParsedStop(std::string const & name_, double latitude_, double longitude_) :
+        name{name_},
+        latitude{latitude_},
+        longitude{longitude_}
+    {}
+
+    std::string as_string() const {
+        std::ostringstream oss;
+        oss << "ParsedStop{" << name << ", " << latitude << ", " << longitude << "}";
+        return oss.str();
+    };
+};
+
+
 struct GtfsParsedData {
     GtfsParsedData(ad::cppgtfs::gtfs::Feed const&);
 
@@ -55,8 +74,9 @@ struct GtfsParsedData {
 
     //   - rankedStops associates a rank to a stop
     //   - stopToRank allows to retrieve the rank of a given stop
-    std::vector<StopLabel> rankedStops;
+    std::vector<ParsedStop> rankedStops;
     std::unordered_map<StopLabel, size_t> stopToRank;
+
 
 };
 

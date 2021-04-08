@@ -12,16 +12,6 @@ using namespace std;
 
 namespace my::preprocess {
 
-static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::StopLabel const& stopLabel) {
-    auto stopPtr = feed.getStops().get(stopLabel);
-    if (stopPtr == 0) {
-        ostringstream oss;
-        oss << "ERROR : unable to get stop with label '" << stopLabel << "' (stopPtr is 0)";
-        throw runtime_error(oss.str());
-    }
-
-    return *stopPtr;
-}
 
 static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::TripLabel const& tripId) {
     auto tripPtr = feed.getTrips().get(tripId);
@@ -36,20 +26,18 @@ static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& fee
 static vector<RAPTOR::Route> build_routeData(vector<RouteLabel> const& rankedRoutes) {
     vector<RAPTOR::Route> routeData;
     routeData.reserve(rankedRoutes.size());
-    // note : The route name is NOT its rank, but its id, i.e. the concatenation of its stops
+    // The name of the RAPTOR::route is NOT its rank, but its label, i.e. the concatenation of its stops
     transform(rankedRoutes.begin(), rankedRoutes.end(), back_inserter(routeData),
-              [](auto& routeID) { return RAPTOR::Route(routeID); });
+              [](auto& routeLabel) { return RAPTOR::Route(routeLabel); });
     return routeData;
 }
 
-static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::StopLabel> const& rankedStops,
-                                                ad::cppgtfs::gtfs::Feed const& feed) {
+static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::ParsedStop> const& rankedStops) {
     vector<RAPTOR::Stop> stopData(rankedStops.size());
     for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
-        my::preprocess::StopLabel stopLabel = rankedStops[rank];
-        Stop const& stop = getStop(feed, stopLabel);
-        Geometry::Point location{Construct::LatLongTag{}, stop.getLat(), stop.getLng()};
-        stopData[rank] = RAPTOR::Stop{stop.getName(), location};
+        my::preprocess::ParsedStop stop = rankedStops[rank];
+        Geometry::Point location{Construct::LatLongTag{}, stop.latitude, stop.longitude};
+        stopData[rank] = RAPTOR::Stop{stop.name, location};
     }
     return stopData;
 }
@@ -186,7 +174,7 @@ my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
 
     // use GTFS parsed data to build ULTRA data :
     routeData = build_routeData(gtfs.rankedRoutes);
-    stopData = build_stopData(gtfs.rankedStops, feed);
+    stopData = build_stopData(gtfs.rankedStops);
     tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, gtfs.stopToRank);
     tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, gtfs.routeToTrips, feed);
     tie(routeSegments, firstRouteSegmentOfStop) =

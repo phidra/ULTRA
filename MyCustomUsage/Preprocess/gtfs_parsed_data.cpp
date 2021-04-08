@@ -7,6 +7,17 @@ using namespace std;
 namespace my::preprocess {
 
 
+static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, my::preprocess::StopLabel const& stopLabel) {
+    auto stopPtr = feed.getStops().get(stopLabel);
+    if (stopPtr == 0) {
+        ostringstream oss;
+        oss << "ERROR : unable to get stop with label '" << stopLabel << "' (stopPtr is 0)";
+        throw runtime_error(oss.str());
+    }
+
+    return *stopPtr;
+}
+
 static map<RouteLabel, set<OrderableTripLabel>> _partitionTripsInRoutes(ad::cppgtfs::gtfs::Feed const& feed) {
     // This function partitions the trips of the GTFS feed, according to their stops.
     // All The trips with exactly the same set of stops are grouped into a (scientific) 'route'.
@@ -62,8 +73,9 @@ static pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> _rankRoutes(
     return {move(rankedRoutes), move(routeToRank)};
 }
 
-static pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> _rankStops(
-    map<RouteLabel, set<OrderableTripLabel>> const& routeToTrips) {
+static pair<vector<ParsedStop>, unordered_map<StopLabel, size_t>> _rankStops(
+    map<RouteLabel, set<OrderableTripLabel>> const& routeToTrips, ad::cppgtfs::gtfs::Feed const& feed) {
+
     // this function ranks the stops (and filter them : stops not used in at least a route are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)
     // (this rank will be used to store the stops in a vector)
@@ -76,11 +88,14 @@ static pair<vector<StopLabel>, unordered_map<StopLabel, size_t>> _rankStops(
     }
 
     // then, rank them :
-    vector<StopLabel> rankedStops(usefulStops.begin(), usefulStops.end());
+    size_t rank = 0;
+    vector<ParsedStop> rankedStops;
     unordered_map<StopLabel, size_t> stopToRank;
-    for (size_t rank = 0; rank < rankedStops.size(); ++rank) {
-        StopLabel stoplabel = rankedStops[rank];
-        stopToRank.insert({stoplabel, rank});
+    for (auto& stopLabel: usefulStops) {
+        Stop const& stop = getStop(feed, stopLabel);
+        rankedStops.emplace_back(stop.getName(), stop.getLat(), stop.getLng());
+        stopToRank.insert({stopLabel, rank});
+        ++rank;
     }
 
     // Here :
@@ -102,7 +117,7 @@ GtfsParsedData::GtfsParsedData(ad::cppgtfs::gtfs::Feed const& feed) {
 #endif
 
     tie(rankedRoutes, routeToRank) = _rankRoutes(routeToTrips);
-    tie(rankedStops, stopToRank) = _rankStops(routeToTrips);
+    tie(rankedStops, stopToRank) = _rankStops(routeToTrips, feed);
 }
 
 }
