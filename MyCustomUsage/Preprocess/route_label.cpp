@@ -44,9 +44,9 @@ RouteLabel RouteLabel::fromTrip(ad::cppgtfs::gtfs::Trip const& trip) {
     return toReturn;
 }
 
-vector<StopLabel> RouteLabel::toStops() const {
-    // from a given routeLabel, this functions builds back the list of its stops :
-    vector<StopLabel> stops;
+vector<std::string> RouteLabel::toStopIds() const {
+    // from a given routeLabel, this functions builds back the list of its stop's ids :
+    vector<std::string> stops;
     string token;
     istringstream iss(string(*this));
     while (getline(iss, token, '+')) {

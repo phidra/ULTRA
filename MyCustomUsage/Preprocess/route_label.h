@@ -8,15 +8,14 @@
 namespace my::preprocess {
 
 // NOTE : to enforce different name than those of ULTRA, we use xxxLabel instead of xxxId
-//  - ::StopId -> this is an ULTRA structure
-//  - StopLabel -> this is a my::preprocess GTFS structure (defined by this code)
+//  - ::RouteId -> this is an ULTRA structure
+//  - RouteLabel -> this is a my::preprocess GTFS structure (defined by this code)
 using TripLabel = std::string;
-using StopLabel = std::string;
 struct RouteLabel {
     RouteLabel() = default;
     RouteLabel(std::string const& label_) : label{label_} {}
     static RouteLabel fromTrip(ad::cppgtfs::gtfs::Trip const& trip);
-    std::vector<StopLabel> toStops() const;
+    std::vector<std::string> toStopIds() const;
     operator std::string() const { return label; }
     bool operator<(std::string const& other) const { return label < other; }
     bool operator==(std::string const& other) const { return label == other; }

@@ -26,7 +26,7 @@ static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& fee
 static vector<RAPTOR::Route> build_routeData(vector<RouteLabel> const& rankedRoutes) {
     vector<RAPTOR::Route> routeData;
     routeData.reserve(rankedRoutes.size());
-    // The name of the RAPTOR::route is NOT its rank, but its label, i.e. the concatenation of its stops
+    // The name of the RAPTOR::route is NOT its rank, but its label, i.e. the concatenation of its stop's ids
     transform(rankedRoutes.begin(), rankedRoutes.end(), back_inserter(routeData),
               [](auto& routeLabel) { return RAPTOR::Route(routeLabel); });
     return routeData;
@@ -44,7 +44,7 @@ static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::ParsedStop> co
 
 static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
     vector<RAPTOR::Route> const& routeData,
-    unordered_map<my::preprocess::StopLabel, size_t> const& stopToRank) {
+    unordered_map<string, size_t> const& stopidToRank) {
     vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
     vector<::StopId> stopIds;
 
@@ -52,9 +52,9 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
     size_t routeRank;
     for (routeRank = 0; routeRank < routeData.size(); ++routeRank) {
         my::preprocess::RouteLabel routeLabel = routeData[routeRank].name;
-        vector<my::preprocess::StopLabel> stopsOfCurrentRoute = routeLabel.toStops();
+        vector<string> stopsOfCurrentRoute = routeLabel.toStopIds();
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
-                  [&stopToRank](my::preprocess::StopLabel const& stopLabel) { return ::StopId{static_cast<u_int32_t>(stopToRank.at(stopLabel))}; });
+                  [&stopidToRank](string const& stopid) { return ::StopId{static_cast<u_int32_t>(stopidToRank.at(stopid))}; });
 
         firstStopIdOfRoute[routeRank] = currentRouteFirstStop;
         currentRouteFirstStop += stopsOfCurrentRoute.size();
@@ -113,21 +113,21 @@ static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
 
 static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
     vector<RAPTOR::Route> const& routeData,
-    unordered_map<my::preprocess::StopLabel, size_t> const& stopToRank,
+    unordered_map<string, size_t> const& stopidToRank,
     unordered_map<my::preprocess::RouteLabel, size_t> const& routeToRank) {
     // building an intermediate structure that associates a stopRank to all its routes
     // for a given stop, this structures stores some pairs {route + stop index in this route}
 
-    auto nb_stops = stopToRank.size();
+    auto nb_stops = stopidToRank.size();
     vector<vector<pair<my::preprocess::RouteLabel, int>>> routesUsingAStop(nb_stops);
 
     for (auto& route : routeData) {
         my::preprocess::RouteLabel routeLabel = route.name;
-        vector<my::preprocess::StopLabel> stopsOfThisRoute = routeLabel.toStops();
+        vector<string> stopsOfThisRoute = routeLabel.toStopIds();
 
         for (size_t stopIndex = 0; stopIndex < stopsOfThisRoute.size(); ++stopIndex) {
-            my::preprocess::StopLabel const& stopLabel = stopsOfThisRoute[stopIndex];
-            size_t stopRank = stopToRank.at(stopLabel);
+            string const& stopid = stopsOfThisRoute[stopIndex];
+            size_t stopRank = stopidToRank.at(stopid);
 
             vector<pair<my::preprocess::RouteLabel, int>>& routesUsingThisStop = routesUsingAStop[stopRank];
             routesUsingThisStop.emplace_back(routeLabel, stopIndex);
@@ -138,7 +138,7 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
 
     // TODO = check that each route only appears once for a given stop
 
-    vector<size_t> firstRouteSegmentOfStop(stopToRank.size() + 1);
+    vector<size_t> firstRouteSegmentOfStop(stopidToRank.size() + 1);
     vector<RAPTOR::RouteSegment> routeSegments;
 
     size_t currentStopFirstRouteSegment = 0;
@@ -175,10 +175,10 @@ my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     // use GTFS parsed data to build ULTRA data :
     routeData = build_routeData(gtfs.rankedRoutes);
     stopData = build_stopData(gtfs.rankedStops);
-    tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, gtfs.stopToRank);
+    tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, gtfs.stopidToRank);
     tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, gtfs.routeToTrips, feed);
     tie(routeSegments, firstRouteSegmentOfStop) =
-        convert_routeSegmentsRelated(routeData, gtfs.stopToRank, gtfs.routeToRank);
+        convert_routeSegmentsRelated(routeData, gtfs.stopidToRank, gtfs.routeToRank);
 
     // STUB : according to some comments in ULTRARAPTOR.h, buffer times have to be implicit :
     implicitDepartureBufferTimes = true;

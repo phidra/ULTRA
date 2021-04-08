@@ -11,7 +11,7 @@
 //  - only the stops that appear in at least one trip are kept (unused stops are ignored)
 //  - trips are partitionned into "scientific" routes (about routes, see details below)
 //  - routes and stops are ranked (about ranks, see details below)
-//  - a route (or a stop) can be identified with either its RouteLabel/StopLabel or its rank
+//  - a route (or a stop) can be identified with either its "ID" (RouteLabel/StopId) or its rank
 //  - the conversion between ID<->rank is done with the conversion structures
 
 // NOTE : this implementation is tightly coupled to the library used to parse GTFS : cppgtfs
@@ -37,11 +37,13 @@ using OrderableTripLabel = std::pair<TripDepartureTime, TripLabel>;
 
 
 struct ParsedStop {
+    std::string id;
     std::string name;
     double latitude;
     double longitude;
 
-    ParsedStop(std::string const & name_, double latitude_, double longitude_) :
+    ParsedStop(std::string const& id_, std::string const & name_, double latitude_, double longitude_) :
+        id{id_},
         name{name_},
         latitude{latitude_},
         longitude{longitude_}
@@ -49,7 +51,7 @@ struct ParsedStop {
 
     std::string as_string() const {
         std::ostringstream oss;
-        oss << "ParsedStop{" << name << ", " << latitude << ", " << longitude << "}";
+        oss << "ParsedStop{" << id << ", " << name << ", " << latitude << ", " << longitude << "}";
         return oss.str();
     };
 };
@@ -73,9 +75,9 @@ struct GtfsParsedData {
 
 
     //   - rankedStops associates a rank to a stop
-    //   - stopToRank allows to retrieve the rank of a given stop
+    //   - stopidToRank allows to retrieve the rank of a given stop
     std::vector<ParsedStop> rankedStops;
-    std::unordered_map<StopLabel, size_t> stopToRank;
+    std::unordered_map<std::string, size_t> stopidToRank;
 
 
 };
