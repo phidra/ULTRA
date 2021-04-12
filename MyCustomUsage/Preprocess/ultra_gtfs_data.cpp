@@ -12,17 +12,6 @@ using namespace std;
 
 namespace my::preprocess {
 
-
-static ad::cppgtfs::gtfs::Trip const& getTrip(ad::cppgtfs::gtfs::Feed const& feed, string const& tripId) {
-    auto tripPtr = feed.getTrips().get(tripId);
-    if (tripPtr == 0) {
-        ostringstream oss;
-        oss << "ERROR : unable to get trip with id '" << tripId << "' (tripPtr is 0)";
-        throw runtime_error(oss.str());
-    }
-    return *tripPtr;
-}
-
 static vector<RAPTOR::Route> build_routeData(vector<RouteLabel> const& rankedRoutes) {
     vector<RAPTOR::Route> routeData;
     routeData.reserve(rankedRoutes.size());
@@ -70,33 +59,28 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
 
 static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     vector<RAPTOR::Route> const& routeData,
-    map<my::preprocess::RouteLabel, set<my::preprocess::OrderableTripId>> const& routeToTrips,
-    ad::cppgtfs::gtfs::Feed const& feed) {
-    vector<RAPTOR::StopEvent> stopEvents;
+    map<my::preprocess::RouteLabel, my::preprocess::ParsedRoute> const& routes) {
+    vector<RAPTOR::StopEvent> allStopEvents;
     vector<size_t> firstStopEventOfRoute(routeData.size() + 1);
 
     size_t currentRouteFirstStopEvent = 0;
     size_t routeRank;
     for (routeRank = 0; routeRank < routeData.size(); ++routeRank) {
-        my::preprocess::RouteLabel routeId = routeData[routeRank].name;
+        my::preprocess::RouteLabel routeLabel = routeData[routeRank].name;
 
         size_t nbStopEventsInThisRoute = 0;
 
-        // each route "contains" (=is associated with) several trips :
-        auto const& tripsOfCurrentRoute = routeToTrips.at(routeId);
-        for (auto& [_, tripId] : tripsOfCurrentRoute) {
-            auto& trip = getTrip(feed, tripId);
 
-            // each trip contains a range of stopevents :
-            for (auto const& stoptime : trip.getStopTimes()) {
-                int departureTime = stoptime.getDepartureTime().seconds();
-                int arrivalTime = stoptime.getArrivalTime().seconds();
-                stopEvents.emplace_back(arrivalTime, departureTime);
+        auto const& route = routes.at(routeLabel);
+        for (auto& [tripId, tripEvents]: route.trips) {
+            for (auto& [arrTime, depTime]: tripEvents) {
+                allStopEvents.emplace_back(arrTime, depTime);
             }
-
-            size_t nbStopEventsInThisTrip = trip.getStopTimes().size();
-            nbStopEventsInThisRoute += nbStopEventsInThisTrip;
+            nbStopEventsInThisRoute += tripEvents.size();
         }
+
+
+
 
         firstStopEventOfRoute[routeRank] = currentRouteFirstStopEvent;
         currentRouteFirstStopEvent += nbStopEventsInThisRoute;
@@ -105,10 +89,10 @@ static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
     // From now on :
     //      routeRank = number of routes
     //      currentRouteFirstStopEvent = number of stopevents in all the routes
-    // Setting past-the-end stopEvents :
+    // Setting past-the-end allStopEvents :
     firstStopEventOfRoute[routeRank] = currentRouteFirstStopEvent;
 
-    return {stopEvents, firstStopEventOfRoute};
+    return {allStopEvents, firstStopEventOfRoute};
 }
 
 static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsRelated(
@@ -176,7 +160,7 @@ my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     routeData = build_routeData(gtfs.rankedRoutes);
     stopData = build_stopData(gtfs.rankedStops);
     tie(stopIds, firstStopIdOfRoute) = build_stopIdsRelated(routeData, gtfs.stopidToRank);
-    tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, gtfs.routeToTrips, feed);
+    tie(stopEvents, firstStopEventOfRoute) = build_stopEventsRelated(routeData, gtfs.routes);
     tie(routeSegments, firstRouteSegmentOfStop) =
         convert_routeSegmentsRelated(routeData, gtfs.stopidToRank, gtfs.routeToRank);
 

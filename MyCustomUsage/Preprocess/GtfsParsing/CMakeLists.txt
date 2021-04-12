@@ -4,7 +4,7 @@
 # this does NOT depend on ULTRA
 
 set(GTFSPARSING_SOURCES
-    route_label.cpp
+    gtfs_parsing_structures.cpp
     gtfs_parsed_data.cpp
 )
 
