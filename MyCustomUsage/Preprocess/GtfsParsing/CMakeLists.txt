@@ -1,7 +1,7 @@
 # this lib depends on :
 #   - the cmake target 'ad_cppgtfs' (for the library cppgtfs)
 
-# this does NOT depend on ULTRA
+# this module has no other dependency, and particularly, it does NOT depend on ULTRA
 
 set(GTFSPARSING_SOURCES
     gtfs_parsing_structures.cpp

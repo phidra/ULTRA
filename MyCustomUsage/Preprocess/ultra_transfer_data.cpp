@@ -1,13 +1,12 @@
 #include <iostream>
 #include <map>
 
-#include "transfer_graph.h"
+#include "ultra_transfer_data.h"
 
 #include "DataStructures/RAPTOR/Data.h"
 #include "DataStructures/Geometry/Point.h"
 #include "DataStructures/Graph/Classes/StaticGraph.h"
 #include "Preprocess/Parsing/polygonfile.h"
-#include "Preprocess/Parsing/gtfs_stops.h"
 #include "Preprocess/Graph/extending_with_stops.h"
 #include "Preprocess/Graph/graph.h"
 #include "Common/geojson.h"
@@ -199,7 +198,7 @@ buildTransferGraphStructures(
     return {vertexAttrs, edgeAttrs, beginOut};
 }
 
-TransferGraph buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWithClosestNode> const& stopsWithClosestNode) {
+static TransferGraph _buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWithClosestNode> const& stopsWithClosestNode) {
     auto [rankedNodes, nodeToRank_] = _rankNodes(edgesWithStops, stopsWithClosestNode);
     // due to a bug in clang, nodeToRank is not capturable in the lambda, unless we alias it :
     auto& nodeToRank = nodeToRank_;
@@ -241,7 +240,7 @@ TransferGraph buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, st
 }
 
 
-my::preprocess::UltraTransferData::UltraTransferData(
+UltraTransferData::UltraTransferData(
     std::filesystem::path osmFile,
     std::filesystem::path polygonFile,
     std::vector<RAPTOR::Stop> const& raptor_stops,
@@ -260,15 +259,15 @@ my::preprocess::UltraTransferData::UltraTransferData(
         );
     }
 
-    edges = my::preprocess::osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
+    edges = osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
 
     // extend graph with stop-edges :
-    std::tie(edgesWithStops,stopsWithClosestNode) = my::preprocess::extend_graph(stops, edges, walkspeedKmPerHour);
-    transferGraph = my::preprocess::buildTransferGraph(edgesWithStops, stopsWithClosestNode);
+    std::tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edges, walkspeedKmPerHour);
+    transferGraph = _buildTransferGraph(edgesWithStops, stopsWithClosestNode);
 }
 
 
-void my::preprocess::UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
+void UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
     std::ofstream originalGraphStream(outputDir + "original_graph.geojson");
     my::dump_geojson_graph(originalGraphStream, edges);
 
@@ -282,7 +281,7 @@ void my::preprocess::UltraTransferData::dumpIntermediary(std::string const& outp
     my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
 }
 
-bool my::preprocess::UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph const& right) {
+bool UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph const& right) {
     // we only check the stats :
     std::ostringstream statsLeft_stream;
     left.printAnalysis(statsLeft_stream);
@@ -295,7 +294,7 @@ bool my::preprocess::UltraTransferData::areApproxEqual(TransferGraph const& left
     return (statsLeft == statsRight);
 }
 
-bool my::preprocess::UltraTransferData::checkSerializationIdempotence() const {
+bool UltraTransferData::checkSerializationIdempotence() const {
     my::AutoDeleteTempFile tmpfile;
 
     transferGraph.writeBinary(tmpfile.file);
@@ -304,7 +303,7 @@ bool my::preprocess::UltraTransferData::checkSerializationIdempotence() const {
     TransferGraph freshTransferGraph;
     freshTransferGraph.readBinary(tmpfile.file);
 
-    return my::preprocess::UltraTransferData::areApproxEqual(transferGraph, freshTransferGraph);
+    return UltraTransferData::areApproxEqual(transferGraph, freshTransferGraph);
 }
 
 }

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "Preprocess/transfer_graph.h"
+#include "Preprocess/ultra_transfer_data.h"
 #include "Preprocess/ultra_gtfs_data.h"
 
 #include "DataStructures/RAPTOR/Data.h"

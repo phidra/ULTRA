@@ -10,13 +10,14 @@
 
 namespace my::preprocess {
 
-TransferGraph buildTransferGraph(
-    std::vector<my::Edge> const& edgesWithStops,
-    std::vector<my::StopWithClosestNode> const& stopsWithClosestNode);
-
 struct UltraTransferData {
 
-    UltraTransferData(std::filesystem::path osmFile, std::filesystem::path polygonFile, std::vector<RAPTOR::Stop> const& stops, float walkspeedKmPerHour_);
+    UltraTransferData(
+        std::filesystem::path osmFile,
+        std::filesystem::path polygonFile,
+        std::vector<RAPTOR::Stop> const& stops,
+        float walkspeedKmPerHour_
+    );
     void dumpIntermediary(std::string const& outputDir) const;
     static bool areApproxEqual(TransferGraph const& left, TransferGraph const& right);
     bool checkSerializationIdempotence() const;
