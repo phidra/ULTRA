@@ -1,9 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <functional>
-
-#include "ad/cppgtfs/Parser.h"
+#include <map>
 
 // this module defines the structures used to store GTFS data after parsing.
 
@@ -30,8 +28,6 @@ struct RouteLabel {
 struct ParsedRoute {
     using StopEvent = std::pair<int, int>;  // arrival, departure
     std::map<OrderableTripId, std::vector<StopEvent>> trips;  // the map ensures trips are ordered
-
-    void addTrip(OrderableTripId const& tripId, ad::cppgtfs::gtfs::Trip const& trip);
 };
 
 

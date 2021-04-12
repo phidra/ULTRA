@@ -1,12 +1,16 @@
 #include <numeric>
 
+#include "ad/cppgtfs/Parser.h"
+
 #include "gtfs_parsed_data.h"
 
 using namespace std;
 
 namespace my::preprocess {
 
-static RouteLabel tripToRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
+// note : the dependency to cppgtfs is isolated in static functions in cpp (instead of exposed in headers) :
+
+static RouteLabel _tripToRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
     RouteLabel toReturn;
     // build the label of the trip's route (scientific route, see below).
     // A route label is just the concatenation of its stop's ids :
@@ -47,7 +51,17 @@ static RouteLabel tripToRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
 }
 
 
-static ad::cppgtfs::gtfs::Stop const& getStop(ad::cppgtfs::gtfs::Feed const& feed, string const& stopid) {
+void _addTripToRoute(ParsedRoute& route, OrderableTripId const& tripId, ad::cppgtfs::gtfs::Trip const& trip) {
+    auto& thisTripEvents = route.trips[tripId];
+    for (auto const& stoptime : trip.getStopTimes()) {
+        int arrivalTime = stoptime.getArrivalTime().seconds();
+        int departureTime = stoptime.getDepartureTime().seconds();
+        thisTripEvents.emplace_back(arrivalTime, departureTime);
+    }
+}
+
+
+static ad::cppgtfs::gtfs::Stop const& _getStop(ad::cppgtfs::gtfs::Feed const& feed, string const& stopid) {
     auto stopPtr = feed.getStops().get(stopid);
     if (stopPtr == 0) {
         ostringstream oss;
@@ -74,9 +88,9 @@ static map<RouteLabel, ParsedRoute> _partitionTripsInRoutes(ad::cppgtfs::gtfs::F
         // precondition = each trip has at least a stop
         int tripDepartureTimeSeconds = trip.getStopTimes().begin()->getDepartureTime().seconds();
 
-        RouteLabel routeLabel = tripToRouteLabel(trip);
+        RouteLabel routeLabel = _tripToRouteLabel(trip);
         ParsedRoute& parsedRoute = parsedRoutes[routeLabel];
-        parsedRoute.addTrip({tripDepartureTimeSeconds, tripId}, trip);
+        _addTripToRoute(parsedRoute, {tripDepartureTimeSeconds, tripId}, trip);
     }
 
     return parsedRoutes;
@@ -134,7 +148,7 @@ static pair<vector<ParsedStop>, unordered_map<string, size_t>> _rankStops(
     vector<ParsedStop> rankedStops;
     unordered_map<string, size_t> stopidToRank;
     for (auto& stopid: usefulStopIds) {
-        Stop const& stop = getStop(feed, stopid);
+        Stop const& stop = _getStop(feed, stopid);
         rankedStops.emplace_back(stopid, stop.getName(), stop.getLat(), stop.getLng());
         stopidToRank.insert({stopid, rank});
         ++rank;
@@ -146,7 +160,11 @@ static pair<vector<ParsedStop>, unordered_map<string, size_t>> _rankStops(
     return {move(rankedStops), move(stopidToRank)};
 }
 
-GtfsParsedData::GtfsParsedData(ad::cppgtfs::gtfs::Feed const& feed) {
+GtfsParsedData::GtfsParsedData(std::string const& gtfsFolder) {
+    ad::cppgtfs::Parser parser;
+    ad::cppgtfs::gtfs::Feed feed;
+    parser.parse(&feed, gtfsFolder);
+
     routes = _partitionTripsInRoutes(feed);
 
 

@@ -8,7 +8,7 @@
 
 using namespace std;
 
-// This code helps to build the RAPTOR binary expected by ULTRA, from a given GTFS feed.
+// This code helps to build the RAPTOR binary expected by ULTRA, from a given GTFS folder.
 
 namespace my::preprocess {
 
@@ -150,11 +150,7 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
 
 
 my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
-    ad::cppgtfs::Parser parser;
-    ad::cppgtfs::gtfs::Feed feed;
-    parser.parse(&feed, gtfsFolder);
-
-    GtfsParsedData gtfs{feed};
+    GtfsParsedData gtfs{gtfsFolder};
 
     // use GTFS parsed data to build ULTRA data :
     routeData = build_routeData(gtfs.rankedRoutes);

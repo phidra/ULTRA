@@ -3,8 +3,6 @@
 #include <vector>
 #include <functional>
 
-#include "ad/cppgtfs/Parser.h"
-
 #include "gtfs_parsing_structures.h"
 
 // From a given GTFS feed, GtfsParsedData is an abstraction of the GTFS data, suitable for ULTRA :
@@ -14,7 +12,7 @@
 //  - a route (or a stop) can be identified with either its "ID" (RouteLabel/StopId) or its rank
 //  - the conversion between ID<->rank is done with the conversion structures
 
-// NOTE : the code that builds GtfsParsedData is tightly coupled to the gtfs-parsing library : cppgtfs
+// NOTE : the code that builds GtfsParsedData is currently tightly coupled to cppgtfs, the gtfs-parsing library
 
 // WARNING : there are two mismatching definitions of the word "route" :
 //  - what scientific papers calls "route" is a particular set of stops
@@ -32,7 +30,7 @@ namespace my::preprocess {
 
 
 struct GtfsParsedData {
-    GtfsParsedData(ad::cppgtfs::gtfs::Feed const&);
+    GtfsParsedData(std::string const& gtfsFolder);
 
     std::map<RouteLabel, ParsedRoute> routes;
 

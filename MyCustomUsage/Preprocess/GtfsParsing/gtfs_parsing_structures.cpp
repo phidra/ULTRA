@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "gtfs_parsing_structures.h"
 
 using namespace std;
@@ -13,17 +15,6 @@ vector<string> RouteLabel::toStopIds() const {
         stops.push_back(token);
     }
     return stops;
-}
-
-
-void ParsedRoute::addTrip(OrderableTripId const& tripId, ad::cppgtfs::gtfs::Trip const& trip)
-{
-    auto& thisTripEvents = trips[tripId];
-    for (auto const& stoptime : trip.getStopTimes()) {
-        int arrivalTime = stoptime.getArrivalTime().seconds();
-        int departureTime = stoptime.getDepartureTime().seconds();
-        thisTripEvents.emplace_back(arrivalTime, departureTime);
-    }
 }
 
 
