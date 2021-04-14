@@ -240,9 +240,6 @@ void UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
     std::ofstream originalGraphStream(outputDir + "original_graph.geojson");
     my::dump_geojson_graph(originalGraphStream, edges);
 
-    std::ofstream polygonStream(outputDir + "polygon.geojson");
-    my::dump_geojson_line(polygonStream, polygon.outer());
-
     std::ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson");
     my::dump_geojson_graph(extendedGraphStream, edgesWithStops);
 
