@@ -42,36 +42,15 @@ _rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWith
     return {rankedNodes, nodeToRank};
 }
 
-std::vector<my::Edge> _revertEdgesIfNecessary(std::vector<my::Edge> const& edges, std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
-    // to build the ULTRA transfer graph, we need that all the edges are in so-called "proper" order
-    // that is : they must go from higher rank node to lower rank node
-    // This is not the case by default in the edges.
-    // This functions ensures it : in the output, all the edges are in "proper" order.
-    // (this assumes that edges are bidirectional, and that reverted them has no effect)
-    std::vector<my::Edge> properOrderEdges;
-    properOrderEdges.reserve(edges.size());
-    std::transform(edges.cbegin(), edges.cend(), std::back_inserter(properOrderEdges), [&nodeToRank](auto& edge) {
-        size_t node_from_rank = nodeToRank.at(edge.node_from.id);
-        size_t node_to_rank = nodeToRank.at(edge.node_to.id);
-        // we want the higher rank to be the first node of the edge :
-        return node_from_rank > node_to_rank ? edge : my::Edge::build_reverted(edge);
-    });
-    return properOrderEdges;
-}
-
-std::pair<std::map<size_t, std::vector<size_t>>, std::vector<my::Edge>> _mapNodesToOutEdges(std::vector<my::Edge> const& edges, std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
-    // this functions helps to retrieve the out-edges of a node, given its rank
-    std::map<size_t, std::vector<size_t>> nodeToOutEdges;
-    for (int i = 0; i < nodeToRank.size(); ++i) {
-        nodeToOutEdges[i] = {};
-    }
-
-    // FIXME : on prépare les edges avec une copie :
-    std::vector<my::Edge> edgesWithReversed(edges);
+std::vector<my::Edge> _makeEdgesBidirectional(std::vector<my::Edge> const& edges) {
+    // For each edge, adds its opposite edge (this doubles the number of edges in the edgelist)
+    // note : the function is cleaner without side-effects (taking a const ref to edges, returning a copy)
+    // but as this is slower, if performance issues arise, we can mutate edges instead
+    std::vector<my::Edge> opposites(edges);
     for (auto edge: edges) {
         Polyline geom = edge.geometry;
         std::reverse(geom.begin(), geom.end());
-        edgesWithReversed.emplace_back(
+        opposites.emplace_back(
             edge.node_to.id,
             edge.node_from.id,
             std::move(geom),
@@ -79,23 +58,18 @@ std::pair<std::map<size_t, std::vector<size_t>>, std::vector<my::Edge>> _mapNode
             edge.weight
         );
     }
+    return opposites;
+}
 
-    size_t edge_index = 0;
-    for (auto edge: edgesWithReversed) {
+std::map<size_t, std::vector<size_t>> _mapNodesToOutEdges(std::vector<my::Edge> const& edges, std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
+    // this functions build a map that helps to retrieve the out-edges of a node (given its rank)
+    std::map<size_t, std::vector<size_t>> nodeToOutEdges;
+    for (size_t edge_index = 0; edge_index < edges.size(); ++edge_index) {
+        auto const& edge = edges[edge_index];
         size_t node_from_rank = nodeToRank.at(edge.node_from.id);
-        size_t node_to_rank = nodeToRank.at(edge.node_to.id);
-        /* FIXME> EDIT : this is not necessary anymore... */
-        /* if (node_from_rank < node_to_rank) { */
-        /*     std::cout << "ERROR : nodes are not properly ordered !" << std::endl; */
-        /*     std::exit(4); */
-        /* } */
-
-        /* // as the edges are bidirectionnal, each edge has to be added as an out-edge of node_from AND as an out-edge of node_to : */
         nodeToOutEdges[node_from_rank].push_back(edge_index);
-        /* nodeToOutEdges[node_to_rank].push_back(edge_index); */
-        ++edge_index;
     }
-    return {nodeToOutEdges, edgesWithReversed};
+    return nodeToOutEdges;
 }
 
 TransferGraph _computeTransferGraph(
@@ -205,15 +179,13 @@ static TransferGraph _buildTransferGraph(std::vector<my::Edge> const& edgesWithS
     std::cout << "nb ranked nodes (1) = " << rankedNodes.size() << std::endl;
     std::cout << "nb ranked nodes (2) = " << nodeToRank.size() << std::endl;
 
-    std::vector<my::Edge> properOrderEdges = _revertEdgesIfNecessary(edgesWithStops, nodeToRank);
-    std::cout << "How many edges in properOrderEdges ? " << properOrderEdges.size() << std::endl;
-
-    auto [nodeToOutEdges, edgesWithReversed] = _mapNodesToOutEdges(properOrderEdges, nodeToRank);
+    auto bidirectionalEdges = _makeEdgesBidirectional(edgesWithStops);
+    auto nodeToOutEdges = _mapNodesToOutEdges(bidirectionalEdges, nodeToRank);
     std::cout << "The association map has " << nodeToOutEdges.size() << " items" << std::endl;
 
     // building structures of transferGraph :
     auto [vertexAttrs, edgeAttrs, beginOut] = buildTransferGraphStructures(
-        edgesWithReversed,
+        bidirectionalEdges,
         stopsWithClosestNode,
         rankedNodes,
         nodeToRank,
@@ -233,9 +205,6 @@ static TransferGraph _buildTransferGraph(std::vector<my::Edge> const& edgesWithS
     TransferGraph transferGraph;
     transferGraph.readBinary(fileName);
     Graph::writeStatisticsFile(transferGraph, fileName, separator);
-
-    // FIXME : remove this properly :
-    /* auto transferGraph = _computeTransferGraph(rankedNodes, nodeToOutEdges, properOrderEdges, nodeToRank); */
     return transferGraph;
 }
 
