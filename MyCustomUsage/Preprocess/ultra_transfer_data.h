@@ -6,7 +6,6 @@
 #include "DataStructures/Graph/Graph.h"
 #include "DataStructures/RAPTOR/Entities/Stop.h"
 #include "Common/graphtypes.h"
-#include "Common/polygon.h"
 
 namespace my::preprocess {
 
@@ -16,14 +15,11 @@ struct UltraTransferData {
         std::filesystem::path osmFile,
         std::filesystem::path polygonFile,
         std::vector<RAPTOR::Stop> const& stops,
-        float walkspeedKmPerHour_
+        float walkspeedKmPerHour
     );
     void dumpIntermediary(std::string const& outputDir) const;
     static bool areApproxEqual(TransferGraph const& left, TransferGraph const& right);
     bool checkSerializationIdempotence() const;
-
-    float walkspeedKmPerHour;
-    my::BgPolygon polygon;
 
     TransferGraph transferGraph;
 

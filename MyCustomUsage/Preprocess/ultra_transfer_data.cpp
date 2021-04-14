@@ -6,114 +6,15 @@
 #include "DataStructures/RAPTOR/Data.h"
 #include "DataStructures/Geometry/Point.h"
 #include "DataStructures/Graph/Classes/StaticGraph.h"
-#include "Preprocess/Parsing/polygonfile.h"
-#include "Preprocess/Graph/extending_with_stops.h"
+#include "Preprocess/Graph/walking_graph.h"
 #include "Preprocess/Graph/graph.h"
 #include "Common/geojson.h"
 #include "Common/autodeletefile.h"
 
 
+
 namespace my::preprocess {
 
-std::pair<std::vector<my::NodeId>, std::unordered_map<my::NodeId, size_t>>
-_rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWithClosestNode> const& stops) {
-    std::vector<my::NodeId> rankedNodes;
-    std::unordered_map<my::NodeId, size_t> nodeToRank;
-
-    // ULTRA needs that stops are the first nodes of the graph -> stops must be ranked first :
-    std::for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &rankedNodes](my::StopWithClosestNode const& stop) {
-        rankedNodes.push_back(stop.id);
-        nodeToRank.insert({stop.id, rankedNodes.size() - 1});
-    });
-
-    // NOTE : here, rankedNodes must contain the stops in the same order that the input rankedNodes.
-
-    // then we can rank the other nodes :
-    for (auto edge: edgesWithStops) {
-        if (nodeToRank.find(edge.node_from.id) == nodeToRank.end()) {
-            rankedNodes.push_back(edge.node_from.id);
-            nodeToRank.insert({edge.node_from.id, rankedNodes.size() - 1});
-        }
-        if (nodeToRank.find(edge.node_to.id) == nodeToRank.end()) {
-            rankedNodes.push_back(edge.node_to.id);
-            nodeToRank.insert({edge.node_to.id, rankedNodes.size() - 1});
-        }
-    }
-    return {rankedNodes, nodeToRank};
-}
-
-std::vector<my::Edge> _makeEdgesBidirectional(std::vector<my::Edge> const& edges) {
-    // For each edge, adds its opposite edge (this doubles the number of edges in the edgelist)
-    // note : the function is cleaner without side-effects (taking a const ref to edges, returning a copy)
-    // but as this is slower, if performance issues arise, we can mutate edges instead
-    std::vector<my::Edge> opposites(edges);
-    for (auto edge: edges) {
-        Polyline geom = edge.geometry;
-        std::reverse(geom.begin(), geom.end());
-        opposites.emplace_back(
-            edge.node_to.id,
-            edge.node_from.id,
-            std::move(geom),
-            edge.length_m,
-            edge.weight
-        );
-    }
-    return opposites;
-}
-
-std::map<size_t, std::vector<size_t>> _mapNodesToOutEdges(std::vector<my::Edge> const& edges, std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
-    // this functions build a map that helps to retrieve the out-edges of a node (given its rank)
-    std::map<size_t, std::vector<size_t>> nodeToOutEdges;
-    for (size_t edge_index = 0; edge_index < edges.size(); ++edge_index) {
-        auto const& edge = edges[edge_index];
-        size_t node_from_rank = nodeToRank.at(edge.node_from.id);
-        nodeToOutEdges[node_from_rank].push_back(edge_index);
-    }
-    return nodeToOutEdges;
-}
-
-TransferGraph _computeTransferGraph(
-    std::vector<my::NodeId> rankedNodes,
-    std::map<size_t, std::vector<size_t>> nodeToOutEdges,
-    std::vector<my::Edge> const& edges,
-    std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
-    TransferGraph transferGraph;
-    size_t vertex_rank = 0;
-
-    for (auto node_id: rankedNodes) {
-
-        // first, add vertex to graph :
-        Vertex currentVertex = transferGraph.addVertex();
-        if (static_cast<size_t>(currentVertex) != vertex_rank) {
-            std::cout << "ERROR : rank should be the vertex id here" << std::endl;
-            std::exit(4);
-        }
-
-        // then, add all its out-edges (by construction, they all go towards an already existing vertex) :
-        auto& currentVertexOutEdges = nodeToOutEdges[vertex_rank];
-        for (auto& outEdgeIndex: currentVertexOutEdges) {
-            auto edge = edges[outEdgeIndex];
-            if (nodeToRank.at(edge.node_from.id) != vertex_rank) {
-                std::cout << "ERROR : rank should be the vertex id here" << std::endl;
-                std::exit(5);
-            }
-            auto target_vertex_rank = nodeToRank.at(edge.node_to.id);
-            auto addedEdge = transferGraph.addEdge(currentVertex, Vertex{target_vertex_rank});
-            Geometry::Point currentVertexLatlon{Construct::LatLongTag{}, edge.node_from.lat(), edge.node_from.lon()};
-            Geometry::Point targetVertexLatlon{Construct::LatLongTag{}, edge.node_to.location.lat(), edge.node_to.location.lon()};
-            transferGraph.setVertexAttributes(currentVertex, currentVertexLatlon);  // FIXME: could probably be done only once (EDIT : but not for stops)
-            transferGraph.setVertexAttributes(Vertex{target_vertex_rank}, targetVertexLatlon);  // FIXME: could probably be done only once (EDIT : but not for stops)
-
-            // FIXME: weight in graph is an int -> travel-time is converted in deciseconds :
-            auto used_weight = 10 * edge.weight;
-            addedEdge.set(TravelTime, static_cast<int>(used_weight));
-        }
-
-        ++vertex_rank;
-    }
-
-    return transferGraph;
-}
 
 
 std::tuple<TransferGraph::VertexAttributes, TransferGraph::EdgeAttributes, std::vector<::Edge> >
@@ -172,24 +73,34 @@ buildTransferGraphStructures(
     return {vertexAttrs, edgeAttrs, beginOut};
 }
 
-static TransferGraph _buildTransferGraph(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWithClosestNode> const& stopsWithClosestNode) {
-    auto [rankedNodes, nodeToRank_] = _rankNodes(edgesWithStops, stopsWithClosestNode);
-    // due to a bug in clang, nodeToRank is not capturable in the lambda, unless we alias it :
-    auto& nodeToRank = nodeToRank_;
-    std::cout << "nb ranked nodes (1) = " << rankedNodes.size() << std::endl;
-    std::cout << "nb ranked nodes (2) = " << nodeToRank.size() << std::endl;
 
-    auto bidirectionalEdges = _makeEdgesBidirectional(edgesWithStops);
-    auto nodeToOutEdges = _mapNodesToOutEdges(bidirectionalEdges, nodeToRank);
-    std::cout << "The association map has " << nodeToOutEdges.size() << " items" << std::endl;
+UltraTransferData::UltraTransferData(
+    std::filesystem::path osmFile,
+    std::filesystem::path polygonFile,
+    std::vector<RAPTOR::Stop> const& raptor_stops,
+    float walkspeedKmPerHour) {
+
+    // converting RAPTOR::Stop to unopinionated stops :
+    std::vector<my::Stop> stops;
+    for (int stopRank = 0; stopRank < raptor_stops.size(); ++stopRank) {
+        auto const& stop = raptor_stops[stopRank];
+        stops.emplace_back(
+            stop.coordinates.longitude,
+            stop.coordinates.latitude,
+            std::to_string(stopRank),
+            stop.name
+        );
+    }
+
+    WalkingGraph walking_graph{osmFile, polygonFile, stops, walkspeedKmPerHour};
 
     // building structures of transferGraph :
     auto [vertexAttrs, edgeAttrs, beginOut] = buildTransferGraphStructures(
-        bidirectionalEdges,
-        stopsWithClosestNode,
-        rankedNodes,
-        nodeToRank,
-        nodeToOutEdges
+        walking_graph.bidirectionalEdges,
+        walking_graph.stopsWithClosestNode,
+        walking_graph.rankedNodes,
+        walking_graph.nodeToRank,
+        walking_graph.nodeToOutEdges
     );
 
     // serialization :
@@ -202,49 +113,20 @@ static TransferGraph _buildTransferGraph(std::vector<my::Edge> const& edgesWithS
 
     // building transfergraph by deserializing :
     // FIXME : modify transferGraph to build directly ?
-    TransferGraph transferGraph;
     transferGraph.readBinary(fileName);
     Graph::writeStatisticsFile(transferGraph, fileName, separator);
-    return transferGraph;
-}
-
-
-UltraTransferData::UltraTransferData(
-    std::filesystem::path osmFile,
-    std::filesystem::path polygonFile,
-    std::vector<RAPTOR::Stop> const& raptor_stops,
-    float walkspeedKmPerHour_) :
-    walkspeedKmPerHour{walkspeedKmPerHour_},
-    polygon{get_polygon(polygonFile)} {
-
-    std::vector<my::Stop> stops;
-    for (int stopRank = 0; stopRank < raptor_stops.size(); ++stopRank) {
-        auto const& stop = raptor_stops[stopRank];
-        stops.emplace_back(
-            stop.coordinates.longitude,
-            stop.coordinates.latitude,
-            std::to_string(stopRank),
-            stop.name
-        );
-    }
-
-    edges = osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
-
-    // extend graph with stop-edges :
-    std::tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edges, walkspeedKmPerHour);
-    transferGraph = _buildTransferGraph(edgesWithStops, stopsWithClosestNode);
 }
 
 
 void UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
-    std::ofstream originalGraphStream(outputDir + "original_graph.geojson");
-    my::dump_geojson_graph(originalGraphStream, edges);
+    /* std::ofstream originalGraphStream(outputDir + "original_graph.geojson"); */
+    /* my::dump_geojson_graph(originalGraphStream, edges); */
 
-    std::ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson");
-    my::dump_geojson_graph(extendedGraphStream, edgesWithStops);
+    /* std::ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson"); */
+    /* my::dump_geojson_graph(extendedGraphStream, edgesWithStops); */
 
-    std::ofstream stopsStream(outputDir + "stops.geojson");
-    my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
+    /* std::ofstream stopsStream(outputDir + "stops.geojson"); */
+    /* my::dump_geojson_stops(stopsStream, stopsWithClosestNode); */
 }
 
 bool UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph const& right) {

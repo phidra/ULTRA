@@ -13,6 +13,7 @@ set(PREPROCESS_SOURCES
     Graph/extending_with_stops.cpp
     Graph/osmparsing.cpp
     Graph/graph.cpp
+    Graph/walking_graph.cpp
     ultra_transfer_data.cpp
     ultra_gtfs_data.cpp
     Parsing/polygonfile.cpp
