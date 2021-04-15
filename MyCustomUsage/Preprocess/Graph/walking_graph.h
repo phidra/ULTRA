@@ -26,7 +26,6 @@ struct WalkingGraph {
     std::vector<my::StopWithClosestNode> stopsWithClosestNode;
 
     std::vector<my::Edge> bidirectionalEdges;
-    std::vector<my::NodeId> rankedNodes;
     std::unordered_map<my::NodeId, size_t> nodeToRank;
     std::map<size_t, std::vector<size_t>> nodeToOutEdges;
 };

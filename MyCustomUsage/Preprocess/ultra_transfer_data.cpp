@@ -21,7 +21,6 @@ std::tuple<TransferGraph::VertexAttributes, TransferGraph::EdgeAttributes, std::
 buildTransferGraphStructures(
     std::vector<my::Edge> const& edgesWithStops,
     std::vector<my::StopWithClosestNode> const& stopsWithClosestNode,
-    std::vector<my::NodeId> const& rankedNodes,
     std::unordered_map<my::NodeId, size_t> const& nodeToRank,
     std::map<size_t, std::vector<size_t>> const& nodeToOutEdges
 ) {
@@ -29,10 +28,9 @@ buildTransferGraphStructures(
     // ICI, je crée les nodes et leur coordonnées (pas très pratique, je n'ai les coordonnées que dans les edges...) :
     std::cout << std::endl;
     std::cout << "Combien d'items dans les stops : " << stopsWithClosestNode.size() << std::endl;
-    std::cout << "Combien d'items dans les rankedNodes : " << rankedNodes.size() << std::endl;
     std::cout << std::endl;
 
-    TransferGraph::VertexAttributes vertexAttrs(rankedNodes.size());
+    TransferGraph::VertexAttributes vertexAttrs(nodeToRank.size());
     for (auto edge: edgesWithStops) {
         Geometry::Point node_from_coords{Construct::LatLongTag{}, edge.node_from.lat(), edge.node_from.lon()};
         size_t node_from_rank = nodeToRank.at(edge.node_from.id);
@@ -67,7 +65,6 @@ buildTransferGraphStructures(
     std::cout << "\t beginOut    = " << beginOut.size() << std::endl;
     std::cout << "\t vertexAttrs = " << vertexAttrs.size() << std::endl;
     std::cout << "\t edgeAttrs   = " << edgeAttrs.size() << std::endl;
-    std::cout << "\t nb_nodes    = " << rankedNodes.size() << std::endl;
     std::cout << "\t nb_edges    = " << edgesWithStops.size() << std::endl;
     std::cout << "\t 2*nb_edges  = " << 2*edgesWithStops.size() << std::endl;
     return {vertexAttrs, edgeAttrs, beginOut};
@@ -98,7 +95,6 @@ UltraTransferData::UltraTransferData(
     auto [vertexAttrs, edgeAttrs, beginOut] = buildTransferGraphStructures(
         walking_graph.bidirectionalEdges,
         walking_graph.stopsWithClosestNode,
-        walking_graph.rankedNodes,
         walking_graph.nodeToRank,
         walking_graph.nodeToOutEdges
     );

@@ -10,31 +10,26 @@
 
 namespace my::preprocess {
 
-std::pair<std::vector<my::NodeId>, std::unordered_map<my::NodeId, size_t>>
-_rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWithClosestNode> const& stops) {
-    std::vector<my::NodeId> rankedNodes;
+std::unordered_map<my::NodeId, size_t> _rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWithClosestNode> const& stops) {
     std::unordered_map<my::NodeId, size_t> nodeToRank;
 
     // some algorithms (ULTRA) need that stops are the first nodes of the graph -> stops must be ranked first :
-    std::for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &rankedNodes](my::StopWithClosestNode const& stop) {
-        rankedNodes.push_back(stop.id);
-        nodeToRank.insert({stop.id, rankedNodes.size() - 1});
+    size_t rank = 0;
+    std::for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &rank](my::StopWithClosestNode const& stop) {
+        nodeToRank.insert({stop.id, rank++});
     });
-
-    // NOTE : here, rankedNodes must contain the stops in the same order that the input rankedNodes.
 
     // then we can rank the other nodes in the graph :
     for (auto edge: edgesWithStops) {
         if (nodeToRank.find(edge.node_from.id) == nodeToRank.end()) {
-            rankedNodes.push_back(edge.node_from.id);
-            nodeToRank.insert({edge.node_from.id, rankedNodes.size() - 1});
+            nodeToRank.insert({edge.node_from.id, rank++});
         }
         if (nodeToRank.find(edge.node_to.id) == nodeToRank.end()) {
-            rankedNodes.push_back(edge.node_to.id);
-            nodeToRank.insert({edge.node_to.id, rankedNodes.size() - 1});
+            nodeToRank.insert({edge.node_to.id, rank++});
         }
     }
-    return {rankedNodes, nodeToRank};
+
+    return nodeToRank;
 }
 
 std::vector<my::Edge> _makeEdgesBidirectional(std::vector<my::Edge> const& edges) {
@@ -79,9 +74,8 @@ WalkingGraph::WalkingGraph(
     // extend graph with stop-edges :
     std::tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edges, walkspeedKmPerHour);
 
-    tie(rankedNodes, nodeToRank) = _rankNodes(edgesWithStops, stopsWithClosestNode);
-    std::cout << "nb ranked nodes (1) = " << rankedNodes.size() << std::endl;
-    std::cout << "nb ranked nodes (2) = " << nodeToRank.size() << std::endl;
+    nodeToRank = _rankNodes(edgesWithStops, stopsWithClosestNode);
+    std::cout << "nb ranked nodes = " << nodeToRank.size() << std::endl;
     // FIXME = assert the equality here
 
     bidirectionalEdges = _makeEdgesBidirectional(edgesWithStops);
