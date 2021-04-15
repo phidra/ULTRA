@@ -10,12 +10,12 @@
 
 namespace my::preprocess {
 
-std::unordered_map<my::NodeId, size_t> _rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::StopWithClosestNode> const& stops) {
+std::unordered_map<my::NodeId, size_t> _rankNodes(std::vector<my::Edge> const& edgesWithStops, std::vector<my::Stop> const& stops) {
     std::unordered_map<my::NodeId, size_t> nodeToRank;
 
     // some algorithms (ULTRA) need that stops are the first nodes of the graph -> stops must be ranked first :
     size_t rank = 0;
-    std::for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &rank](my::StopWithClosestNode const& stop) {
+    std::for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &rank](my::Stop const& stop) {
         nodeToRank.insert({stop.id, rank++});
     });
 
@@ -74,7 +74,7 @@ WalkingGraph::WalkingGraph(
     // extend graph with stop-edges :
     std::tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edges, walkspeedKmPerHour);
 
-    nodeToRank = _rankNodes(edgesWithStops, stopsWithClosestNode);
+    nodeToRank = _rankNodes(edgesWithStops, stops);
     std::cout << "nb ranked nodes = " << nodeToRank.size() << std::endl;
     // FIXME = assert the equality here
 
