@@ -38,11 +38,11 @@ std::vector<my::Edge> _makeEdgesBidirectional(std::vector<my::Edge> const& edges
     // For each edge, adds its opposite edge (this doubles the number of edges in the edgelist)
     // note : the function is cleaner without side-effects (taking a const ref to edges, returning a copy)
     // but as this is slower, if performance issues arise, we can mutate edges instead
-    std::vector<my::Edge> opposites(edges);
+    std::vector<my::Edge> bidirectional(edges);
     for (auto edge: edges) {
         Polyline geom = edge.geometry;
         std::reverse(geom.begin(), geom.end());
-        opposites.emplace_back(
+        bidirectional.emplace_back(
             edge.node_to.id,
             edge.node_from.id,
             std::move(geom),
@@ -50,7 +50,8 @@ std::vector<my::Edge> _makeEdgesBidirectional(std::vector<my::Edge> const& edges
             edge.weight
         );
     }
-    return opposites;
+    assert(bidirectional.size() == 2 * edges.size());
+    return bidirectional;
 }
 
 std::map<size_t, std::vector<size_t>> _mapNodesToOutEdges(std::vector<my::Edge> const& edges, std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
@@ -70,18 +71,17 @@ WalkingGraph::WalkingGraph(
     std::vector<my::Stop> const& stops,
     float walkspeedKmPerHour_) :
     walkspeedKmPerHour{walkspeedKmPerHour_},
-    polygon{get_polygon(polygonFile)} {
-    edges = osm_to_graph(osmFile, polygon, walkspeedKmPerHour);
+    polygon{get_polygon(polygonFile)},
+    edgesOsm{osm_to_graph(osmFile, polygon, walkspeedKmPerHour)} {
 
     // extend graph with stop-edges :
-    std::tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edges, walkspeedKmPerHour);
+    std::tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edgesOsm, walkspeedKmPerHour);
 
     nodeToRank = _rankNodes(edgesWithStops, stops);
     std::cout << "nb ranked nodes = " << nodeToRank.size() << std::endl;
-    // FIXME = assert the equality here
 
-    bidirectionalEdges = _makeEdgesBidirectional(edgesWithStops);
-    nodeToOutEdges = _mapNodesToOutEdges(bidirectionalEdges, nodeToRank);
+    edgesWithStopsBidirectional = _makeEdgesBidirectional(edgesWithStops);
+    nodeToOutEdges = _mapNodesToOutEdges(edgesWithStopsBidirectional, nodeToRank);
     std::cout << "The association map has " << nodeToOutEdges.size() << " items" << std::endl;
 }
 
