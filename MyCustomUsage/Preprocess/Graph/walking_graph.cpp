@@ -19,14 +19,16 @@ std::unordered_map<my::NodeId, size_t> _rankNodes(std::vector<my::Edge> const& e
         nodeToRank.insert({stop.id, rank++});
     });
 
+    auto rankThatNode = [&nodeToRank, &rank](auto const& node_id) {
+        if (nodeToRank.find(node_id) == nodeToRank.end()) {
+            nodeToRank.insert({node_id, rank++});
+        }
+    };
+
     // then we can rank the other nodes in the graph :
     for (auto edge: edgesWithStops) {
-        if (nodeToRank.find(edge.node_from.id) == nodeToRank.end()) {
-            nodeToRank.insert({edge.node_from.id, rank++});
-        }
-        if (nodeToRank.find(edge.node_to.id) == nodeToRank.end()) {
-            nodeToRank.insert({edge.node_to.id, rank++});
-        }
+        rankThatNode(edge.node_from.id);
+        rankThatNode(edge.node_to.id);
     }
 
     return nodeToRank;
