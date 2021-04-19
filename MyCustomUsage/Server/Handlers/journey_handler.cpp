@@ -11,7 +11,7 @@
 #include "../json_helper.h"
 #include "../legs.h"
 #include "../Snapping/snapping.h"
-#include "Common/duration_helper.h"
+#include "../duration_helper.h"
 
 using namespace std;
 

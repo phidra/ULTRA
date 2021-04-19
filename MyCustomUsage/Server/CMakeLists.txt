@@ -1,7 +1,6 @@
 # this lib depends on :
-#   - the cmake target 'common' (we could get rid of this dependency, only needed for duration_helper)
 #   - some ULTRA code (Algorithms / DataStructures / Helpers) which has to be includable
-#   - rapidjson (already included via common)
+#   - rapidjson (used via conan, see below)
 #   - cpp-httplib (used via conan, see below)
 
 set(SERVER_SOURCES
@@ -22,7 +21,7 @@ get_filename_component(ULTRA_INCLUDE_DIR "${SERVER_PARENT_DIR}" DIRECTORY)
 target_include_directories(serverlib PUBLIC "${SERVER_PARENT_DIR}")
 target_include_directories(serverlib PUBLIC "${ULTRA_INCLUDE_DIR}")
 target_include_directories(serverlib PUBLIC "${CONAN_INCLUDE_DIRS_CPP-HTTPLIB}")
+target_include_directories(serverlib PRIVATE "${CONAN_INCLUDE_DIRS_RAPIDJSON}")
 
-target_link_libraries(serverlib PUBLIC common)
 set(CPPHTTPLIB_LINK_DEPS -pthread)
 target_link_libraries(serverlib PUBLIC "${CPPHTTPLIB_LINK_DEPS}")

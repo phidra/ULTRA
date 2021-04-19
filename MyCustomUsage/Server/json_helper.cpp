@@ -4,7 +4,7 @@
 #include <rapidjson/ostreamwrapper.h>
 
 #include "json_helper.h"
-#include "Common/duration_helper.h"
+#include "duration_helper.h"
 
 using namespace std;
 
