@@ -43,6 +43,11 @@ std::vector<Edge> build_graph(std::map<WayId, std::vector<LocatedNode> > const& 
 
     // precondition = each way has at least 2 nodes
 
+
+    // L'objectif de ce code est de splitter en plusieurs edges les ways OSM qui sont intersectées en leur milieu
+    // par d'autres ways. On utilise pour cela :
+    //      way_to_nodes qui permet à partir d'une way de retrouver ses nodes
+    //      number_of_node_usage qui permet à partir d'un node de savoir combien de ways l'utilisent
     for (auto ite : way_to_nodes) {
         auto nodes = ite.second;
 
