@@ -48,6 +48,14 @@ std::vector<Edge> build_graph(std::map<WayId, std::vector<LocatedNode> > const& 
     // par d'autres ways. On utilise pour cela :
     //      way_to_nodes qui permet à partir d'une way de retrouver ses nodes
     //      number_of_node_usage qui permet à partir d'un node de savoir combien de ways l'utilisent
+    // Illustration de situation (au 19 avril 2021) où ce split est nécessaire :
+    //      - la Rue de Gabian (way OSM d'id 158189827) est intersectée en son milieu par la Rue de l'Industrie (way OSM d'id 446530366) :
+    //              https://www.openstreetmap.org/way/158189827
+    //              https://www.openstreetmap.org/way/446530366
+    //      - si on se contente de créer un edge entre les noeuds extrêmes de la Rue de Gabian, le graphe résultant n'aura pas de lien entre les deux rues.
+    //      - on splitte donc la Rue de Gabian en deux edges, ayant comme noeud commun l'extrêmité de la Rue de l'Industrie (node OSM d'id 2825675780) :
+    //              https://www.openstreetmap.org/node/2825675780
+
     for (auto ite : way_to_nodes) {
         auto nodes = ite.second;
 
