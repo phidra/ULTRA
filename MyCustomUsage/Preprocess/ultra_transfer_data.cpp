@@ -34,8 +34,7 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     }
 
     // ET LA, je créé les vertex et leur attributs (ToVertex + TravelTime) :
-    TransferGraph::EdgeAttributes edgeAttrs(2*walkingGraph.edgesWithStopsBidirectional.size());  // each edge will be added twice, in each direction
-    // EDIT : on n'a besoin que de les edgesBidirectional, inutile de multiplier par deux, normalement.
+    TransferGraph::EdgeAttributes edgeAttrs(walkingGraph.edgesWithStopsBidirectional.size());
     std::vector<::Edge> beginOut;
     // NOTE : ici, il faut plutôt itérer sur les nodes dans l'ordre (si pas encore fait)
     int edge_counter{0};
@@ -59,7 +58,6 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     std::cout << "\t vertexAttrs = " << vertexAttrs.size() << std::endl;
     std::cout << "\t edgeAttrs   = " << edgeAttrs.size() << std::endl;
     std::cout << "\t nb_edges    = " << walkingGraph.edgesWithStopsBidirectional.size() << std::endl;
-    std::cout << "\t 2*nb_edges  = " << 2*walkingGraph.edgesWithStopsBidirectional.size() << std::endl;
     return {vertexAttrs, edgeAttrs, beginOut};
 }
 
