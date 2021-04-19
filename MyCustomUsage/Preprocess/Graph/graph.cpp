@@ -73,13 +73,13 @@ std::vector<Edge> build_graph(std::map<WayId, std::vector<LocatedNode> > const& 
                 break;
             }
 
-            // cas général : on ajoute l'edge, et on continue d'iéterer sur la way :
+            // cas général : on ajoute le subedge, et on continue d'itérer sur la way :
             geometry.push_back(second_node->second);
             add_edge(edges, first_node->first, second_node->first, std::move(geometry), walkspeed_m_per_s);
             first_node = second_node;
 
-            // NOTE : quoi qu'il arrive, on aura au moins un edge ajouté contenant le premier node, et un (autre,
-            // peut-être) edge contenant le dernier node.
+            // NOTE : quoi qu'il arrive, on aura au moins un edge ajouté contenant le premier node, et un edge ajouté
+            // contenant le dernier node (qui pourra ou non être le même).
         }
     }
 
