@@ -98,9 +98,9 @@ UltraTransferData::UltraTransferData(
     edgeAttrs.serialize(fileName, separator);
 
     // building transfergraph by deserializing :
-    // FIXME : modify transferGraph to build directly ?
-    transferGraph.readBinary(fileName);
-    Graph::writeStatisticsFile(transferGraph, fileName, separator);
+    // FIXME : modify transferGraphUltra to build directly ?
+    transferGraphUltra.readBinary(fileName);
+    Graph::writeStatisticsFile(transferGraphUltra, fileName, separator);
 }
 
 bool UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph const& right) {
@@ -119,13 +119,13 @@ bool UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph 
 bool UltraTransferData::checkSerializationIdempotence() const {
     my::AutoDeleteTempFile tmpfile;
 
-    transferGraph.writeBinary(tmpfile.file);
+    transferGraphUltra.writeBinary(tmpfile.file);
 
     // unserializing, to see if serialization+serialization is idempotent :
     TransferGraph freshTransferGraph;
     freshTransferGraph.readBinary(tmpfile.file);
 
-    return UltraTransferData::areApproxEqual(transferGraph, freshTransferGraph);
+    return UltraTransferData::areApproxEqual(transferGraphUltra, freshTransferGraph);
 }
 
 }

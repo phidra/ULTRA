@@ -63,8 +63,8 @@ int main(int argc, char** argv) {
     std::cout << "Number of edges in original graph : " << transferData.walkingGraph.edgesOsm.size() << std::endl;
     std::cout << "nb edges (including added stops) = " << transferData.walkingGraph.edgesWithStops.size() << std::endl;
     std::cout << "nb stops = " << transferData.walkingGraph.stopsWithClosestNode.size() << std::endl;
-    std::cout << "The transferGraph has these vertices : " << transferData.transferGraph.numVertices() << std::endl;
-    std::cout << "The transferGraph has these edges    : " << transferData.transferGraph.numEdges() << std::endl;
+    std::cout << "The transferGraph has these vertices : " << transferData.transferGraphUltra.numVertices() << std::endl;
+    std::cout << "The transferGraph has these edges    : " << transferData.transferGraphUltra.numEdges() << std::endl;
 
     const std::filesystem::path intermediaryDir = outputDir + "INTERMEDIARY/";
     std::filesystem::create_directory(intermediaryDir);
@@ -73,11 +73,11 @@ int main(int argc, char** argv) {
     // serializing data like RAPTOR::Data does :
     const std::string raptorDataFileName = outputDir + "raptor.binary";
     gtfsData.serialize(raptorDataFileName);
-    transferData.transferGraph.writeBinary(raptorDataFileName + ".graph");
+    transferData.transferGraphUltra.writeBinary(raptorDataFileName + ".graph");
 
     // checking that we can unserialize it, and find no mismatch :
     auto unserialized = RAPTOR::Data::FromBinary(raptorDataFileName);
-    bool areApproxEqual = my::preprocess::UltraTransferData::areApproxEqual(transferData.transferGraph, unserialized.transferGraph);
+    bool areApproxEqual = my::preprocess::UltraTransferData::areApproxEqual(transferData.transferGraphUltra, unserialized.transferGraph);
     std::cout << "La serialization est-elle idempotente pour le transferGraph ? " << std::boolalpha << areApproxEqual << std::endl;
 
     return 0;
