@@ -6,7 +6,6 @@
 #include "DataStructures/RAPTOR/Data.h"
 #include "DataStructures/Geometry/Point.h"
 #include "DataStructures/Graph/Classes/StaticGraph.h"
-#include "Preprocess/Graph/walking_graph.h"
 #include "Preprocess/Graph/graph.h"
 #include "Common/geojson.h"
 #include "Common/autodeletefile.h"
@@ -69,21 +68,25 @@ UltraTransferData::UltraTransferData(
     std::filesystem::path osmFile,
     std::filesystem::path polygonFile,
     std::vector<RAPTOR::Stop> const& raptor_stops,
-    float walkspeedKmPerHour) {
+    float walkspeedKmPerHour) :
+    walkingGraph{[&](){
 
-    // converting RAPTOR::Stop to unopinionated stops :
-    std::vector<my::Stop> stops;
-    for (int stopRank = 0; stopRank < raptor_stops.size(); ++stopRank) {
-        auto const& stop = raptor_stops[stopRank];
-        stops.emplace_back(
-            stop.coordinates.longitude,
-            stop.coordinates.latitude,
-            std::to_string(stopRank),
-            stop.name
-        );
-    }
+        // converting RAPTOR::Stop to unopinionated stops :
+        std::vector<my::Stop> stops;
+        for (int stopRank = 0; stopRank < raptor_stops.size(); ++stopRank) {
+            auto const& stop = raptor_stops[stopRank];
+            stops.emplace_back(
+                stop.coordinates.longitude,
+                stop.coordinates.latitude,
+                std::to_string(stopRank),
+                stop.name
+            );
+        }
 
-    WalkingGraph walkingGraph{osmFile, polygonFile, stops, walkspeedKmPerHour};
+        WalkingGraph walkingGraph{osmFile, polygonFile, stops, walkspeedKmPerHour};
+        return walkingGraph;
+    }()} {
+
     auto [vertexAttrs, edgeAttrs, beginOut] = buildTransferGraphStructures(walkingGraph);
 
     // serialization :
@@ -98,18 +101,6 @@ UltraTransferData::UltraTransferData(
     // FIXME : modify transferGraph to build directly ?
     transferGraph.readBinary(fileName);
     Graph::writeStatisticsFile(transferGraph, fileName, separator);
-}
-
-
-void UltraTransferData::dumpIntermediary(std::string const& outputDir) const {
-    /* std::ofstream originalGraphStream(outputDir + "original_graph.geojson"); */
-    /* my::dump_geojson_graph(originalGraphStream, edges); */
-
-    /* std::ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson"); */
-    /* my::dump_geojson_graph(extendedGraphStream, edgesWithStops); */
-
-    /* std::ofstream stopsStream(outputDir + "stops.geojson"); */
-    /* my::dump_geojson_stops(stopsStream, stopsWithClosestNode); */
 }
 
 bool UltraTransferData::areApproxEqual(TransferGraph const& left, TransferGraph const& right) {

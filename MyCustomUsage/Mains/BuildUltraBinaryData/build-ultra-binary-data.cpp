@@ -53,7 +53,6 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
     my::preprocess::UltraGtfsData gtfsData{gtfsFolder};
 
-
     my::preprocess::UltraTransferData transferData = buildTransferData(
         osmFile,
         polygonFile,
@@ -61,16 +60,15 @@ int main(int argc, char** argv) {
         walkspeedKmPerHour,
         argv[0]);
 
-    std::cout << "Number of edges in original graph : " << transferData.edges.size() << std::endl;
-    std::cout << "nb edges (including added stops) = " << transferData.edgesWithStops.size() << std::endl;
-    std::cout << "nb stops = " << transferData.stopsWithClosestNode.size() << std::endl;
+    std::cout << "Number of edges in original graph : " << transferData.walkingGraph.edgesOsm.size() << std::endl;
+    std::cout << "nb edges (including added stops) = " << transferData.walkingGraph.edgesWithStops.size() << std::endl;
+    std::cout << "nb stops = " << transferData.walkingGraph.stopsWithClosestNode.size() << std::endl;
     std::cout << "The transferGraph has these vertices : " << transferData.transferGraph.numVertices() << std::endl;
     std::cout << "The transferGraph has these edges    : " << transferData.transferGraph.numEdges() << std::endl;
 
     const std::filesystem::path intermediaryDir = outputDir + "INTERMEDIARY/";
     std::filesystem::create_directory(intermediaryDir);
-    transferData.dumpIntermediary(intermediaryDir);
-
+    transferData.walkingGraph.dumpIntermediary(intermediaryDir);
 
     // serializing data like RAPTOR::Data does :
     const std::string raptorDataFileName = outputDir + "raptor.binary";

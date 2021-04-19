@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <map>
 
 #include "walking_graph.h"
@@ -6,6 +7,7 @@
 #include "Preprocess/Parsing/polygonfile.h"
 #include "Preprocess/Graph/extending_with_stops.h"
 #include "Preprocess/Graph/graph.h"
+#include "Common/geojson.h"
 
 
 namespace my::preprocess {
@@ -83,6 +85,21 @@ WalkingGraph::WalkingGraph(
     edgesWithStopsBidirectional = _makeEdgesBidirectional(edgesWithStops);
     nodeToOutEdges = _mapNodesToOutEdges(edgesWithStopsBidirectional, nodeToRank);
     std::cout << "The association map has " << nodeToOutEdges.size() << " items" << std::endl;
+}
+
+
+void WalkingGraph::dumpIntermediary(std::string const& outputDir) const {
+    std::ofstream originalGraphStream(outputDir + "original_graph.geojson");
+    my::dump_geojson_graph(originalGraphStream, edgesOsm);
+
+    std::ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson");
+    my::dump_geojson_graph(extendedGraphStream, edgesWithStops);
+
+    std::ofstream stopsStream(outputDir + "stops.geojson");
+    my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
+
+    std::ofstream polygonStream(outputDir + "polygon.geojson");
+    my::dump_geojson_line(polygonStream, polygon.outer());
 }
 
 

@@ -6,6 +6,7 @@
 #include "DataStructures/Graph/Graph.h"
 #include "DataStructures/RAPTOR/Entities/Stop.h"
 #include "Common/graphtypes.h"
+#include "Preprocess/Graph/walking_graph.h"
 
 namespace my::preprocess {
 
@@ -17,17 +18,11 @@ struct UltraTransferData {
         std::vector<RAPTOR::Stop> const& stops,
         float walkspeedKmPerHour
     );
-    void dumpIntermediary(std::string const& outputDir) const;
     static bool areApproxEqual(TransferGraph const& left, TransferGraph const& right);
     bool checkSerializationIdempotence() const;
 
+    WalkingGraph walkingGraph;
     TransferGraph transferGraph;
-
-    // intermediate data :
-    std::vector<my::Stop> stops;
-    std::vector<my::Edge> edges;
-    std::vector<my::Edge> edgesWithStops;
-    std::vector<my::StopWithClosestNode> stopsWithClosestNode;
 };
 
 }

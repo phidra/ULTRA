@@ -44,6 +44,10 @@ struct WalkingGraph {
     // helper structures :
     std::unordered_map<my::NodeId, size_t> nodeToRank;
     std::map<size_t, std::vector<size_t>> nodeToOutEdges;
+
+    // this dump helper is currently used to check non-regression (output must be binary iso)
+    // later, we can remove it or replace it with proper tests, but for now it is useful
+    void dumpIntermediary(std::string const& outputDir) const;
 };
 
 }
