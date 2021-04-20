@@ -3,7 +3,7 @@
 from pathlib import Path
 import sys
 import csv
-from typing import TextIO, Tuple
+from typing import TextIO, Tuple, Iterable, cast
 import textwrap
 
 
@@ -11,7 +11,7 @@ def usage_and_exit(return_code: int):
     print(
         textwrap.dedent(
             """
-        From an INPUT transfers.txt, only keep the transfers to or from an existing stop (i.e. that appears in INPUT stops.txt).
+        From an INPUT transfers.txt, only keep transfers to/from an existing stop (i.e. appearing in INPUT stops.txt)
 
         OUTPUT transfers.txt is identical to INPUT transfers.txt, but without the transfers to/from an inexisting stop.
 
@@ -63,7 +63,7 @@ def remove_invalid_transfers(in_io: TextIO, stops_io: TextIO, out_io: TextIO) ->
     print("Number of known stops = {}".format(len(known_stops)))
 
     transfers_reader = csv.DictReader(in_io)
-    fieldnames = transfers_reader.fieldnames
+    fieldnames = cast(Iterable[str], transfers_reader.fieldnames)
     writer = csv.DictWriter(out_io, fieldnames, dialect="unix", quoting=csv.QUOTE_MINIMAL)
     writer.writeheader()
     nb_transfers_total = 0
