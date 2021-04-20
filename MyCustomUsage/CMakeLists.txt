@@ -17,7 +17,7 @@ conan_basic_setup(TARGETS)
 
 include(cppgtfs.cmake)
 
-add_subdirectory(Common)
+add_subdirectory(MutualizedPreprocess)
 add_subdirectory(Preprocess)
 add_subdirectory(Server)
 add_subdirectory(Mains)

@@ -6,9 +6,9 @@
 #include "DataStructures/RAPTOR/Data.h"
 #include "DataStructures/Geometry/Point.h"
 #include "DataStructures/Graph/Classes/StaticGraph.h"
-#include "Preprocess/Graph/graph.h"
-#include "Common/geojson.h"
-#include "Common/autodeletefile.h"
+#include "MutualizedPreprocess/Graph/graph.h"
+#include "MutualizedPreprocess/geojson.h"
+#include "MutualizedPreprocess/autodeletefile.h"
 
 
 

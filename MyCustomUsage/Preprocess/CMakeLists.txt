@@ -1,22 +1,15 @@
 # this lib depends on :
 #   - the cmake target 'ad_cppgtfs' (for the library cppgtfs)
-#   - the cmake target 'common'
+#   - the cmake target 'mutualizedpreprocess'
 #   - some ULTRA code (DataStructures / Helpers) which has to be includable
 #   - BoostGeometry (expected to be available in system libs)
 #   - libosmium (expected to be available in system libs)
 #   - rapidjson (used via conan, see below)
 
 
-add_subdirectory(GtfsParsing)
-
 set(PREPROCESS_SOURCES
-    Graph/extending_with_stops.cpp
-    Graph/osmparsing.cpp
-    Graph/graph.cpp
-    Graph/walking_graph.cpp
     ultra_transfer_data.cpp
     ultra_gtfs_data.cpp
-    Parsing/polygonfile.cpp
 )
 
 add_library(preprocess STATIC "${PREPROCESS_SOURCES}")
@@ -29,8 +22,4 @@ get_filename_component(ULTRA_INCLUDE_DIR "${PREPROCESS_PARENT_DIR}" DIRECTORY)
 
 target_include_directories(preprocess PUBLIC "${PREPROCESS_PARENT_DIR}")
 target_include_directories(preprocess PUBLIC "${ULTRA_INCLUDE_DIR}")
-target_link_libraries(preprocess PUBLIC common)
-target_link_libraries(preprocess PUBLIC gtfs_parsing)
-
-set(LIBOSMIUM_LINK_DEPS bz2 z expat -pthread)
-target_link_libraries(preprocess PRIVATE "${LIBOSMIUM_LINK_DEPS}")
+target_link_libraries(preprocess PUBLIC mutualizedpreprocess)

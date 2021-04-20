@@ -3,8 +3,8 @@
 #include <vector>
 #include <filesystem>
 
-#include "Common/graphtypes.h"
-#include "Common/polygon.h"
+#include "MutualizedPreprocess/graphtypes.h"
+#include "MutualizedPreprocess/polygon.h"
 
 namespace my::preprocess {
 

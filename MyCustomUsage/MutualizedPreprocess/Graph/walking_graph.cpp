@@ -4,10 +4,10 @@
 
 #include "walking_graph.h"
 
-#include "Preprocess/Parsing/polygonfile.h"
-#include "Preprocess/Graph/extending_with_stops.h"
-#include "Preprocess/Graph/graph.h"
-#include "Common/geojson.h"
+#include "MutualizedPreprocess/Parsing/polygonfile.h"
+#include "MutualizedPreprocess/Graph/extending_with_stops.h"
+#include "MutualizedPreprocess/Graph/graph.h"
+#include "MutualizedPreprocess/geojson.h"
 
 
 namespace my::preprocess {
