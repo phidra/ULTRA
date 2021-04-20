@@ -86,15 +86,17 @@ def analyze(in_stop_times: TextIO, src_stop: str, dst_stop: str) -> Any:
     for trip_id in trips_joining_both_stop:
         src_row = maybe_interesting_lines[trip_id + "_SRC"]
         dst_row = maybe_interesting_lines[trip_id + "_DST"]
-        assert(src_row["trip_id"] == dst_row["trip_id"] == trip_id)
+        assert src_row["trip_id"] == dst_row["trip_id"] == trip_id
         if src_row["departure_time"] < dst_row["arrival_time"]:
-            proper_order_trips.append(Trip(
-                trip_id=trip_id,
-                departure_time_from_src=src_row["departure_time"],
-                arrival_time_at_dst=dst_row["arrival_time"],
-                src_sequence_number=int(src_row["stop_sequence"]),
-                dst_sequence_number=int(dst_row["stop_sequence"]),
-            ))
+            proper_order_trips.append(
+                Trip(
+                    trip_id=trip_id,
+                    departure_time_from_src=src_row["departure_time"],
+                    arrival_time_at_dst=dst_row["arrival_time"],
+                    src_sequence_number=int(src_row["stop_sequence"]),
+                    dst_sequence_number=int(dst_row["stop_sequence"]),
+                )
+            )
 
     return proper_order_trips
 

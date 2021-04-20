@@ -69,7 +69,7 @@ def main():
     print("Total number of stop_times          = {}".format(total))
     print("stop_times where departure==arrival = {}".format(equal))
     print("stop_times where departure!=arrival = {}".format(different))
-    assert(total == equal + different)
+    assert total == equal + different
 
 
 if __name__ == "__main__":
