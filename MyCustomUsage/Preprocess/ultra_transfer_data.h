@@ -11,13 +11,10 @@
 namespace my::preprocess {
 
 struct UltraTransferData {
-
-    UltraTransferData(
-        std::filesystem::path osmFile,
-        std::filesystem::path polygonFile,
-        std::vector<RAPTOR::Stop> const& stops,
-        float walkspeedKmPerHour
-    );
+    UltraTransferData(std::filesystem::path osmFile,
+                      std::filesystem::path polygonFile,
+                      std::vector<RAPTOR::Stop> const& stops,
+                      float walkspeedKmPerHour);
     static bool areApproxEqual(TransferGraph const& left, TransferGraph const& right);
     bool checkSerializationIdempotence() const;
 
@@ -25,4 +22,4 @@ struct UltraTransferData {
     TransferGraph transferGraphUltra;  // this is from ULTRA code (unfortunately, in the global namespace)
 };
 
-}
+}  // namespace my::preprocess

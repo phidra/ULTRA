@@ -23,13 +23,11 @@ struct RouteLabel {
     std::string label;
 };
 
-
 // A ParsedRoute stores the trips (and their events) of a route
 struct ParsedRoute {
-    using StopEvent = std::pair<int, int>;  // arrival, departure
+    using StopEvent = std::pair<int, int>;                    // arrival, departure
     std::map<OrderableTripId, std::vector<StopEvent>> trips;  // the map ensures trips are ordered
 };
-
 
 // A ParsedStop stores what is necessary to ultra : name and coordinates.
 // We don't use an external structure (as my::Stop) here, to keep GtfsParsing independent.
@@ -39,19 +37,17 @@ struct ParsedStop {
     double latitude;
     double longitude;
 
-    ParsedStop(std::string const& id_, std::string const & name_, double latitude_, double longitude_);
+    ParsedStop(std::string const& id_, std::string const& name_, double latitude_, double longitude_);
     std::string as_string() const;
 };
 
 }  // namespace my::preprocess
 
+namespace std {
 
-namespace std
-{
-
-template <> struct hash<my::preprocess::RouteLabel>
-{
-    size_t operator() (my::preprocess::RouteLabel const& x) const { return hash<string>()(x.label); }
+template <>
+struct hash<my::preprocess::RouteLabel> {
+    size_t operator()(my::preprocess::RouteLabel const& x) const { return hash<string>()(x.label); }
 };
 
 }  // namespace std

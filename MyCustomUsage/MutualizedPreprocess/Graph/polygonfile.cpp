@@ -112,4 +112,4 @@ BgPolygon get_polygon(string polygonfile_path) {
     return create_polygon(points);
 }
 
-}
+}  // namespace my::preprocess

@@ -18,9 +18,8 @@ namespace my {
 void dump_geojson_graph(std::ostream& out, std::vector<Edge> const& edges);
 void dump_geojson_stops(std::ostream& out, std::vector<StopWithClosestNode> const& stops);
 
-
 template <typename PointsOfLine>
-void dump_geojson_line(std::ostream& out, PointsOfLine const & pointsOfLine) {
+void dump_geojson_line(std::ostream& out, PointsOfLine const& pointsOfLine) {
     rapidjson::Document doc(rapidjson::kObjectType);
     rapidjson::Document::AllocatorType& a = doc.GetAllocator();
     doc.AddMember("type", "FeatureCollection", a);
@@ -30,8 +29,7 @@ void dump_geojson_line(std::ostream& out, PointsOfLine const & pointsOfLine) {
     // coordinates :
     rapidjson::Value coordinates(rapidjson::kArrayType);
 
-    for(auto point = boost::begin(pointsOfLine); point != boost::end(pointsOfLine); ++point)
-    {
+    for (auto point = boost::begin(pointsOfLine); point != boost::end(pointsOfLine); ++point) {
         double lng = boost::geometry::get<0>(*point);
         double lat = boost::geometry::get<1>(*point);
         rapidjson::Value coords(rapidjson::kArrayType);
@@ -66,4 +64,4 @@ void dump_geojson_line(std::ostream& out, PointsOfLine const & pointsOfLine) {
     out << std::endl;
 }
 
-}
+}  // namespace my

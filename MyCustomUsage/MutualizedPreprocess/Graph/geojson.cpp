@@ -126,4 +126,4 @@ void dump_geojson_stops(ostream& out, vector<StopWithClosestNode> const& stops) 
     doc.Accept(writer);
 }
 
-}
+}  // namespace my

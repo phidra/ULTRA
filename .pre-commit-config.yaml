@@ -1,14 +1,14 @@
 exclude: '^$'
 fail_fast: false
 default_language_version:
-    python: python3.6
+    python: python3.8
 repos:
     - repo: https://gitlab.com/pycqa/flake8
       rev: 3.8.3
       hooks:
           - id: flake8
             args: [--max-line-length=120]
-            language_version: python3.5
+            language_version: python3.8
     - repo: https://github.com/ambv/black
       rev: 20.8b1
       hooks:
@@ -34,5 +34,6 @@ repos:
       rev: 62302476d0da01515660132d76902359bed0f782
       hooks:
           - id: clang-format
-            # we don't run clang on original ULTRA code :
+            # we don't run clang on original ULTRA code, or js-server :
             exclude: '(Algorithms|DataStructures|Helpers|Runnables)/.*'
+            types: [c++]

@@ -42,4 +42,4 @@ void handle_echo(const httplib::Request& req, httplib::Response& res) {
     res.set_content(buffer.GetString(), "application/json");
 }
 
-}
+}  // namespace myserver

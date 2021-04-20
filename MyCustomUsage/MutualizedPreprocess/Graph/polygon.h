@@ -14,4 +14,4 @@ BgPolygon create_polygon(std::vector<std::pair<double, double>> const& points);
 bool is_inside(BgPolygon const& polygon, double lon, double lat);
 bool is_empty(BgPolygon const& polygon);
 
-}
+}  // namespace my

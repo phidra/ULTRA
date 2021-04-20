@@ -31,9 +31,8 @@ static vector<RAPTOR::Stop> build_stopData(vector<my::preprocess::ParsedStop> co
     return stopData;
 }
 
-static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
-    vector<RAPTOR::Route> const& routeData,
-    unordered_map<string, size_t> const& stopidToRank) {
+static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(vector<RAPTOR::Route> const& routeData,
+                                                                   unordered_map<string, size_t> const& stopidToRank) {
     vector<size_t> firstStopIdOfRoute(routeData.size() + 1);
     vector<::StopId> stopIds;
 
@@ -43,7 +42,9 @@ static pair<vector<::StopId>, vector<size_t>> build_stopIdsRelated(
         my::preprocess::RouteLabel routeLabel = routeData[routeRank].name;
         vector<string> stopsOfCurrentRoute = routeLabel.toStopIds();
         transform(stopsOfCurrentRoute.cbegin(), stopsOfCurrentRoute.cend(), back_inserter(stopIds),
-                  [&stopidToRank](string const& stopid) { return ::StopId{static_cast<u_int32_t>(stopidToRank.at(stopid))}; });
+                  [&stopidToRank](string const& stopid) {
+                      return ::StopId{static_cast<u_int32_t>(stopidToRank.at(stopid))};
+                  });
 
         firstStopIdOfRoute[routeRank] = currentRouteFirstStop;
         currentRouteFirstStop += stopsOfCurrentRoute.size();
@@ -70,17 +71,13 @@ static pair<vector<RAPTOR::StopEvent>, vector<size_t>> build_stopEventsRelated(
 
         size_t nbStopEventsInThisRoute = 0;
 
-
         auto const& route = routes.at(routeLabel);
-        for (auto& [tripId, tripEvents]: route.trips) {
-            for (auto& [arrTime, depTime]: tripEvents) {
+        for (auto& [tripId, tripEvents] : route.trips) {
+            for (auto& [arrTime, depTime] : tripEvents) {
                 allStopEvents.emplace_back(arrTime, depTime);
             }
             nbStopEventsInThisRoute += tripEvents.size();
         }
-
-
-
 
         firstStopEventOfRoute[routeRank] = currentRouteFirstStopEvent;
         currentRouteFirstStopEvent += nbStopEventsInThisRoute;
@@ -130,7 +127,7 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     for (size_t stopRank = 0; stopRank < routesUsingAStop.size(); ++stopRank) {
         auto& routesUsingThisStop = routesUsingAStop[stopRank];
 
-        for (auto & [ routeId, stopIndexInThisRoute ] : routesUsingThisStop) {
+        for (auto& [routeId, stopIndexInThisRoute] : routesUsingThisStop) {
             auto routeRank = static_cast<u_int32_t>(routeToRank.at(routeId));
             routeSegments.emplace_back(::RouteId{routeRank}, StopIndex{static_cast<u_int32_t>(stopIndexInThisRoute)});
         }
@@ -148,7 +145,6 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-
 my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     GtfsParsedData gtfs{gtfsFolder};
 
@@ -165,11 +161,10 @@ my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
     implicitArrivalBufferTimes = true;
 }
 
-
 void my::preprocess::UltraGtfsData::dump(string const& filename) const {
-    IO::serialize(filename, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
+    IO::serialize(filename, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds,
+                  stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
 }
-
 
 bool my::preprocess::UltraGtfsData::checkSerializationIdempotence(ostream& out) const {
     my::AutoDeleteTempFile tmpfile;
@@ -189,39 +184,29 @@ bool my::preprocess::UltraGtfsData::checkSerializationIdempotence(ostream& out) 
     bool freshImplicitDepartureBufferTimes;
     bool freshImplicitArrivalBufferTimes;
 
-    IO::deserialize(tmpfile.file, freshFirstRouteSegmentOfStop, freshFirstStopIdOfRoute, freshFirstStopEventOfRoute, freshRouteSegments, freshStopIds, freshStopEvents, freshStopData, freshRouteData, freshImplicitDepartureBufferTimes, freshImplicitArrivalBufferTimes);
+    IO::deserialize(tmpfile.file, freshFirstRouteSegmentOfStop, freshFirstStopIdOfRoute, freshFirstStopEventOfRoute,
+                    freshRouteSegments, freshStopIds, freshStopEvents, freshStopData, freshRouteData,
+                    freshImplicitDepartureBufferTimes, freshImplicitArrivalBufferTimes);
 
     bool areFirstRouteSegmentOfStopEqual = firstRouteSegmentOfStop == freshFirstRouteSegmentOfStop;
     bool areFirstStopIdOfRouteEqual = firstStopIdOfRoute == freshFirstStopIdOfRoute;
     bool areFirstStopEventOfRouteEqual = firstStopEventOfRoute == freshFirstStopEventOfRoute;
-    bool areRouteSegmentsEqual = equal(
-        routeSegments.begin(),
-        routeSegments.end(),
-        freshRouteSegments.begin(),
-        [](auto const& x, auto const& y) { return x.routeId == y.routeId && x.stopIndex == y.stopIndex; }
-    );
+    bool areRouteSegmentsEqual =
+        equal(routeSegments.begin(), routeSegments.end(), freshRouteSegments.begin(),
+              [](auto const& x, auto const& y) { return x.routeId == y.routeId && x.stopIndex == y.stopIndex; });
     bool areStopIdsEqual = stopIds == freshStopIds;
-    bool areStopEventsEqual = equal(
-        stopEvents.begin(),
-        stopEvents.end(),
-        freshStopEvents.begin(),
-        [](auto const& x, auto const& y) { return x.arrivalTime == y.arrivalTime && x.departureTime == y.departureTime; }
-    );
-    bool areStopDataEqual = equal(
-        stopData.begin(),
-        stopData.end(),
-        freshStopData.begin(),
-        [](auto const& x, auto const& y) { return x.name == y.name && x.coordinates == y.coordinates && x.minTransferTime == y.minTransferTime; }
-    );
-    bool areRouteDataEqual = equal(
-        routeData.begin(),
-        routeData.end(),
-        freshRouteData.begin(),
-        [](auto const& x, auto const& y) { return x.name == y.name && x.type == y.type; }
-    );
+    bool areStopEventsEqual =
+        equal(stopEvents.begin(), stopEvents.end(), freshStopEvents.begin(), [](auto const& x, auto const& y) {
+            return x.arrivalTime == y.arrivalTime && x.departureTime == y.departureTime;
+        });
+    bool areStopDataEqual =
+        equal(stopData.begin(), stopData.end(), freshStopData.begin(), [](auto const& x, auto const& y) {
+            return x.name == y.name && x.coordinates == y.coordinates && x.minTransferTime == y.minTransferTime;
+        });
+    bool areRouteDataEqual = equal(routeData.begin(), routeData.end(), freshRouteData.begin(),
+                                   [](auto const& x, auto const& y) { return x.name == y.name && x.type == y.type; });
     bool areImplicitDepartureBufferTimesEqual = implicitDepartureBufferTimes == freshImplicitDepartureBufferTimes;
     bool areImplicitArrivalBufferTimesEqual = implicitArrivalBufferTimes == freshImplicitArrivalBufferTimes;
-
 
     out << "DETAILS : is serialization + deserialization idempotent ?" << endl;
     out << boolalpha;
@@ -236,23 +221,14 @@ bool my::preprocess::UltraGtfsData::checkSerializationIdempotence(ostream& out) 
     out << areImplicitDepartureBufferTimesEqual << endl;
     out << areImplicitArrivalBufferTimesEqual << endl;
 
-
-    return (
-        areFirstRouteSegmentOfStopEqual &&
-        areFirstStopIdOfRouteEqual &&
-        areFirstStopEventOfRouteEqual &&
-        areRouteSegmentsEqual &&
-        areStopIdsEqual &&
-        areStopEventsEqual &&
-        areStopDataEqual &&
-        areRouteDataEqual &&
-        areImplicitDepartureBufferTimesEqual &&
-        areImplicitArrivalBufferTimesEqual
-    );
+    return (areFirstRouteSegmentOfStopEqual && areFirstStopIdOfRouteEqual && areFirstStopEventOfRouteEqual &&
+            areRouteSegmentsEqual && areStopIdsEqual && areStopEventsEqual && areStopDataEqual && areRouteDataEqual &&
+            areImplicitDepartureBufferTimesEqual && areImplicitArrivalBufferTimesEqual);
 }
 
 void UltraGtfsData::serialize(const string& fileName) const {
-    IO::serialize(fileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds, stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
+    IO::serialize(fileName, firstRouteSegmentOfStop, firstStopIdOfRoute, firstStopEventOfRoute, routeSegments, stopIds,
+                  stopEvents, stopData, routeData, implicitDepartureBufferTimes, implicitArrivalBufferTimes);
 }
 
-}
+}  // namespace my::preprocess

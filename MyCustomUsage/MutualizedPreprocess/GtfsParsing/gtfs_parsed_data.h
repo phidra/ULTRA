@@ -25,9 +25,7 @@
 // Thus, one of the main purpose of GtfsParsedData is to build "scientific" routes from GTFS feed.
 // BEWARE : the "routes" returned by cppgtfs are not the scientific ones, and they are NOT further used !
 
-
 namespace my::preprocess {
-
 
 struct GtfsParsedData {
     GtfsParsedData(std::string const& gtfsFolder);
@@ -44,13 +42,10 @@ struct GtfsParsedData {
     std::vector<RouteLabel> rankedRoutes;
     std::unordered_map<RouteLabel, size_t> routeToRank;
 
-
     //   - rankedStops associates a rank to a stop
     //   - stopidToRank allows to retrieve the rank of a given stop
     std::vector<ParsedStop> rankedStops;
     std::unordered_map<std::string, size_t> stopidToRank;
-
-
 };
 
-}
+}  // namespace my::preprocess

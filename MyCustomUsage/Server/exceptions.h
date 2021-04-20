@@ -40,4 +40,4 @@ struct InconsistentLegDurations : public std::exception {
     std::string error_msg;
 };
 
-}
+}  // namespace myserver

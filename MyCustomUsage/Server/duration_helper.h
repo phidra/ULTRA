@@ -10,9 +10,9 @@ namespace my {
 
 inline std::tuple<int, int, int> dispatch(int duration) {
     int nb_hours = duration / 3600;
-    int duration_without_hours = duration - (nb_hours*3600);
+    int duration_without_hours = duration - (nb_hours * 3600);
     int nb_minutes = duration_without_hours / 60;
-    int duration_without_hours_or_minutes = duration_without_hours - (nb_minutes*60);
+    int duration_without_hours_or_minutes = duration_without_hours - (nb_minutes * 60);
     int nb_seconds = duration_without_hours_or_minutes;
     assert(nb_seconds >= 0 && nb_seconds < 60);
     assert(nb_minutes >= 0 && nb_minutes < 60);
@@ -51,8 +51,7 @@ inline std::string format_duration(int duration) {
     if (duration <= 3599) {
         oss << std::setw(2) << nb_minutes << "m";
         oss << std::setw(2) << nb_seconds << "s";
-    }
-    else {
+    } else {
         oss << nb_hours << "h";
         oss << std::setw(2) << nb_minutes << "m";
         oss << std::setw(2) << nb_seconds << "s";
@@ -61,4 +60,4 @@ inline std::string format_duration(int duration) {
     return oss.str();
 }
 
-}
+}  // namespace my

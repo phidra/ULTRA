@@ -62,4 +62,4 @@ bool is_way_in_polygon(const osmium::Way& way, const BgPolygon& polygon) {
     return is_front_in_polygon || is_back_in_polygon;
 }
 
-}
+}  // namespace my::preprocess

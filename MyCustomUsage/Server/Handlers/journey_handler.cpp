@@ -25,34 +25,30 @@ struct UnknownStation : public std::exception {
     inline const char* what() const throw() { return msg.c_str(); }
 };
 
-
 struct JourneyParams {
     JourneyParams() = default;
-    JourneyParams(
-        string srcid_,
-        string srcname_,
-        double srclon_,
-        double srclat_,
-        float src_snap_distance_,
-        string dstid_,
-        string dstname_,
-        double dstlon_,
-        double dstlat_,
-        float dst_snap_distance_,
-        int departure_time_
-    ) :
-        srcid{srcid_},
-        srcname{srcname_},
-        srclon{srclon_},
-        srclat{srclat_},
-        src_snap_distance{src_snap_distance_},
-        dstid{dstid_},
-        dstname{dstname_},
-        dstlon{dstlon_},
-        dstlat{dstlat_},
-        dst_snap_distance{dst_snap_distance_},
-        departure_time{departure_time_}
-    {}
+    JourneyParams(string srcid_,
+                  string srcname_,
+                  double srclon_,
+                  double srclat_,
+                  float src_snap_distance_,
+                  string dstid_,
+                  string dstname_,
+                  double dstlon_,
+                  double dstlat_,
+                  float dst_snap_distance_,
+                  int departure_time_)
+        : srcid{srcid_},
+          srcname{srcname_},
+          srclon{srclon_},
+          srclat{srclat_},
+          src_snap_distance{src_snap_distance_},
+          dstid{dstid_},
+          dstname{dstname_},
+          dstlon{dstlon_},
+          dstlat{dstlat_},
+          dst_snap_distance{dst_snap_distance_},
+          departure_time{departure_time_} {}
     rapidjson::Value as_json(rapidjson::Document::AllocatorType& a) const {
         rapidjson::Value params(rapidjson::kObjectType);
         params.AddMember("srcid", rapidjson::Value().SetString(srcid.c_str(), a), a);
@@ -66,7 +62,8 @@ struct JourneyParams {
         params.AddMember("dstlat", rapidjson::Value(dstlat), a);
         params.AddMember("dst_snap_distance", rapidjson::Value(dst_snap_distance), a);
         params.AddMember("departure_time", rapidjson::Value(departure_time), a);
-        params.AddMember("departure_time_str", rapidjson::Value().SetString(my::format_time(departure_time).c_str(), a), a);
+        params.AddMember("departure_time_str", rapidjson::Value().SetString(my::format_time(departure_time).c_str(), a),
+                         a);
         return params;
     }
     string srcid, srcname;
@@ -130,7 +127,7 @@ pair<double, double> parse_location(string const& location_str) {
     vector<string> tokens;
     string token;
     istringstream iss(location_str);
-    while(getline(iss, token, ',')) {
+    while (getline(iss, token, ',')) {
         tokens.push_back(token);
     }
 
@@ -157,7 +154,7 @@ JourneyParams parse_locations_params(const httplib::Params& params, myserver::St
 
     string src = get_required_param_as_string(params, "src");
     auto src_pair = parse_location(src);
-    auto src_result =  get_closest_stop(src_pair.first, src_pair.second);
+    auto src_result = get_closest_stop(src_pair.first, src_pair.second);
     auto src_id = get<0>(src_result);
     auto src_name = stopid_to_stopname(src_id, stops, "unknown-name");
     auto src_lon = get<1>(src_result);
@@ -166,7 +163,7 @@ JourneyParams parse_locations_params(const httplib::Params& params, myserver::St
 
     string dst = get_required_param_as_string(params, "dst");
     auto dst_pair = parse_location(dst);
-    auto dst_result =  get_closest_stop(dst_pair.first, dst_pair.second);
+    auto dst_result = get_closest_stop(dst_pair.first, dst_pair.second);
     auto dst_id = get<0>(dst_result);
     auto dst_name = stopid_to_stopname(dst_id, stops, "unknown-name");
     auto dst_lon = get<1>(dst_result);
@@ -175,7 +172,8 @@ JourneyParams parse_locations_params(const httplib::Params& params, myserver::St
 
     int departure_time = get_required_param_as_int(params, "departure-time");
 
-    return {src_id, src_name, src_lon, src_lat, src_snap_distance, dst_id, dst_name, dst_lon, dst_lat, dst_snap_distance, departure_time};
+    return {src_id,   src_name, src_lon, src_lat,           src_snap_distance, dst_id,
+            dst_name, dst_lon,  dst_lat, dst_snap_distance, departure_time};
 }
 
 rapidjson::Document prepare_response(const httplib::Request& req, httplib::Response& res) {
@@ -213,7 +211,11 @@ void finalize_response(httplib::Response& res, rapidjson::Document& doc, int htt
     cerr << "\t" << (is_ok ? "OK" : error_msg) << endl;
 }
 
-bool compute_journey(JourneyParams const& jparams, rapidjson::Value& response_field, rapidjson::Document::AllocatorType& a, ALGO& algo, myserver::StopMap const& stops) {
+bool compute_journey(JourneyParams const& jparams,
+                     rapidjson::Value& response_field,
+                     rapidjson::Document::AllocatorType& a,
+                     ALGO& algo,
+                     myserver::StopMap const& stops) {
     response_field.AddMember("journey_params", jparams.as_json(a), a);
 
     decltype(chrono::high_resolution_clock::now()) before;
@@ -256,7 +258,8 @@ bool compute_journey(JourneyParams const& jparams, rapidjson::Value& response_fi
     response_field.AddMember("EAT", eat, a);
     response_field.AddMember("EAT_str", rapidjson::Value().SetString(my::format_time(eat).c_str(), a), a);
     response_field.AddMember("journey_duration", journey_duration, a);
-    response_field.AddMember("journey_duration_str", rapidjson::Value().SetString(my::format_duration(journey_duration).c_str(), a), a);
+    response_field.AddMember("journey_duration_str",
+                             rapidjson::Value().SetString(my::format_duration(journey_duration).c_str(), a), a);
     response_field.AddMember("legs", legs_to_json(legs, stops, a), a);
 
     // dumping legs as geojson :
@@ -266,7 +269,10 @@ bool compute_journey(JourneyParams const& jparams, rapidjson::Value& response_fi
     return is_raptor_ok;
 }
 
-void handle_journey_between_stops(const httplib::Request& req, httplib::Response& res, RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>& algo, myserver::StopMap const& stops) {
+void handle_journey_between_stops(const httplib::Request& req,
+                                  httplib::Response& res,
+                                  RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>& algo,
+                                  myserver::StopMap const& stops) {
     JourneyParams jparams;
     try {
         jparams = parse_stops_params(req.params);
@@ -287,7 +293,10 @@ void handle_journey_between_stops(const httplib::Request& req, httplib::Response
     }
 }
 
-void handle_journey_between_locations(const httplib::Request& req, httplib::Response& res, RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>& algo, myserver::StopMap const& stops) {
+void handle_journey_between_locations(const httplib::Request& req,
+                                      httplib::Response& res,
+                                      RAPTOR::ULTRARAPTOR<RAPTOR::NoDebugger>& algo,
+                                      myserver::StopMap const& stops) {
     JourneyParams jparams;
     try {
         jparams = parse_locations_params(req.params, stops);
@@ -306,7 +315,6 @@ void handle_journey_between_locations(const httplib::Request& req, httplib::Resp
     } else {
         finalize_response(res, doc, 500, "raptor encountered an error");
     }
-
 }
 
-}
+}  // namespace myserver

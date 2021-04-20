@@ -43,17 +43,19 @@ std::vector<Edge> build_graph(std::map<WayId, std::vector<LocatedNode> > const& 
 
     // precondition = each way has at least 2 nodes
 
-
     // L'objectif de ce code est de splitter en plusieurs edges les ways OSM qui sont intersectées en leur milieu
     // par d'autres ways. On utilise pour cela :
     //      way_to_nodes qui permet à partir d'une way de retrouver ses nodes
     //      number_of_node_usage qui permet à partir d'un node de savoir combien de ways l'utilisent
     // Illustration de situation (au 19 avril 2021) où ce split est nécessaire :
-    //      - la Rue de Gabian (way OSM d'id 158189827) est intersectée en son milieu par la Rue de l'Industrie (way OSM d'id 446530366) :
+    //      - la Rue de Gabian (way OSM d'id 158189827) est intersectée en son milieu par la Rue de l'Industrie (way OSM
+    //      d'id 446530366) :
     //              https://www.openstreetmap.org/way/158189827
     //              https://www.openstreetmap.org/way/446530366
-    //      - si on se contente de créer un edge entre les noeuds extrêmes de la Rue de Gabian, le graphe résultant n'aura pas de lien entre les deux rues.
-    //      - on splitte donc la Rue de Gabian en deux edges, ayant comme noeud commun l'extrêmité de la Rue de l'Industrie (node OSM d'id 2825675780) :
+    //      - si on se contente de créer un edge entre les noeuds extrêmes de la Rue de Gabian, le graphe résultant
+    //      n'aura pas de lien entre les deux rues.
+    //      - on splitte donc la Rue de Gabian en deux edges, ayant comme noeud commun l'extrêmité de la Rue de
+    //      l'Industrie (node OSM d'id 2825675780) :
     //              https://www.openstreetmap.org/node/2825675780
 
     for (auto ite : way_to_nodes) {
@@ -117,4 +119,4 @@ vector<Edge> osm_to_graph(string osmfile, BgPolygon polygon, float walkspeed_km_
     return edges;
 }
 
-}
+}  // namespace my::preprocess

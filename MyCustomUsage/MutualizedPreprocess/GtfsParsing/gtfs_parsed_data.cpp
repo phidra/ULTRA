@@ -39,7 +39,7 @@ static RouteLabel _tripToRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
         // verifying that stop times are properly ordered :
         int currentDepartureTime = stoptime.getDepartureTime().seconds();
         if (currentDepartureTime <= previousDepartureTime) {
-            throw runtime_error( "ERROR : stoptimes are not properly ordered !");
+            throw runtime_error("ERROR : stoptimes are not properly ordered !");
         }
         previousDepartureTime = currentDepartureTime;
 #endif
@@ -50,7 +50,6 @@ static RouteLabel _tripToRouteLabel(ad::cppgtfs::gtfs::Trip const& trip) {
     return toReturn;
 }
 
-
 void _addTripToRoute(ParsedRoute& route, OrderableTripId const& tripId, ad::cppgtfs::gtfs::Trip const& trip) {
     auto& thisTripEvents = route.trips[tripId];
     for (auto const& stoptime : trip.getStopTimes()) {
@@ -59,7 +58,6 @@ void _addTripToRoute(ParsedRoute& route, OrderableTripId const& tripId, ad::cppg
         thisTripEvents.emplace_back(arrivalTime, departureTime);
     }
 }
-
 
 static ad::cppgtfs::gtfs::Stop const& _getStop(ad::cppgtfs::gtfs::Feed const& feed, string const& stopid) {
     auto stopPtr = feed.getStops().get(stopid);
@@ -80,8 +78,7 @@ static map<RouteLabel, ParsedRoute> _partitionTripsInRoutes(ad::cppgtfs::gtfs::F
 
     map<RouteLabel, ParsedRoute> parsedRoutes;
 
-
-    for (auto const & [ tripId, tripPtr ] : feed.getTrips()) {
+    for (auto const& [tripId, tripPtr] : feed.getTrips()) {
         auto& trip = *(tripPtr);
 
         // in the set, all the trips of a given route are ordered by their departure times
@@ -96,15 +93,14 @@ static map<RouteLabel, ParsedRoute> _partitionTripsInRoutes(ad::cppgtfs::gtfs::F
     return parsedRoutes;
 }
 
-[[maybe_unused]] static bool _checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed, map<RouteLabel, ParsedRoute> const& partition) {
+[[maybe_unused]] static bool _checkRoutePartitionConsistency(ad::cppgtfs::gtfs::Feed const& feed,
+                                                             map<RouteLabel, ParsedRoute> const& partition) {
     // checks that the agregation of the trips of all routes have the same number of trips than feed
     auto nbTripsInFeed = feed.getTrips().size();
-    int nbTripsInPartitions = accumulate(
-        partition.cbegin(),
-        partition.cend(),
-        0,
-        [](int acc, auto const& routePair) { auto const& route = routePair.second ; return acc + route.trips.size(); }
-    );
+    int nbTripsInPartitions = accumulate(partition.cbegin(), partition.cend(), 0, [](int acc, auto const& routePair) {
+        auto const& route = routePair.second;
+        return acc + route.trips.size();
+    });
     return nbTripsInFeed == nbTripsInPartitions;
 }
 
@@ -118,7 +114,7 @@ static pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> _rankRoutes(
     vector<RouteLabel> rankedRoutes;
     unordered_map<RouteLabel, size_t> routeToRank;
 
-    for (auto& [routeLabel, _]: routes) {
+    for (auto& [routeLabel, _] : routes) {
         rankedRoutes.push_back(routeLabel);
         routeToRank.insert({routeLabel, routeRank++});
     }
@@ -129,16 +125,15 @@ static pair<vector<RouteLabel>, unordered_map<RouteLabel, size_t>> _rankRoutes(
     return {move(rankedRoutes), move(routeToRank)};
 }
 
-static pair<vector<ParsedStop>, unordered_map<string, size_t>> _rankStops(
-    map<RouteLabel, ParsedRoute> const& routes, ad::cppgtfs::gtfs::Feed const& feed) {
-
+static pair<vector<ParsedStop>, unordered_map<string, size_t>> _rankStops(map<RouteLabel, ParsedRoute> const& routes,
+                                                                          ad::cppgtfs::gtfs::Feed const& feed) {
     // this function ranks the stops (and filter them : stops not used in at least a route are ignored)
     // i.e. each stop has an arbitrary rank from 0 to N-1 (where N is the number of stops)
     // (this rank will be used to store the stops in a vector)
 
     // first, identify the stops that are used by at least one route :
     set<string> usefulStopIds;
-    for (auto & [ routeLabel, _ ] : routes) {
+    for (auto& [routeLabel, _] : routes) {
         vector<string> stopsOfThisRoute = routeLabel.toStopIds();
         usefulStopIds.insert(stopsOfThisRoute.begin(), stopsOfThisRoute.end());
     }
@@ -147,7 +142,7 @@ static pair<vector<ParsedStop>, unordered_map<string, size_t>> _rankStops(
     size_t rank = 0;
     vector<ParsedStop> rankedStops;
     unordered_map<string, size_t> stopidToRank;
-    for (auto& stopid: usefulStopIds) {
+    for (auto& stopid : usefulStopIds) {
         Stop const& stop = _getStop(feed, stopid);
         rankedStops.emplace_back(stopid, stop.getName(), stop.getLat(), stop.getLng());
         stopidToRank.insert({stopid, rank});
@@ -167,12 +162,12 @@ GtfsParsedData::GtfsParsedData(std::string const& gtfsFolder) {
 
     routes = _partitionTripsInRoutes(feed);
 
-
 #ifndef NDEBUG
     bool isPartitionConsistent = _checkRoutePartitionConsistency(feed, routes);
     if (!isPartitionConsistent) {
         ostringstream oss;
-        oss << "ERROR : number of trips after partitioning by route is not the same than number of trips in feed (=" << feed.getTrips().size() << ")";
+        oss << "ERROR : number of trips after partitioning by route is not the same than number of trips in feed (="
+            << feed.getTrips().size() << ")";
         throw runtime_error(oss.str());
     }
 #endif
@@ -181,4 +176,4 @@ GtfsParsedData::GtfsParsedData(std::string const& gtfsFolder) {
     tie(rankedStops, stopidToRank) = _rankStops(routes, feed);
 }
 
-}
+}  // namespace my::preprocess

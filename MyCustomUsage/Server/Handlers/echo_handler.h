@@ -3,7 +3,7 @@
 namespace httplib {
 struct Request;
 struct Response;
-}
+}  // namespace httplib
 
 namespace myserver {
 

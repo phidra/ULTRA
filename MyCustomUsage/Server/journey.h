@@ -82,7 +82,7 @@ inline std::vector<Leg> build_legs(Vertex source,
                                    std::vector<Round> const& rounds) {
     // journey is rebuilt backward : we recursively get parents, beginning with last_stop
 
-    auto[last_stop, last_walk_distance, last_stop_label] = _find_optimal_last_stop(data, initialTransfers, rounds);
+    auto [last_stop, last_walk_distance, last_stop_label] = _find_optimal_last_stop(data, initialTransfers, rounds);
 
     // for now, we only allow journeys from/to a stop -> targetVertex is necessary a stop
     // (but last_walk_distance is not necessarily 0, if a more optimal stop + final walk exist)
@@ -96,7 +96,8 @@ inline std::vector<Leg> build_legs(Vertex source,
 
     std::vector<Leg> legs;
 
-    std::cout << "About to reconstruct (backward) journey from source=" << source << " to target=" << target << " (using last_stop=" << last_stop << ")" << std::endl;
+    std::cout << "About to reconstruct (backward) journey from source=" << source << " to target=" << target
+              << " (using last_stop=" << last_stop << ")" << std::endl;
     auto currentStop = Vertex(last_stop);
     auto currentStopLabel = get_best_label(currentStop, rounds);
 
@@ -110,8 +111,10 @@ inline std::vector<Leg> build_legs(Vertex source,
         int start_time = departure_time;
         int arrival_time = label.arrivalTime;
         std::cout << "\tleg ";
-        std::cout << "FROM=" << label.parent << " (" << raptorData.stopData[label.parent] << ", at " << label.parentDepartureTime << ") ";
-        std::cout << "TO=" << stop << "(" << raptorData.stopData[stop] << ", at " << label.arrivalTime << ")" << std::endl;
+        std::cout << "FROM=" << label.parent << " (" << raptorData.stopData[label.parent] << ", at "
+                  << label.parentDepartureTime << ") ";
+        std::cout << "TO=" << stop << "(" << raptorData.stopData[stop] << ", at " << label.arrivalTime << ")"
+                  << std::endl;
         return {is_walk, departure_id, arrival_id, start_time, departure_time, arrival_time};
     };
 
@@ -127,7 +130,8 @@ inline std::vector<Leg> build_legs(Vertex source,
     std::reverse(legs.begin(), legs.end());
 
     // it is still unclear if having last_stop != target is a bug or no
-    // while this is clarified, we manually add a last walking leg in those situation, to display a proper route in viewer
+    // while this is clarified, we manually add a last walking leg in those situation, to display a proper route in
+    // viewer
     if (last_stop != target) {
         auto distance_from_stop_to_target = initialTransfers.getBackwardDistance(Vertex(last_stop));
 
@@ -142,16 +146,10 @@ inline std::vector<Leg> build_legs(Vertex source,
         int arrival_time = start_time + distance_from_stop_to_target;
         std::cout << "\tMANUAL LAST leg ";
         std::cout << "FROM=" << last_stop << " (" << raptorData.stopData[last_stop] << ", at " << start_time << ") ";
-        std::cout << "TO=" << target << "(" << raptorData.stopData[target] << ", at " << arrival_time << ")" << std::endl;
+        std::cout << "TO=" << target << "(" << raptorData.stopData[target] << ", at " << arrival_time << ")"
+                  << std::endl;
 
-        legs.emplace_back(
-            is_walk,
-            departure_id,
-            arrival_id,
-            start_time,
-            departure_time,
-            arrival_time
-        );
+        legs.emplace_back(is_walk, departure_id, arrival_id, start_time, departure_time, arrival_time);
     }
 
     // setting the wait_time of all legs.
@@ -160,10 +158,11 @@ inline std::vector<Leg> build_legs(Vertex source,
     first_leg.start_time = requestedDepartureTime;
     assert(first_leg.start_time <= first_leg.departure_time);
 
-    // for the other leg, the wait_time is the difference between the previous leg's arrival_time and the current leg's departure_time :
+    // for the other leg, the wait_time is the difference between the previous leg's arrival_time and the current leg's
+    // departure_time :
     if (legs.size() > 1) {
         for (size_t i_leg = 1; i_leg < legs.size(); ++i_leg) {
-            auto const& left_leg = legs[i_leg-1];
+            auto const& left_leg = legs[i_leg - 1];
             auto& right_leg = legs[i_leg];
             right_leg.start_time = left_leg.arrival_time;
             assert(right_leg.start_time <= right_leg.departure_time);

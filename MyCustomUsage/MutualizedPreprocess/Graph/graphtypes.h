@@ -17,10 +17,7 @@ struct Node {
           id{url},  // for OSM nodes, node ids are their URL
           location{location_} {}
 
-    inline Node(NodeId id, osmium::Location const& location_)
-        : url{},
-          id{id},
-          location{location_} {}
+    inline Node(NodeId id, osmium::Location const& location_) : url{}, id{id}, location{location_} {}
 
     inline double lon() const { return location.lon(); }
     inline double lat() const { return location.lat(); }
@@ -59,4 +56,4 @@ struct Edge {
     Polyline geometry;
 };
 
-}
+}  // namespace my

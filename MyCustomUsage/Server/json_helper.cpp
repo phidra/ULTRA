@@ -37,8 +37,9 @@ rapidjson::Value stop_to_geojson(string const& stopId, StopMap const& stops, rap
     return feature;
 }
 
-
-rapidjson::Value stop_to_coordinates(string const& stopId, StopMap const& stops, rapidjson::Document::AllocatorType& a) {
+rapidjson::Value stop_to_coordinates(string const& stopId,
+                                     StopMap const& stops,
+                                     rapidjson::Document::AllocatorType& a) {
     // special value [0.0, 0.0] is placeholder for "not found"
     rapidjson::Value json_location(rapidjson::kArrayType);
 
@@ -47,14 +48,12 @@ rapidjson::Value stop_to_coordinates(string const& stopId, StopMap const& stops,
         auto stop = iterator->second;
         json_location.PushBack(rapidjson::Value(stop.lon), a);
         json_location.PushBack(rapidjson::Value(stop.lat), a);
-    }
-    else {
+    } else {
         json_location.PushBack(rapidjson::Value(0.0), a);
         json_location.PushBack(rapidjson::Value(0.0), a);
     }
     return json_location;
 }
-
 
 rapidjson::Value leg_to_json(Leg const& leg, StopMap const& stops, rapidjson::Document::AllocatorType& a) {
     rapidjson::Value json_leg(rapidjson::kObjectType);
@@ -70,15 +69,20 @@ rapidjson::Value leg_to_json(Leg const& leg, StopMap const& stops, rapidjson::Do
     json_leg.AddMember("start_time", leg.start_time, a);
     json_leg.AddMember("start_time_str", rapidjson::Value().SetString(my::format_time(leg.start_time).c_str(), a), a);
     json_leg.AddMember("departure_time", leg.departure_time, a);
-    json_leg.AddMember("departure_time_str", rapidjson::Value().SetString(my::format_time(leg.departure_time).c_str(), a), a);
+    json_leg.AddMember("departure_time_str",
+                       rapidjson::Value().SetString(my::format_time(leg.departure_time).c_str(), a), a);
     json_leg.AddMember("arrival_time", leg.arrival_time, a);
-    json_leg.AddMember("arrival_time_str", rapidjson::Value().SetString(my::format_time(leg.arrival_time).c_str(), a), a);
+    json_leg.AddMember("arrival_time_str", rapidjson::Value().SetString(my::format_time(leg.arrival_time).c_str(), a),
+                       a);
     json_leg.AddMember("full_duration", leg.get_full_duration(), a);
-    json_leg.AddMember("full_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_full_duration()).c_str(), a), a);
+    json_leg.AddMember("full_duration_str",
+                       rapidjson::Value().SetString(my::format_duration(leg.get_full_duration()).c_str(), a), a);
     json_leg.AddMember("waiting_duration", leg.get_waiting_duration(), a);
-    json_leg.AddMember("waiting_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_waiting_duration()).c_str(), a), a);
+    json_leg.AddMember("waiting_duration_str",
+                       rapidjson::Value().SetString(my::format_duration(leg.get_waiting_duration()).c_str(), a), a);
     json_leg.AddMember("traveling_duration", leg.get_traveling_duration(), a);
-    json_leg.AddMember("traveling_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_traveling_duration()).c_str(), a), a);
+    json_leg.AddMember("traveling_duration_str",
+                       rapidjson::Value().SetString(my::format_duration(leg.get_traveling_duration()).c_str(), a), a);
 
     // intermediary stops :
     rapidjson::Value json_stops(rapidjson::kArrayType);
@@ -106,9 +110,8 @@ rapidjson::Value leg_to_geojson_polyline(Leg const& leg, StopMap const& stops, r
         rapidjson::Value dst_coordinates = stop_to_coordinates(leg.arrival_id, stops, a);
         coordinates.PushBack(src_coordinates, a);
         coordinates.PushBack(dst_coordinates, a);
-    }
-    else {
-        for (auto stop: leg.stops) {
+    } else {
+        for (auto stop : leg.stops) {
             rapidjson::Value stop_coordinates = stop_to_coordinates(stop, stops, a);
             coordinates.PushBack(stop_coordinates, a);
         }
@@ -126,15 +129,20 @@ rapidjson::Value leg_to_geojson_polyline(Leg const& leg, StopMap const& stops, r
     properties.AddMember("start_time", leg.start_time, a);
     properties.AddMember("start_time_str", rapidjson::Value().SetString(my::format_time(leg.start_time).c_str(), a), a);
     properties.AddMember("departure_time", leg.departure_time, a);
-    properties.AddMember("departure_time_str", rapidjson::Value().SetString(my::format_time(leg.departure_time).c_str(), a), a);
+    properties.AddMember("departure_time_str",
+                         rapidjson::Value().SetString(my::format_time(leg.departure_time).c_str(), a), a);
     properties.AddMember("arrival_time", leg.arrival_time, a);
-    properties.AddMember("arrival_time_str", rapidjson::Value().SetString(my::format_time(leg.arrival_time).c_str(), a), a);
+    properties.AddMember("arrival_time_str", rapidjson::Value().SetString(my::format_time(leg.arrival_time).c_str(), a),
+                         a);
     properties.AddMember("full_duration", leg.get_full_duration(), a);
-    properties.AddMember("full_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_full_duration()).c_str(), a), a);
+    properties.AddMember("full_duration_str",
+                         rapidjson::Value().SetString(my::format_duration(leg.get_full_duration()).c_str(), a), a);
     properties.AddMember("waiting_duration", leg.get_waiting_duration(), a);
-    properties.AddMember("waiting_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_waiting_duration()).c_str(), a), a);
+    properties.AddMember("waiting_duration_str",
+                         rapidjson::Value().SetString(my::format_duration(leg.get_waiting_duration()).c_str(), a), a);
     properties.AddMember("traveling_duration", leg.get_traveling_duration(), a);
-    properties.AddMember("traveling_duration_str", rapidjson::Value().SetString(my::format_duration(leg.get_traveling_duration()).c_str(), a), a);
+    properties.AddMember("traveling_duration_str",
+                         rapidjson::Value().SetString(my::format_duration(leg.get_traveling_duration()).c_str(), a), a);
 
     // geometry :
     rapidjson::Value geometry(rapidjson::kObjectType);
@@ -187,8 +195,8 @@ rapidjson::Value legs_to_geojson(vector<Leg> const& legs, StopMap const& stops, 
     rapidjson::Value features(rapidjson::kArrayType);
     for (auto& leg : legs) {
         rapidjson::Value polyline = leg_to_geojson_polyline(leg, stops, a);
-		rapidjson::Value src_point = stop_to_geojson(leg.departure_id, stops, a);
-		rapidjson::Value dst_point = stop_to_geojson(leg.arrival_id, stops, a);
+        rapidjson::Value src_point = stop_to_geojson(leg.departure_id, stops, a);
+        rapidjson::Value dst_point = stop_to_geojson(leg.arrival_id, stops, a);
         features.PushBack(src_point, a);
         features.PushBack(polyline, a);
         features.PushBack(dst_point, a);
@@ -205,4 +213,4 @@ void dump_to_file(rapidjson::Value const& data, string filepath) {
     data.Accept(writer);
 }
 
-}
+}  // namespace myserver

@@ -7,16 +7,16 @@
 #include "DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {
-    std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <walkspeed km/h>  <outputDir>" << std::endl;
+    std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <walkspeed km/h>  <outputDir>"
+              << std::endl;
     exit(0);
 }
 
-my::preprocess::UltraTransferData buildTransferData(
-    std::filesystem::path osmFile,
-    std::filesystem::path polygonFile,
-    std::vector<RAPTOR::Stop> const& stopData,
-    float walkspeedKmPerHour,
-    std::string programName) {
+my::preprocess::UltraTransferData buildTransferData(std::filesystem::path osmFile,
+                                                    std::filesystem::path polygonFile,
+                                                    std::vector<RAPTOR::Stop> const& stopData,
+                                                    float walkspeedKmPerHour,
+                                                    std::string programName) {
     try {
         my::preprocess::UltraTransferData transferData{osmFile, polygonFile, stopData, walkspeedKmPerHour};
         return transferData;
@@ -30,7 +30,6 @@ my::preprocess::UltraTransferData buildTransferData(
         exit(2);
     }
 }
-
 
 int main(int argc, char** argv) {
     if (argc < 6)
@@ -53,17 +52,14 @@ int main(int argc, char** argv) {
     std::cout << std::endl;
     my::preprocess::UltraGtfsData gtfsData{gtfsFolder};
 
-    my::preprocess::UltraTransferData transferData = buildTransferData(
-        osmFile,
-        polygonFile,
-        gtfsData.stopData,
-        walkspeedKmPerHour,
-        argv[0]);
+    my::preprocess::UltraTransferData transferData =
+        buildTransferData(osmFile, polygonFile, gtfsData.stopData, walkspeedKmPerHour, argv[0]);
 
     std::cout << "Number of edges in original graph : " << transferData.walkingGraph.edgesOsm.size() << std::endl;
     std::cout << "nb edges (including added stops) = " << transferData.walkingGraph.edgesWithStops.size() << std::endl;
     std::cout << "nb stops = " << transferData.walkingGraph.stopsWithClosestNode.size() << std::endl;
-    std::cout << "The transferGraph has these vertices : " << transferData.transferGraphUltra.numVertices() << std::endl;
+    std::cout << "The transferGraph has these vertices : " << transferData.transferGraphUltra.numVertices()
+              << std::endl;
     std::cout << "The transferGraph has these edges    : " << transferData.transferGraphUltra.numEdges() << std::endl;
 
     const std::filesystem::path intermediaryDir = outputDir + "INTERMEDIARY/";
@@ -77,8 +73,10 @@ int main(int argc, char** argv) {
 
     // checking that we can unserialize it, and find no mismatch :
     auto unserialized = RAPTOR::Data::FromBinary(raptorDataFileName);
-    bool areApproxEqual = my::preprocess::UltraTransferData::areApproxEqual(transferData.transferGraphUltra, unserialized.transferGraph);
-    std::cout << "La serialization est-elle idempotente pour le transferGraph ? " << std::boolalpha << areApproxEqual << std::endl;
+    bool areApproxEqual =
+        my::preprocess::UltraTransferData::areApproxEqual(transferData.transferGraphUltra, unserialized.transferGraph);
+    std::cout << "La serialization est-elle idempotente pour le transferGraph ? " << std::boolalpha << areApproxEqual
+              << std::endl;
 
     return 0;
 }

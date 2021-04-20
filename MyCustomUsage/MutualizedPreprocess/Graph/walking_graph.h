@@ -9,7 +9,6 @@
 namespace my::preprocess {
 
 struct WalkingGraph {
-
     // From a set of stops and a given OSM file (+ a possible filtering polygon), computes a walking graph.
     //
     // The graph is extended with new nodes (the stops) and new edges (between each stop and its closest OSM node).
@@ -18,12 +17,10 @@ struct WalkingGraph {
     // Each node of the graph is identified by its rank.
     // Nodes representing stops are ranked BEFORE the other nodes (because this is needed by ULTRA).
 
-    WalkingGraph(
-        std::filesystem::path osmFile,
-        std::filesystem::path polygonFile,
-        std::vector<my::Stop> const& stops,
-        float walkspeedKmPerHour_
-    );
+    WalkingGraph(std::filesystem::path osmFile,
+                 std::filesystem::path polygonFile,
+                 std::vector<my::Stop> const& stops,
+                 float walkspeedKmPerHour_);
 
     float walkspeedKmPerHour;
     my::BgPolygon polygon;
@@ -37,7 +34,6 @@ struct WalkingGraph {
     // edges3 = same than edges2, but twice as more because bidirectional :
     std::vector<my::Edge> edgesWithStopsBidirectional;
 
-
     // those are the stops passed as parameters, augmented with their closest node in the OSM graph :
     std::vector<my::StopWithClosestNode> stopsWithClosestNode;
 
@@ -50,5 +46,4 @@ struct WalkingGraph {
     void dumpIntermediary(std::string const& outputDir) const;
 };
 
-}
-
+}  // namespace my::preprocess

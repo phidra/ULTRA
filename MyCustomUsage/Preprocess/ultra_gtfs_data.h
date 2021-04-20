@@ -32,4 +32,4 @@ struct UltraGtfsData {
     void serialize(const std::string& fileName) const;
 };
 
-}
+}  // namespace my::preprocess

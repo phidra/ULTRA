@@ -10,20 +10,16 @@
 #include "MutualizedPreprocess/Graph/geojson.h"
 #include "MutualizedPreprocess/autodeletefile.h"
 
-
-
 namespace my::preprocess {
 
-
-
-std::tuple<TransferGraph::VertexAttributes, TransferGraph::EdgeAttributes, std::vector<::Edge> >
+std::tuple<TransferGraph::VertexAttributes, TransferGraph::EdgeAttributes, std::vector<::Edge>>
 buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     // FIXME : grosse passe de mise au propre nécessaire
 
     // ICI, je crée les nodes et leur coordonnées (pas très pratique, je n'ai les coordonnées que dans les edges...) :
     TransferGraph::VertexAttributes vertexAttrs(walkingGraph.nodeToRank.size());
 
-    for (auto edge: walkingGraph.edgesWithStopsBidirectional) {
+    for (auto edge : walkingGraph.edgesWithStopsBidirectional) {
         Geometry::Point node_from_coords{Construct::LatLongTag{}, edge.node_from.lat(), edge.node_from.lon()};
         size_t node_from_rank = walkingGraph.nodeToRank.at(edge.node_from.id);
         vertexAttrs.set(Coordinates, ::Vertex{node_from_rank}, node_from_coords);
@@ -38,9 +34,9 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     std::vector<::Edge> beginOut;
     // NOTE : ici, il faut plutôt itérer sur les nodes dans l'ordre (si pas encore fait)
     int edge_counter{0};
-    for (auto [vertex, outEdges]: walkingGraph.nodeToOutEdges) {
+    for (auto [vertex, outEdges] : walkingGraph.nodeToOutEdges) {
         beginOut.push_back(::Edge{edge_counter});
-        for (auto outEdgeIdx: outEdges) {
+        for (auto outEdgeIdx : outEdges) {
             auto edge = walkingGraph.edgesWithStopsBidirectional.at(outEdgeIdx);
 
             auto node_to_rank = walkingGraph.nodeToRank.at(edge.node_to.id);
@@ -61,30 +57,22 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     return {vertexAttrs, edgeAttrs, beginOut};
 }
 
+UltraTransferData::UltraTransferData(std::filesystem::path osmFile,
+                                     std::filesystem::path polygonFile,
+                                     std::vector<RAPTOR::Stop> const& raptor_stops,
+                                     float walkspeedKmPerHour)
+    : walkingGraph{[&]() {
+          // converting RAPTOR::Stop to unopinionated stops :
+          std::vector<my::Stop> stops;
+          for (int stopRank = 0; stopRank < raptor_stops.size(); ++stopRank) {
+              auto const& stop = raptor_stops[stopRank];
+              stops.emplace_back(stop.coordinates.longitude, stop.coordinates.latitude, std::to_string(stopRank),
+                                 stop.name);
+          }
 
-UltraTransferData::UltraTransferData(
-    std::filesystem::path osmFile,
-    std::filesystem::path polygonFile,
-    std::vector<RAPTOR::Stop> const& raptor_stops,
-    float walkspeedKmPerHour) :
-    walkingGraph{[&](){
-
-        // converting RAPTOR::Stop to unopinionated stops :
-        std::vector<my::Stop> stops;
-        for (int stopRank = 0; stopRank < raptor_stops.size(); ++stopRank) {
-            auto const& stop = raptor_stops[stopRank];
-            stops.emplace_back(
-                stop.coordinates.longitude,
-                stop.coordinates.latitude,
-                std::to_string(stopRank),
-                stop.name
-            );
-        }
-
-        WalkingGraph walkingGraph{osmFile, polygonFile, stops, walkspeedKmPerHour};
-        return walkingGraph;
-    }()} {
-
+          WalkingGraph walkingGraph{osmFile, polygonFile, stops, walkspeedKmPerHour};
+          return walkingGraph;
+      }()} {
     auto [vertexAttrs, edgeAttrs, beginOut] = buildTransferGraphStructures(walkingGraph);
 
     // serialization :
@@ -126,4 +114,4 @@ bool UltraTransferData::checkSerializationIdempotence() const {
     return UltraTransferData::areApproxEqual(transferGraphUltra, freshTransferGraph);
 }
 
-}
+}  // namespace my::preprocess

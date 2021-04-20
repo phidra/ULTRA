@@ -10,4 +10,4 @@ struct Error400 : public std::exception {
     inline const char* what() const throw() { return msg.c_str(); }
 };
 
-}
+}  // namespace myserver

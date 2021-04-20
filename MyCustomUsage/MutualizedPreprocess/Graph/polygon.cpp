@@ -28,4 +28,4 @@ bool is_empty(BgPolygon const& polygon) {
     return polygon.outer().empty();
 }
 
-}
+}  // namespace my

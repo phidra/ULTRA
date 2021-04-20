@@ -31,4 +31,4 @@ tuple<string, double, double, float> get_closest_stop(double lon, double lat) {
     return make_tuple(closest_stop_id, get<0>(closest_stop_loc), get<1>(closest_stop_loc), distance);
 }
 
-}
+}  // namespace myserver

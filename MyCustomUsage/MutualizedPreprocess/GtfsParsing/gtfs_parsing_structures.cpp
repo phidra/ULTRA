@@ -17,14 +17,8 @@ vector<string> RouteLabel::toStopIds() const {
     return stops;
 }
 
-
-ParsedStop::ParsedStop(string const& id_, string const & name_, double latitude_, double longitude_) :
-        id{id_},
-        name{name_},
-        latitude{latitude_},
-        longitude{longitude_}
-    {}
-
+ParsedStop::ParsedStop(string const& id_, string const& name_, double latitude_, double longitude_)
+    : id{id_}, name{name_}, latitude{latitude_}, longitude{longitude_} {}
 
 string ParsedStop::as_string() const {
     ostringstream oss;
@@ -32,4 +26,4 @@ string ParsedStop::as_string() const {
     return oss.str();
 };
 
-}
+}  // namespace my::preprocess

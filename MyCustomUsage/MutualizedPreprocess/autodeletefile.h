@@ -6,7 +6,6 @@
 namespace my {
 
 struct AutoDeleteTempFile {
-
     // file path is computed at construction, but no file is created on disk :
     inline AutoDeleteTempFile() : file{tmpnam(nullptr)} {}
 
@@ -16,4 +15,4 @@ struct AutoDeleteTempFile {
     std::filesystem::path file;
 };
 
-}
+}  // namespace my

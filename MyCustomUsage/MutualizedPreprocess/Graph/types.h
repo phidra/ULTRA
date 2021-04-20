@@ -25,14 +25,13 @@ struct Stop {
 };
 
 struct StopWithClosestNode : public Stop {
-    inline StopWithClosestNode(Stop const& stop_, std::string const& closest_node_id_, std::string const& closest_node_url_) :
-        Stop{stop_},
-        closest_node_id{closest_node_id_},
-        closest_node_url{closest_node_url_}
-    {}
+    inline StopWithClosestNode(Stop const& stop_,
+                               std::string const& closest_node_id_,
+                               std::string const& closest_node_url_)
+        : Stop{stop_}, closest_node_id{closest_node_id_}, closest_node_url{closest_node_url_} {}
 
     std::string closest_node_id;
     std::string closest_node_url;
 };
 
-}
+}  // namespace my
