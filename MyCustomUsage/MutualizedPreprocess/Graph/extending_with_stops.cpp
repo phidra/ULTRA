@@ -1,7 +1,7 @@
 #include <boost/geometry.hpp>
 #include <osmium/geom/haversine.hpp>
 
-#include "extending_with_stops.h"
+#include "Graph/extending_with_stops.h"
 
 using namespace std;
 

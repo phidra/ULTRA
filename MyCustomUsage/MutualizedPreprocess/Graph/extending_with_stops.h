@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "MutualizedPreprocess/types.h"
-#include "MutualizedPreprocess/graphtypes.h"
+#include "Graph/types.h"
+#include "Graph/graphtypes.h"
 
 namespace my::preprocess {
 

@@ -4,8 +4,8 @@
 #include <map>
 #include <osmium/handler.hpp>
 
-#include "MutualizedPreprocess/types.h"
-#include "MutualizedPreprocess/polygon.h"
+#include "Graph/types.h"
+#include "Graph/polygon.h"
 
 namespace my::preprocess {
 

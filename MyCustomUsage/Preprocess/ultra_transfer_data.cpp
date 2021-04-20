@@ -7,7 +7,7 @@
 #include "DataStructures/Geometry/Point.h"
 #include "DataStructures/Graph/Classes/StaticGraph.h"
 #include "MutualizedPreprocess/Graph/graph.h"
-#include "MutualizedPreprocess/geojson.h"
+#include "MutualizedPreprocess/Graph/geojson.h"
 #include "MutualizedPreprocess/autodeletefile.h"
 
 

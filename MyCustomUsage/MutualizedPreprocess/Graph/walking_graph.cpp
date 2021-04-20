@@ -2,12 +2,12 @@
 #include <fstream>
 #include <map>
 
-#include "walking_graph.h"
+#include "Graph/walking_graph.h"
 
-#include "MutualizedPreprocess/Parsing/polygonfile.h"
-#include "MutualizedPreprocess/Graph/extending_with_stops.h"
-#include "MutualizedPreprocess/Graph/graph.h"
-#include "MutualizedPreprocess/geojson.h"
+#include "Graph/polygonfile.h"
+#include "Graph/extending_with_stops.h"
+#include "Graph/graph.h"
+#include "Graph/geojson.h"
 
 
 namespace my::preprocess {

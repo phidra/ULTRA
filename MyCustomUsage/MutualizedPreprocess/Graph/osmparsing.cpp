@@ -1,7 +1,7 @@
 #include <iostream>
 #include <osmium/osm/way.hpp>
 
-#include "osmparsing.h"
+#include "Graph/osmparsing.h"
 
 using namespace std;
 

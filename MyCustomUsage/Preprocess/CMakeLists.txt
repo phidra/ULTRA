@@ -1,10 +1,7 @@
 # this lib depends on :
-#   - the cmake target 'ad_cppgtfs' (for the library cppgtfs)
-#   - the cmake target 'mutualizedpreprocess'
+#   - the cmake target 'graphlib'
+#   - the cmake target 'gtfs_parsing'
 #   - some ULTRA code (DataStructures / Helpers) which has to be includable
-#   - BoostGeometry (expected to be available in system libs)
-#   - libosmium (expected to be available in system libs)
-#   - rapidjson (used via conan, see below)
 
 
 set(PREPROCESS_SOURCES
@@ -22,4 +19,5 @@ get_filename_component(ULTRA_INCLUDE_DIR "${PREPROCESS_PARENT_DIR}" DIRECTORY)
 
 target_include_directories(preprocess PUBLIC "${PREPROCESS_PARENT_DIR}")
 target_include_directories(preprocess PUBLIC "${ULTRA_INCLUDE_DIR}")
-target_link_libraries(preprocess PUBLIC mutualizedpreprocess)
+target_link_libraries(preprocess PUBLIC graphlib)
+target_link_libraries(preprocess PUBLIC gtfs_parsing)
