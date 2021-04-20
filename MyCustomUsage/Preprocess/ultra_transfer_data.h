@@ -22,7 +22,7 @@ struct UltraTransferData {
     bool checkSerializationIdempotence() const;
 
     WalkingGraph walkingGraph;
-    TransferGraph transferGraphUltra;
+    TransferGraph transferGraphUltra;  // this is from ULTRA code (unfortunately, in the global namespace)
 };
 
 }
