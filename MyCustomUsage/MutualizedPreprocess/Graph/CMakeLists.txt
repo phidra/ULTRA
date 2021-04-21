@@ -22,17 +22,7 @@ target_link_libraries(graphlib PRIVATE ad_cppgtfs)
 
 
 # to allow that the inclusion is prefixed by "Graph" (#include "Graph/graphtypes.h"), we use parent directory as include dir :
-message(STATUS "")
-message(STATUS "")
-message(STATUS "CURRENT SOURCE DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "CURRENT SOURCE DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "CURRENT SOURCE DIR = ${CMAKE_CURRENT_SOURCE_DIR}")
 get_filename_component(GRAPH_PARENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" DIRECTORY)
-message(STATUS "GRAPH_PARENT_DIR = ${GRAPH_PARENT_DIR}")
-message(STATUS "GRAPH_PARENT_DIR = ${GRAPH_PARENT_DIR}")
-message(STATUS "GRAPH_PARENT_DIR = ${GRAPH_PARENT_DIR}")
-message(STATUS "")
-message(STATUS "")
 target_include_directories(graphlib PUBLIC "${GRAPH_PARENT_DIR}")
 
 # we export the use of conan's rapidjson (to allow users of graphlib to also use rapidjson) :
