@@ -10,7 +10,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-infinite-recu
 
 # uncomment (and adapt if necessary) to use iwyu (https://include-what-you-use.org/) :
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/lib/llvm-10/lib/clang/10.0.0/include ")
-# set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/iwyu")
+# set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/iwyu;-Xiwyu;--no_comments;-Xiwyu;--cxx17ns")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
