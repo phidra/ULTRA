@@ -9,8 +9,12 @@ project(my-custom-ultra-usage)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-infinite-recursion -Wno-unused-variable -Wno-sign-compare")
 
 # uncomment (and adapt if necessary) to use iwyu (https://include-what-you-use.org/) :
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/lib/llvm-10/lib/clang/10.0.0/include ")
-# set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/iwyu;-Xiwyu;--no_comments;-Xiwyu;--cxx17ns")
+# note : there is currently a slight bug in iwyu, that causes unnecessary long paths, such as :
+#       #include "DataStructures/RAPTOR/Entities/../../../Helpers/IO/Serialization.h"
+# see https://github.com/include-what-you-use/include-what-you-use/issues/532
+# the benefits seem greater than this bug, though, so iwyu is kept
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/lib/llvm-10/lib/clang/10.0.0/include ")
+set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "/usr/bin/iwyu;-Xiwyu;--no_comments;-Xiwyu;--cxx17ns")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
