@@ -55,9 +55,7 @@ int main(int argc, char** argv) {
     my::preprocess::UltraTransferData transferData =
         buildTransferData(osmFile, polygonFile, gtfsData.stopData, walkspeedKmPerHour, argv[0]);
 
-    std::cout << "Number of edges in original graph : " << transferData.walkingGraph.edgesOsm.size() << std::endl;
-    std::cout << "nb edges (including added stops) = " << transferData.walkingGraph.edgesWithStops.size() << std::endl;
-    std::cout << "nb stops = " << transferData.walkingGraph.stopsWithClosestNode.size() << std::endl;
+    transferData.walkingGraph.printStats(std::cout);
     std::cout << "The transferGraph has these vertices : " << transferData.transferGraphUltra.numVertices()
               << std::endl;
     std::cout << "The transferGraph has these edges    : " << transferData.transferGraphUltra.numEdges() << std::endl;

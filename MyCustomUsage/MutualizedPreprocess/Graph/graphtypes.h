@@ -12,21 +12,27 @@ inline std::string node_url(NodeOsmId id) {
 using NodeId = std::string;
 
 struct Node {
+    static constexpr const size_t UNRANKED = SIZE_MAX;
+
     inline Node(NodeOsmId osm_id_, osmium::Location const& location_)
         : url{node_url(osm_id_)},
           id{url},  // for OSM nodes, node ids are their URL
           location{location_} {}
 
-    inline Node(NodeId id, osmium::Location const& location_) : url{}, id{id}, location{location_} {}
+    inline Node(NodeId id, osmium::Location const& location_, size_t rank_ = UNRANKED)
+        : url{}, id{id}, location{location_}, rank{rank_} {}
 
     inline double lon() const { return location.lon(); }
     inline double lat() const { return location.lat(); }
 
-    inline bool operator==(Node const& other) const { return this->id == other.id; }  // needed by set<T>
+    inline bool operator==(Node const& other) const {
+        return this->id == other.id && this->rank == other.rank;
+    }  // needed by set<T>
 
     std::string url;
     NodeId id;
     osmium::Location location;
+    size_t rank = UNRANKED;
 };
 
 struct NodeHasher {
@@ -42,12 +48,23 @@ struct Edge {
           weight{weight_},
           geometry{geometry_} {}
 
-    inline Edge(NodeId node_from_, NodeId node_to_, Polyline&& geometry_, float length_m_, float weight_)
-        : node_from{node_from_, geometry_.front()},
-          node_to{node_to_, geometry_.back()},
+    inline Edge(NodeId node_from_,
+                size_t rank_from,
+                NodeId node_to_,
+                size_t rank_to,
+                Polyline&& geometry_,
+                float length_m_,
+                float weight_)
+        : node_from{node_from_, geometry_.front(), rank_from},
+          node_to{node_to_, geometry_.back(), rank_to},
           length_m{length_m_},
           weight{weight_},
           geometry{geometry_} {}
+
+    bool operator==(Edge const& other) const {
+        return (node_from == other.node_from && node_to == other.node_to && length_m == other.length_m &&
+                weight == other.weight && geometry == other.geometry);
+    }
 
     Node node_from;
     Node node_to;

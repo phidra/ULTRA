@@ -22,6 +22,27 @@ struct WalkingGraph {
                  std::vector<my::Stop> const& stops,
                  float walkspeedKmPerHour_);
 
+    WalkingGraph() {}
+    //
+    // edges3 = same than edges2, but twice as more because bidirectional :
+    std::vector<my::Edge> edgesWithStopsBidirectional;
+
+    // helper structures :
+    std::map<size_t, std::vector<size_t>> nodeToOutEdges;
+
+    // this dump helper is currently used to check non-regression (output must be binary iso)
+    // later, we can remove it or replace it with proper tests, but for now it is useful
+    void dumpIntermediary(std::string const& outputDir) const;
+
+    void printStats(std::ostream& out) const;
+
+    void checkStructuresConsistency() const;
+
+    // serialization/deserialization :
+    void toStream(std::ostream& out) const;
+    static WalkingGraph fromStream(std::istream& in);
+
+   private:
     float walkspeedKmPerHour;
     my::BgPolygon polygon;
 
@@ -31,19 +52,8 @@ struct WalkingGraph {
     // edges2 = those are the edges "augmented" with an edge between each stop and its closest initial node :
     std::vector<my::Edge> edgesWithStops;
 
-    // edges3 = same than edges2, but twice as more because bidirectional :
-    std::vector<my::Edge> edgesWithStopsBidirectional;
-
     // those are the stops passed as parameters, augmented with their closest node in the OSM graph :
     std::vector<my::StopWithClosestNode> stopsWithClosestNode;
-
-    // helper structures :
-    std::unordered_map<my::NodeId, size_t> nodeToRank;
-    std::map<size_t, std::vector<size_t>> nodeToOutEdges;
-
-    // this dump helper is currently used to check non-regression (output must be binary iso)
-    // later, we can remove it or replace it with proper tests, but for now it is useful
-    void dumpIntermediary(std::string const& outputDir) const;
 };
 
 }  // namespace my::preprocess

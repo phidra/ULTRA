@@ -17,6 +17,7 @@ namespace my {
 
 void dump_geojson_graph(std::ostream& out, std::vector<Edge> const& edges);
 void dump_geojson_stops(std::ostream& out, std::vector<StopWithClosestNode> const& stops);
+std::vector<Edge> parse_geojson_graph(std::istream& in);
 
 template <typename PointsOfLine>
 void dump_geojson_line(std::ostream& out, PointsOfLine const& pointsOfLine) {

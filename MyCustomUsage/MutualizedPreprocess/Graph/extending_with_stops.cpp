@@ -50,8 +50,8 @@ pair<vector<my::Edge>, vector<my::StopWithClosestNode>> extend_graph(vector<Stop
         float distance_in_meters = osmium::geom::haversine::distance(geometry.front(), geometry.back());
         auto walkspeed_m_per_second = walkspeed_km_per_h * 1000 / 3600;
         float weight_in_seconds = distance_in_meters / walkspeed_m_per_second;
-        edgesExtendedWithStops.emplace_back(stop.id, closest_node.id, std::move(geometry), distance_in_meters,
-                                            weight_in_seconds);
+        edgesExtendedWithStops.emplace_back(stop.id, Node::UNRANKED, closest_node.id, Node::UNRANKED,
+                                            std::move(geometry), distance_in_meters, weight_in_seconds);
 
         // for each stop, we memorize the closest node :
         stops_with_closest_node.emplace_back(stop, closest_node.id, closest_node.url);

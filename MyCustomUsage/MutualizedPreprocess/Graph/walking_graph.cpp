@@ -3,7 +3,6 @@
 #include <map>
 
 #include "Graph/walking_graph.h"
-
 #include "Graph/polygonfile.h"
 #include "Graph/extending_with_stops.h"
 #include "Graph/graph.h"
@@ -13,52 +12,52 @@ using namespace std;
 
 namespace my::preprocess {
 
-unordered_map<my::NodeId, size_t> _rankNodes(vector<my::Edge> const& edgesWithStops, vector<my::Stop> const& stops) {
+void _rankNodes(vector<my::Edge>& edgesWithStops, vector<my::Stop> const& stops) {
     unordered_map<my::NodeId, size_t> nodeToRank;
 
-    // some algorithms (ULTRA) need that stops are the first nodes of the graph -> stops must be ranked first :
-    size_t rank = 0;
-    for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &rank](my::Stop const& stop) {
-        nodeToRank.insert({stop.id, rank++});
+    // some algorithms (ULTRA) require that stops are the first nodes of the graph -> we rank stops first :
+    size_t current_rank = 0;
+    for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &current_rank](my::Stop const& stop) {
+        nodeToRank.insert({stop.id, current_rank++});
     });
 
-    auto rankThatNode = [&nodeToRank, &rank](auto const& node_id) {
-        if (nodeToRank.find(node_id) == nodeToRank.end()) {
-            nodeToRank.insert({node_id, rank++});
+    auto rankThatNode = [&nodeToRank, &current_rank](auto& node) {
+        if (nodeToRank.find(node.id) == nodeToRank.end()) {
+            nodeToRank.insert({node.id, current_rank++});
         }
+        node.rank = nodeToRank.at(node.id);
     };
 
     // then we can rank the other nodes in the graph :
-    for (auto edge : edgesWithStops) {
-        rankThatNode(edge.node_from.id);
-        rankThatNode(edge.node_to.id);
+    for (auto& edge : edgesWithStops) {
+        rankThatNode(edge.node_from);
+        rankThatNode(edge.node_to);
     }
-
-    return nodeToRank;
 }
 
 vector<my::Edge> _makeEdgesBidirectional(vector<my::Edge> const& edges) {
     // For each edge, adds its opposite edge (this doubles the number of edges in the edgelist)
-    // note : the function is cleaner without side-effects (taking a const ref to edges, returning a copy)
-    // but as this is slower, if performance issues arise, we can mutate edges instead
+    // note : if performance issues arise, the function would be faster with side-effects (mutating the edges)
+    // it is kept as is for now, as it is cleaner.
     vector<my::Edge> bidirectional(edges);
     for (auto edge : edges) {
-        Polyline geom = edge.geometry;
-        reverse(geom.begin(), geom.end());
-        bidirectional.emplace_back(edge.node_to.id, edge.node_from.id, move(geom), edge.length_m, edge.weight);
+        Polyline reversed_geom = edge.geometry;
+        reverse(reversed_geom.begin(), reversed_geom.end());
+        bidirectional.emplace_back(edge.node_to.id, edge.node_to.rank, edge.node_from.id, edge.node_from.rank,
+                                   move(reversed_geom), edge.length_m, edge.weight);
     }
     assert(bidirectional.size() == 2 * edges.size());
+
+    // FIXME : here, add a (debug only) check that the nodes of the graph are unchanged by this function
     return bidirectional;
 }
 
-map<size_t, vector<size_t>> _mapNodesToOutEdges(vector<my::Edge> const& edges,
-                                                unordered_map<my::NodeId, size_t> const& nodeToRank) {
+map<size_t, vector<size_t>> _mapNodesToOutEdges(vector<my::Edge> const& edges) {
     // this functions build a map that helps to retrieve the out-edges of a node (given its rank)
     map<size_t, vector<size_t>> nodeToOutEdges;
     for (size_t edge_index = 0; edge_index < edges.size(); ++edge_index) {
         auto const& edge = edges[edge_index];
-        size_t node_from_rank = nodeToRank.at(edge.node_from.id);
-        nodeToOutEdges[node_from_rank].push_back(edge_index);
+        nodeToOutEdges[edge.node_from.rank].push_back(edge_index);
     }
     return nodeToOutEdges;
 }
@@ -73,12 +72,12 @@ WalkingGraph::WalkingGraph(filesystem::path osmFile,
     // extend graph with stop-edges :
     tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edgesOsm, walkspeedKmPerHour);
 
-    nodeToRank = _rankNodes(edgesWithStops, stops);
-    cout << "nb ranked nodes = " << nodeToRank.size() << endl;
-
+    _rankNodes(edgesWithStops, stops);
     edgesWithStopsBidirectional = _makeEdgesBidirectional(edgesWithStops);
-    nodeToOutEdges = _mapNodesToOutEdges(edgesWithStopsBidirectional, nodeToRank);
-    cout << "The association map has " << nodeToOutEdges.size() << " items" << endl;
+    nodeToOutEdges = _mapNodesToOutEdges(edgesWithStopsBidirectional);
+    cout << "Number of nodes in the graph = " << nodeToOutEdges.size() << endl;
+    cout << "Number of edges in the graph = " << edgesWithStopsBidirectional.size() << endl;
+    checkStructuresConsistency();
 }
 
 void WalkingGraph::dumpIntermediary(string const& outputDir) const {
@@ -93,6 +92,53 @@ void WalkingGraph::dumpIntermediary(string const& outputDir) const {
 
     ofstream polygonStream(outputDir + "polygon.geojson");
     my::dump_geojson_line(polygonStream, polygon.outer());
+}
+
+void WalkingGraph::printStats(ostream& out) const {
+    out << "Number of edges in original graph : " << this->edgesOsm.size() << endl;
+    out << "nb edges (including added stops) = " << this->edgesWithStops.size() << endl;
+    out << "nb stops = " << this->stopsWithClosestNode.size() << endl;
+}
+
+void WalkingGraph::checkStructuresConsistency() const {
+    // check structures consistency :
+    //  - each node in the node-structure are used in at least one edge
+    //  - each edge's extremities in the edge-structure exists in the node-strcture
+    // FIXME : this should be used in debug settings only.
+    set<size_t> nodes1;
+    for (auto& edge : edgesWithStopsBidirectional) {
+        nodes1.insert(edge.node_from.rank);
+        nodes1.insert(edge.node_to.rank);
+    }
+
+    set<size_t> nodes2;
+    for (auto& [rank, _] : nodeToOutEdges) {
+        nodes2.insert(rank);
+    }
+
+    if (nodes1 != nodes2) {
+        cout << "ERROR : structures inconsistency :" << endl;
+        cout << "nodes1 (used in vector<Edge>) is of size = " << nodes1.size() << endl;
+        cout << "nodes2 (used in nodeToOutEdges) is of size = " << nodes2.size() << endl;
+        exit(1);
+    }
+}
+
+void WalkingGraph::toStream(ostream& out) const {
+    dump_geojson_graph(out, edgesWithStopsBidirectional);
+}
+
+WalkingGraph WalkingGraph::fromStream(istream& in) {
+    WalkingGraph deserialized;
+    deserialized.edgesWithStopsBidirectional = parse_geojson_graph(in);
+
+    map<size_t, vector<size_t>> nodeToOutEdges;
+    size_t edge_rank = 0;
+    for (auto& edge : deserialized.edgesWithStopsBidirectional) {
+        deserialized.nodeToOutEdges[edge.node_from.rank].push_back(edge_rank++);
+    }
+    deserialized.checkStructuresConsistency();
+    return deserialized;
 }
 
 }  // namespace my::preprocess

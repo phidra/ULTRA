@@ -17,16 +17,14 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     // FIXME : grosse passe de mise au propre nécessaire
 
     // ICI, je crée les nodes et leur coordonnées (pas très pratique, je n'ai les coordonnées que dans les edges...) :
-    TransferGraph::VertexAttributes vertexAttrs(walkingGraph.nodeToRank.size());
+    TransferGraph::VertexAttributes vertexAttrs(walkingGraph.nodeToOutEdges.size());
 
     for (auto edge : walkingGraph.edgesWithStopsBidirectional) {
         Geometry::Point node_from_coords{Construct::LatLongTag{}, edge.node_from.lat(), edge.node_from.lon()};
-        size_t node_from_rank = walkingGraph.nodeToRank.at(edge.node_from.id);
-        vertexAttrs.set(Coordinates, ::Vertex{node_from_rank}, node_from_coords);
+        vertexAttrs.set(Coordinates, ::Vertex{edge.node_from.rank}, node_from_coords);
 
         Geometry::Point node_to_coords{Construct::LatLongTag{}, edge.node_to.lat(), edge.node_to.lon()};
-        size_t node_to_rank = walkingGraph.nodeToRank.at(edge.node_to.id);
-        vertexAttrs.set(Coordinates, ::Vertex{node_to_rank}, node_to_coords);
+        vertexAttrs.set(Coordinates, ::Vertex{edge.node_to.rank}, node_to_coords);
     }
 
     // ET LA, je créé les vertex et leur attributs (ToVertex + TravelTime) :
@@ -34,13 +32,12 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     std::vector<::Edge> beginOut;
     // NOTE : ici, il faut plutôt itérer sur les nodes dans l'ordre (si pas encore fait)
     int edge_counter{0};
-    for (auto [vertex, outEdges] : walkingGraph.nodeToOutEdges) {
+    for (auto [rankedNode, outEdges] : walkingGraph.nodeToOutEdges) {
         beginOut.push_back(::Edge{edge_counter});
         for (auto outEdgeIdx : outEdges) {
             auto edge = walkingGraph.edgesWithStopsBidirectional.at(outEdgeIdx);
 
-            auto node_to_rank = walkingGraph.nodeToRank.at(edge.node_to.id);
-            edgeAttrs.set(ToVertex, ::Edge{edge_counter}, Vertex{node_to_rank});
+            edgeAttrs.set(ToVertex, ::Edge{edge_counter}, Vertex{edge.node_to.rank});
 
             auto travel_time = edge.weight;  // FIXME : there is a slight rounding mistake here
             edgeAttrs.set(TravelTime, ::Edge{edge_counter}, travel_time);
@@ -69,9 +66,8 @@ UltraTransferData::UltraTransferData(std::filesystem::path osmFile,
               stops.emplace_back(stop.coordinates.longitude, stop.coordinates.latitude, std::to_string(stopRank),
                                  stop.name);
           }
-
-          WalkingGraph walkingGraph{osmFile, polygonFile, stops, walkspeedKmPerHour};
-          return walkingGraph;
+          WalkingGraph graph{osmFile, polygonFile, stops, walkspeedKmPerHour};
+          return graph;
       }()} {
     auto [vertexAttrs, edgeAttrs, beginOut] = buildTransferGraphStructures(walkingGraph);
 
