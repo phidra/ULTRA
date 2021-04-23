@@ -25,8 +25,12 @@ struct RouteLabel {
 
 // A ParsedRoute stores the trips (and their events) of a route
 struct ParsedRoute {
-    using StopEvent = std::pair<int, int>;                    // arrival, departure
-    std::map<OrderableTripId, std::vector<StopEvent>> trips;  // the map ensures trips are ordered
+    using StopEvent = std::pair<int, int>;                            // arrival, departure
+    using Trips = std::map<OrderableTripId, std::vector<StopEvent>>;  // the map ensures trips are ordered
+    ParsedRoute(Trips&& trips_) : trips{trips_} {}
+    ParsedRoute() = default;
+    bool operator==(ParsedRoute const& other) const { return trips == other.trips; }
+    Trips trips;
 };
 
 // A ParsedStop stores what is necessary to ultra : name and coordinates.
@@ -38,6 +42,12 @@ struct ParsedStop {
     double longitude;
 
     ParsedStop(std::string const& id_, std::string const& name_, double latitude_, double longitude_);
+    static inline bool approxEqual(double left, double right, double epsilon = 1e-9) {
+        return std::abs(left - right) < epsilon;
+    }
+    bool operator==(ParsedStop const& x) const {
+        return id == x.id && name == x.name && approxEqual(longitude, x.longitude) && approxEqual(latitude, x.latitude);
+    }
     std::string as_string() const;
 };
 

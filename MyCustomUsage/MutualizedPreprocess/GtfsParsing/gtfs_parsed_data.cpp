@@ -155,7 +155,7 @@ static pair<vector<ParsedStop>, unordered_map<string, size_t>> _rankStops(map<Ro
     return {move(rankedStops), move(stopidToRank)};
 }
 
-GtfsParsedData::GtfsParsedData(std::string const& gtfsFolder) {
+GtfsParsedData::GtfsParsedData(string const& gtfsFolder) {
     ad::cppgtfs::Parser parser;
     ad::cppgtfs::gtfs::Feed feed;
     parser.parse(&feed, gtfsFolder);

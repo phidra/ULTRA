@@ -29,6 +29,7 @@ namespace my::preprocess {
 
 struct GtfsParsedData {
     GtfsParsedData(std::string const& gtfsFolder);
+    inline GtfsParsedData(){};
 
     std::map<RouteLabel, ParsedRoute> routes;
 
@@ -46,6 +47,10 @@ struct GtfsParsedData {
     //   - stopidToRank allows to retrieve the rank of a given stop
     std::vector<ParsedStop> rankedStops;
     std::unordered_map<std::string, size_t> stopidToRank;
+
+    // serialization/deserialization :
+    void toStream(std::ostream& out) const;
+    static GtfsParsedData fromStream(std::istream& in);
 };
 
 }  // namespace my::preprocess
