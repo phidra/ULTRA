@@ -62,7 +62,8 @@ int main(int argc, char** argv) {
 
     const std::filesystem::path intermediaryDir = outputDir + "INTERMEDIARY/";
     std::filesystem::create_directory(intermediaryDir);
-    transferData.walkingGraph.dumpIntermediary(intermediaryDir);
+    // FIXME : these intermediary structures should be in the preprocess :
+    // transferData.walkingGraph.dumpIntermediary(intermediaryDir);
 
     // serializing data like RAPTOR::Data does :
     const std::string raptorDataFileName = outputDir + "raptor.binary";
