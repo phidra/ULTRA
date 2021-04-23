@@ -25,7 +25,7 @@ void _rankNodes(vector<my::Edge>& edgesWithStops, vector<my::Stop> const& stops)
         if (nodeToRank.find(node.id) == nodeToRank.end()) {
             nodeToRank.insert({node.id, current_rank++});
         }
-        node.rank = nodeToRank.at(node.id);
+        node.set_rank(nodeToRank.at(node.id));
     };
 
     // then we can rank the other nodes in the graph :
@@ -43,8 +43,8 @@ vector<my::Edge> _makeEdgesBidirectional(vector<my::Edge> const& edges) {
     for (auto edge : edges) {
         Polyline reversed_geom = edge.geometry;
         reverse(reversed_geom.begin(), reversed_geom.end());
-        bidirectional.emplace_back(edge.node_to.id, edge.node_to.rank, edge.node_from.id, edge.node_from.rank,
-                                   move(reversed_geom), edge.length_m, edge.weight);
+        bidirectional.emplace_back(edge.node_to.id, edge.node_to.get_rank(), edge.node_from.id,
+                                   edge.node_from.get_rank(), move(reversed_geom), edge.length_m, edge.weight);
     }
     assert(bidirectional.size() == 2 * edges.size());
 
@@ -57,7 +57,7 @@ map<size_t, vector<size_t>> _mapNodesToOutEdges(vector<my::Edge> const& edges) {
     map<size_t, vector<size_t>> nodeToOutEdges;
     for (size_t edge_index = 0; edge_index < edges.size(); ++edge_index) {
         auto const& edge = edges[edge_index];
-        nodeToOutEdges[edge.node_from.rank].push_back(edge_index);
+        nodeToOutEdges[edge.node_from.get_rank()].push_back(edge_index);
     }
     return nodeToOutEdges;
 }
@@ -107,8 +107,8 @@ void WalkingGraph::checkStructuresConsistency() const {
     // FIXME : this should be used in debug settings only.
     set<size_t> nodes1;
     for (auto& edge : edgesWithStopsBidirectional) {
-        nodes1.insert(edge.node_from.rank);
-        nodes1.insert(edge.node_to.rank);
+        nodes1.insert(edge.node_from.get_rank());
+        nodes1.insert(edge.node_to.get_rank());
     }
 
     set<size_t> nodes2;
@@ -135,7 +135,7 @@ WalkingGraph WalkingGraph::fromStream(istream& in) {
     map<size_t, vector<size_t>> nodeToOutEdges;
     size_t edge_rank = 0;
     for (auto& edge : deserialized.edgesWithStopsBidirectional) {
-        deserialized.nodeToOutEdges[edge.node_from.rank].push_back(edge_rank++);
+        deserialized.nodeToOutEdges[edge.node_from.get_rank()].push_back(edge_rank++);
     }
     deserialized.checkStructuresConsistency();
     return deserialized;

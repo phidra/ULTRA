@@ -21,10 +21,10 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
 
     for (auto edge : walkingGraph.edgesWithStopsBidirectional) {
         Geometry::Point node_from_coords{Construct::LatLongTag{}, edge.node_from.lat(), edge.node_from.lon()};
-        vertexAttrs.set(Coordinates, ::Vertex{edge.node_from.rank}, node_from_coords);
+        vertexAttrs.set(Coordinates, ::Vertex{edge.node_from.get_rank()}, node_from_coords);
 
         Geometry::Point node_to_coords{Construct::LatLongTag{}, edge.node_to.lat(), edge.node_to.lon()};
-        vertexAttrs.set(Coordinates, ::Vertex{edge.node_to.rank}, node_to_coords);
+        vertexAttrs.set(Coordinates, ::Vertex{edge.node_to.get_rank()}, node_to_coords);
     }
 
     // ET LA, je créé les vertex et leur attributs (ToVertex + TravelTime) :
@@ -37,7 +37,7 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
         for (auto outEdgeIdx : outEdges) {
             auto edge = walkingGraph.edgesWithStopsBidirectional.at(outEdgeIdx);
 
-            edgeAttrs.set(ToVertex, ::Edge{edge_counter}, Vertex{edge.node_to.rank});
+            edgeAttrs.set(ToVertex, ::Edge{edge_counter}, Vertex{edge.node_to.get_rank()});
 
             auto travel_time = edge.weight;  // FIXME : there is a slight rounding mistake here
             edgeAttrs.set(TravelTime, ::Edge{edge_counter}, travel_time);

@@ -25,6 +25,19 @@ struct Node {
     inline double lon() const { return location.lon(); }
     inline double lat() const { return location.lat(); }
 
+    // FIXME : for speed, those checks should be in debug mode :
+    inline size_t get_rank() const {
+        if (!is_ranked())
+            throw std::runtime_error("trying to get rank of UNRANKED node");
+        return rank;
+    }
+    inline void set_rank(size_t rank_) {
+        if (is_ranked() && rank_ != rank)
+            throw std::runtime_error("trying to set an inconsistent rank");
+        rank = rank_;
+    }
+    inline bool is_ranked() const { return rank != UNRANKED; }
+
     inline bool operator==(Node const& other) const {
         return this->id == other.id && this->rank == other.rank;
     }  // needed by set<T>
@@ -32,6 +45,8 @@ struct Node {
     std::string url;
     NodeId id;
     osmium::Location location;
+
+   private:
     size_t rank = UNRANKED;
 };
 
