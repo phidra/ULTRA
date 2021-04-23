@@ -9,15 +9,16 @@
 #include "Graph/graph.h"
 #include "Graph/geojson.h"
 
+using namespace std;
+
 namespace my::preprocess {
 
-std::unordered_map<my::NodeId, size_t> _rankNodes(std::vector<my::Edge> const& edgesWithStops,
-                                                  std::vector<my::Stop> const& stops) {
-    std::unordered_map<my::NodeId, size_t> nodeToRank;
+unordered_map<my::NodeId, size_t> _rankNodes(vector<my::Edge> const& edgesWithStops, vector<my::Stop> const& stops) {
+    unordered_map<my::NodeId, size_t> nodeToRank;
 
     // some algorithms (ULTRA) need that stops are the first nodes of the graph -> stops must be ranked first :
     size_t rank = 0;
-    std::for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &rank](my::Stop const& stop) {
+    for_each(stops.cbegin(), stops.cend(), [&nodeToRank, &rank](my::Stop const& stop) {
         nodeToRank.insert({stop.id, rank++});
     });
 
@@ -36,24 +37,24 @@ std::unordered_map<my::NodeId, size_t> _rankNodes(std::vector<my::Edge> const& e
     return nodeToRank;
 }
 
-std::vector<my::Edge> _makeEdgesBidirectional(std::vector<my::Edge> const& edges) {
+vector<my::Edge> _makeEdgesBidirectional(vector<my::Edge> const& edges) {
     // For each edge, adds its opposite edge (this doubles the number of edges in the edgelist)
     // note : the function is cleaner without side-effects (taking a const ref to edges, returning a copy)
     // but as this is slower, if performance issues arise, we can mutate edges instead
-    std::vector<my::Edge> bidirectional(edges);
+    vector<my::Edge> bidirectional(edges);
     for (auto edge : edges) {
         Polyline geom = edge.geometry;
-        std::reverse(geom.begin(), geom.end());
-        bidirectional.emplace_back(edge.node_to.id, edge.node_from.id, std::move(geom), edge.length_m, edge.weight);
+        reverse(geom.begin(), geom.end());
+        bidirectional.emplace_back(edge.node_to.id, edge.node_from.id, move(geom), edge.length_m, edge.weight);
     }
     assert(bidirectional.size() == 2 * edges.size());
     return bidirectional;
 }
 
-std::map<size_t, std::vector<size_t>> _mapNodesToOutEdges(std::vector<my::Edge> const& edges,
-                                                          std::unordered_map<my::NodeId, size_t> const& nodeToRank) {
+map<size_t, vector<size_t>> _mapNodesToOutEdges(vector<my::Edge> const& edges,
+                                                unordered_map<my::NodeId, size_t> const& nodeToRank) {
     // this functions build a map that helps to retrieve the out-edges of a node (given its rank)
-    std::map<size_t, std::vector<size_t>> nodeToOutEdges;
+    map<size_t, vector<size_t>> nodeToOutEdges;
     for (size_t edge_index = 0; edge_index < edges.size(); ++edge_index) {
         auto const& edge = edges[edge_index];
         size_t node_from_rank = nodeToRank.at(edge.node_from.id);
@@ -62,35 +63,35 @@ std::map<size_t, std::vector<size_t>> _mapNodesToOutEdges(std::vector<my::Edge> 
     return nodeToOutEdges;
 }
 
-WalkingGraph::WalkingGraph(std::filesystem::path osmFile,
-                           std::filesystem::path polygonFile,
-                           std::vector<my::Stop> const& stops,
+WalkingGraph::WalkingGraph(filesystem::path osmFile,
+                           filesystem::path polygonFile,
+                           vector<my::Stop> const& stops,
                            float walkspeedKmPerHour_)
     : walkspeedKmPerHour{walkspeedKmPerHour_},
       polygon{get_polygon(polygonFile)},
       edgesOsm{osm_to_graph(osmFile, polygon, walkspeedKmPerHour)} {
     // extend graph with stop-edges :
-    std::tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edgesOsm, walkspeedKmPerHour);
+    tie(edgesWithStops, stopsWithClosestNode) = extend_graph(stops, edgesOsm, walkspeedKmPerHour);
 
     nodeToRank = _rankNodes(edgesWithStops, stops);
-    std::cout << "nb ranked nodes = " << nodeToRank.size() << std::endl;
+    cout << "nb ranked nodes = " << nodeToRank.size() << endl;
 
     edgesWithStopsBidirectional = _makeEdgesBidirectional(edgesWithStops);
     nodeToOutEdges = _mapNodesToOutEdges(edgesWithStopsBidirectional, nodeToRank);
-    std::cout << "The association map has " << nodeToOutEdges.size() << " items" << std::endl;
+    cout << "The association map has " << nodeToOutEdges.size() << " items" << endl;
 }
 
-void WalkingGraph::dumpIntermediary(std::string const& outputDir) const {
-    std::ofstream originalGraphStream(outputDir + "original_graph.geojson");
+void WalkingGraph::dumpIntermediary(string const& outputDir) const {
+    ofstream originalGraphStream(outputDir + "original_graph.geojson");
     my::dump_geojson_graph(originalGraphStream, edgesOsm);
 
-    std::ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson");
+    ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson");
     my::dump_geojson_graph(extendedGraphStream, edgesWithStops);
 
-    std::ofstream stopsStream(outputDir + "stops.geojson");
+    ofstream stopsStream(outputDir + "stops.geojson");
     my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
 
-    std::ofstream polygonStream(outputDir + "polygon.geojson");
+    ofstream polygonStream(outputDir + "polygon.geojson");
     my::dump_geojson_line(polygonStream, polygon.outer());
 }
 
