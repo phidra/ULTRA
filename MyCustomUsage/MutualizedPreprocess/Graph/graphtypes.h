@@ -25,6 +25,7 @@ struct Node {
     inline double lon() const { return location.lon(); }
     inline double lat() const { return location.lat(); }
 
+    inline size_t get_rank_or_unranked() const { return rank; }  // this CAN return UNRANKED
     // FIXME : for speed, those checks should be in debug mode :
     inline size_t get_rank() const {
         if (!is_ranked())

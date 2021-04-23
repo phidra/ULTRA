@@ -9,7 +9,7 @@ using namespace std;
 
 namespace my {
 
-void dump_geojson_graph(ostream& out, vector<Edge> const& edges) {
+void dump_geojson_graph(ostream& out, vector<Edge> const& edges, bool allow_unranked) {
     // EXPECTED OUTPUT :
     // {
     //     "type": "FeatureCollection",
@@ -59,9 +59,11 @@ void dump_geojson_graph(ostream& out, vector<Edge> const& edges) {
 
         // properties :
         rapidjson::Value properties(rapidjson::kObjectType);
-        /* properties.AddMember("node_from_rank", edge.node_from.get_rank(), a); */
+        /* properties.AddMember("node_from_rank", allow_unranked ? edge.node_from.get_rank_or_unranked() :
+         * edge.node_from.get_rank(), a); */
         properties.AddMember("node_from", rapidjson::Value().SetString(edge.node_from.id.c_str(), a), a);
-        /* properties.AddMember("node_to_rank", edge.node_to.get_rank(), a); */
+        /* properties.AddMember("node_to_rank",  allow_unranked ? edge.node_to.get_rank_or_unranked() :
+         * edge.node_to.get_rank(), a); */
         properties.AddMember("node_to", rapidjson::Value().SetString(edge.node_to.id.c_str(), a), a);
         properties.AddMember("node_from_url", rapidjson::Value().SetString(edge.node_from.url.c_str(), a), a);
         properties.AddMember("node_to_url", rapidjson::Value().SetString(edge.node_to.url.c_str(), a), a);

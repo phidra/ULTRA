@@ -82,10 +82,10 @@ WalkingGraph::WalkingGraph(filesystem::path osmFile,
 
 void WalkingGraph::dumpIntermediary(string const& outputDir) const {
     ofstream originalGraphStream(outputDir + "original_graph.geojson");
-    my::dump_geojson_graph(originalGraphStream, edgesOsm);
+    my::dump_geojson_graph(originalGraphStream, edgesOsm, true);
 
     ofstream extendedGraphStream(outputDir + "graph_with_stops.geojson");
-    my::dump_geojson_graph(extendedGraphStream, edgesWithStops);
+    my::dump_geojson_graph(extendedGraphStream, edgesWithStops, true);
 
     ofstream stopsStream(outputDir + "stops.geojson");
     my::dump_geojson_stops(stopsStream, stopsWithClosestNode);
@@ -125,7 +125,7 @@ void WalkingGraph::checkStructuresConsistency() const {
 }
 
 void WalkingGraph::toStream(ostream& out) const {
-    dump_geojson_graph(out, edgesWithStopsBidirectional);
+    dump_geojson_graph(out, edgesWithStopsBidirectional, false);
 }
 
 WalkingGraph WalkingGraph::fromStream(istream& in) {
