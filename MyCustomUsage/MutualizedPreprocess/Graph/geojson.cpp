@@ -59,11 +59,11 @@ void dump_geojson_graph(ostream& out, vector<Edge> const& edges, bool allow_unra
 
         // properties :
         rapidjson::Value properties(rapidjson::kObjectType);
-        properties.AddMember("node_from_rank",
-                             allow_unranked ? edge.node_from.get_rank_or_unranked() : edge.node_from.get_rank(), a);
+        size_t node_from_rank = allow_unranked ? edge.node_from.get_rank_or_unranked() : edge.node_from.get_rank();
+        properties.AddMember("node_from_rank", node_from_rank, a);
         properties.AddMember("node_from", rapidjson::Value().SetString(edge.node_from.id.c_str(), a), a);
-        properties.AddMember("node_to_rank",
-                             allow_unranked ? edge.node_to.get_rank_or_unranked() : edge.node_to.get_rank(), a);
+        size_t node_to_rank = allow_unranked ? edge.node_to.get_rank_or_unranked() : edge.node_to.get_rank();
+        properties.AddMember("node_to_rank", node_to_rank, a);
         properties.AddMember("node_to", rapidjson::Value().SetString(edge.node_to.id.c_str(), a), a);
         properties.AddMember("node_from_url", rapidjson::Value().SetString(edge.node_from.url.c_str(), a), a);
         properties.AddMember("node_to_url", rapidjson::Value().SetString(edge.node_to.url.c_str(), a), a);
