@@ -54,21 +54,7 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     return {vertexAttrs, edgeAttrs, beginOut};
 }
 
-UltraTransferData::UltraTransferData(std::filesystem::path osmFile,
-                                     std::filesystem::path polygonFile,
-                                     std::vector<RAPTOR::Stop> const& raptor_stops,
-                                     float walkspeedKmPerHour)
-    : walkingGraph{[&]() {
-          // converting RAPTOR::Stop to unopinionated stops :
-          std::vector<my::Stop> stops;
-          for (int stopRank = 0; stopRank < raptor_stops.size(); ++stopRank) {
-              auto const& stop = raptor_stops[stopRank];
-              stops.emplace_back(stop.coordinates.longitude, stop.coordinates.latitude, std::to_string(stopRank),
-                                 stop.name);
-          }
-          WalkingGraph graph{osmFile, polygonFile, stops, walkspeedKmPerHour};
-          return graph;
-      }()} {
+UltraTransferData::UltraTransferData(WalkingGraph&& graph) : walkingGraph{std::move(graph)} {
     auto [vertexAttrs, edgeAttrs, beginOut] = buildTransferGraphStructures(walkingGraph);
 
     // serialization :

@@ -22,6 +22,7 @@ struct WalkingGraph {
                  std::vector<my::Stop> const& stops,
                  float walkspeedKmPerHour_);
 
+    WalkingGraph(WalkingGraph&&) = default;
     WalkingGraph() {}
     //
     // edges3 = same than edges2, but twice as more because bidirectional :

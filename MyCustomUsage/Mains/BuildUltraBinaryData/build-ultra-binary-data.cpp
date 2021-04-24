@@ -15,13 +15,9 @@ inline void usage(const std::string programName) noexcept {
     exit(0);
 }
 
-my::preprocess::UltraTransferData buildTransferData(std::filesystem::path osmFile,
-                                                    std::filesystem::path polygonFile,
-                                                    std::vector<RAPTOR::Stop> const& stopData,
-                                                    float walkspeedKmPerHour,
-                                                    std::string programName) {
+my::preprocess::UltraTransferData buildTransferData(my::preprocess::WalkingGraph&& graph, std::string programName) {
     try {
-        my::preprocess::UltraTransferData transferData{osmFile, polygonFile, stopData, walkspeedKmPerHour};
+        my::preprocess::UltraTransferData transferData{std::move(graph)};
         return transferData;
     } catch (std::exception& e) {
         std::cout << "EXCEPTION: " << e.what() << std::endl;
@@ -35,36 +31,39 @@ my::preprocess::UltraTransferData buildTransferData(std::filesystem::path osmFil
 }
 
 int main(int argc, char** argv) {
-    if (argc < 6)
+    if (argc < 7)
         usage(argv[0]);
 
     const std::string preparatoryGtfsFile = argv[1];
-    const std::string osmFile = argv[2];
-    const std::string polygonFile = argv[3];
-    const float walkspeedKmPerHour = std::stof(argv[4]);
-    std::string outputDir = argv[5];
+    const std::string preparatoryGraph = argv[2];
+    const std::string osmFile = argv[3];
+    const std::string polygonFile = argv[4];
+    const float walkspeedKmPerHour = std::stof(argv[5]);
+    std::string outputDir = argv[6];
     if (outputDir.back() != '/') {
         outputDir.push_back('/');
     }
 
-    std::cout << "PREPARATORY GTFS = " << preparatoryGtfsFile << std::endl;
-    std::cout << "OSMFILE          = " << osmFile << std::endl;
-    std::cout << "POLYGONFILE      = " << polygonFile << std::endl;
-    std::cout << "WALKSPEED KM/H   = " << walkspeedKmPerHour << std::endl;
-    std::cout << "OUTPUT_DIR       = " << outputDir << std::endl;
+    std::cout << "PREPARATORY GTFS  = " << preparatoryGtfsFile << std::endl;
+    std::cout << "PREPARATORY GRAPH = " << preparatoryGraph << std::endl;
+    std::cout << "OSMFILE           = " << osmFile << std::endl;
+    std::cout << "POLYGONFILE       = " << polygonFile << std::endl;
+    std::cout << "WALKSPEED KM/H    = " << walkspeedKmPerHour << std::endl;
+    std::cout << "OUTPUT_DIR        = " << outputDir << std::endl;
     std::cout << std::endl;
 
     std::ifstream gtfs_input_stream{preparatoryGtfsFile};
     my::preprocess::GtfsParsedData gtfs = my::preprocess::fromStream(gtfs_input_stream);
     my::preprocess::UltraGtfsData gtfsData{gtfs};
 
-    my::preprocess::UltraTransferData transferData =
-        buildTransferData(osmFile, polygonFile, gtfsData.stopData, walkspeedKmPerHour, argv[0]);
+    std::ifstream walking_graph_input_stream{preparatoryGraph};
+    my::preprocess::WalkingGraph graph = my::preprocess::WalkingGraph::fromStream(walking_graph_input_stream);
+
+    my::preprocess::UltraTransferData transferData = buildTransferData(std::move(graph), argv[0]);
 
     transferData.walkingGraph.printStats(std::cout);
-    std::cout << "The transferGraph has these vertices : " << transferData.transferGraphUltra.numVertices()
-              << std::endl;
-    std::cout << "The transferGraph has these edges    : " << transferData.transferGraphUltra.numEdges() << std::endl;
+    std::cout << "transferGraph vertices : " << transferData.transferGraphUltra.numVertices() << std::endl;
+    std::cout << "transferGraph edges    : " << transferData.transferGraphUltra.numEdges() << std::endl;
 
     const std::filesystem::path intermediaryDir = outputDir + "INTERMEDIARY/";
     std::filesystem::create_directory(intermediaryDir);

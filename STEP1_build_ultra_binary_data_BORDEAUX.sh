@@ -89,6 +89,7 @@ echo "Building ULTRA data :"
 set -o xtrace
 "${BUILD_DIR}/bin/build-ultra-binary-data" \
     "$PREPARATORY_OUTPUT_DIR/gtfs.json" \
+    "$PREPARATORY_OUTPUT_DIR/walking_graph.json" \
     "$INPUT_OSM_FILE" \
     "$INPUT_POLYGON_FILE" \
     "$WALKSPEED_KMH" \

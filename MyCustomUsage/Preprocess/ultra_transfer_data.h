@@ -5,16 +5,12 @@
 
 #include "DataStructures/Graph/Graph.h"
 #include "DataStructures/RAPTOR/Entities/Stop.h"
-#include "MutualizedPreprocess/Graph/graphtypes.h"
 #include "MutualizedPreprocess/Graph/walking_graph.h"
 
 namespace my::preprocess {
 
 struct UltraTransferData {
-    UltraTransferData(std::filesystem::path osmFile,
-                      std::filesystem::path polygonFile,
-                      std::vector<RAPTOR::Stop> const& stops,
-                      float walkspeedKmPerHour);
+    UltraTransferData(WalkingGraph&&);
     static bool areApproxEqual(TransferGraph const& left, TransferGraph const& right);
     bool checkSerializationIdempotence() const;
 
