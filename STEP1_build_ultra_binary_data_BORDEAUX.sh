@@ -11,6 +11,7 @@ BUILD_DIR="$this_script_parent/_build"
 CMAKE_ROOT_DIR="$this_script_parent/MyCustomUsage"
 SCRIPTS_DIR="$this_script_parent/MyCustomUsage/Scripts"
 DATA_DIR="$this_script_parent/MyCustomUsage/Data"
+WALKSPEED_KMH=4.7
 echo "BUILD_DIR=$BUILD_DIR"
 echo "CMAKE_ROOT_DIR=$CMAKE_ROOT_DIR"
 
@@ -31,7 +32,7 @@ mkdir -p "$INPUT_GTFS_DATA"
 mkdir -p "$BUILD_DIR"
 conan install --install-folder="$BUILD_DIR" "$CMAKE_ROOT_DIR" --profile="$CMAKE_ROOT_DIR/conanprofile.txt"
 CXX=$(which clang++) cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo  -B"$BUILD_DIR" -H"$CMAKE_ROOT_DIR"
-make -j -C "$BUILD_DIR" download_osm_bordeaux build-ultra-binary-data
+make -j -C "$BUILD_DIR" download_osm_bordeaux build-preparatory build-ultra-binary-data
 
 
 # === Putting GTFS data in WORKDIR :
@@ -68,11 +69,26 @@ mv "$INPUT_GTFS_DATA/stop_times.txt" "$INPUT_GTFS_DATA/original_stop_times.txt"
     "$INPUT_GTFS_DATA/stops.txt" \
     "$INPUT_GTFS_DATA/stop_times.txt"
 
+# === building preparatory data :
+PREPARATORY_OUTPUT_DIR="$WORKDIR/PREPARATORY"
+mkdir "$PREPARATORY_OUTPUT_DIR"
+echo ""
+echo "Building preparatory data :"
+set -o xtrace
+"${BUILD_DIR}/bin/build-preparatory" \
+    "$INPUT_GTFS_DATA" \
+    "$INPUT_OSM_FILE" \
+    "$INPUT_POLYGON_FILE" \
+    "$WALKSPEED_KMH" \
+    "$PREPARATORY_OUTPUT_DIR"
+set +o xtrace
+
 # === building ULTRA binary data :
-WALKSPEED_KMH=4.7
+echo ""
+echo "Building ULTRA data :"
 set -o xtrace
 "${BUILD_DIR}/bin/build-ultra-binary-data" \
-    "$INPUT_GTFS_DATA" \
+    "$PREPARATORY_OUTPUT_DIR/gtfs.json" \
     "$INPUT_OSM_FILE" \
     "$INPUT_POLYGON_FILE" \
     "$WALKSPEED_KMH" \

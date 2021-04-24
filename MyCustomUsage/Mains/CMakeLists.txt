@@ -1,2 +1,3 @@
+add_subdirectory(BuildPreparatory)
 add_subdirectory(BuildUltraBinaryData)
 add_subdirectory(Server)

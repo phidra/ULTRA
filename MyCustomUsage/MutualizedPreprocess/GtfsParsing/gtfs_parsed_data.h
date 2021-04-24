@@ -51,6 +51,11 @@ struct GtfsParsedData {
     // serialization/deserialization :
     void toStream(std::ostream& out) const;
     static GtfsParsedData fromStream(std::istream& in);
+
+    inline bool operator==(GtfsParsedData const& other) const {
+        return (rankedRoutes == other.rankedRoutes && routeToRank == other.routeToRank &&
+                rankedStops == other.rankedStops && stopidToRank == other.stopidToRank && routes == other.routes);
+    }
 };
 
 }  // namespace my::preprocess

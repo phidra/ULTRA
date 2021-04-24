@@ -145,9 +145,7 @@ static pair<vector<RAPTOR::RouteSegment>, vector<size_t>> convert_routeSegmentsR
     return {routeSegments, firstRouteSegmentOfStop};
 }
 
-my::preprocess::UltraGtfsData::UltraGtfsData(string const& gtfsFolder) {
-    GtfsParsedData gtfs{gtfsFolder};
-
+my::preprocess::UltraGtfsData::UltraGtfsData(GtfsParsedData const& gtfs) {
     // use GTFS parsed data to build ULTRA data :
     routeData = build_routeData(gtfs.rankedRoutes);
     stopData = build_stopData(gtfs.rankedStops);

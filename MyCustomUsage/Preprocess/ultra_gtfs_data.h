@@ -8,12 +8,14 @@
 #include "DataStructures/RAPTOR/Entities/RouteSegment.h"
 #include "Helpers/Types.h"
 
+#include "GtfsParsing/gtfs_parsed_data.h"
+
 namespace my::preprocess {
 
 // From a given GTFS folder, builds the RAPTOR binary data expected by ULTRA.
 
 struct UltraGtfsData {
-    UltraGtfsData(std::string const& gtfsFolder);
+    UltraGtfsData(GtfsParsedData const&);
     void dump(std::string const& filename) const;
     bool checkSerializationIdempotence(std::ostream& out) const;
 

@@ -4,11 +4,14 @@
 #include "Preprocess/ultra_transfer_data.h"
 #include "Preprocess/ultra_gtfs_data.h"
 
+#include "MutualizedPreprocess/GtfsParsing/gtfs_parsed_data.h"
+#include "MutualizedPreprocess/GtfsParsing/gtfs_geojson.h"
+
 #include "DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {
-    std::cout << "Usage:  " << programName << "  <GTFS folder>  <osmFile>  <polygonFile>  <walkspeed km/h>  <outputDir>"
-              << std::endl;
+    std::cout << "Usage:  " << programName
+              << "  <preparatory GTFS>  <osmFile>  <polygonFile>  <walkspeed km/h>  <outputDir>" << std::endl;
     exit(0);
 }
 
@@ -35,7 +38,7 @@ int main(int argc, char** argv) {
     if (argc < 6)
         usage(argv[0]);
 
-    const std::string gtfsFolder = argv[1];
+    const std::string preparatoryGtfsFile = argv[1];
     const std::string osmFile = argv[2];
     const std::string polygonFile = argv[3];
     const float walkspeedKmPerHour = std::stof(argv[4]);
@@ -44,13 +47,16 @@ int main(int argc, char** argv) {
         outputDir.push_back('/');
     }
 
-    std::cout << "GTFS FOLDER      = " << gtfsFolder << std::endl;
+    std::cout << "PREPARATORY GTFS = " << preparatoryGtfsFile << std::endl;
     std::cout << "OSMFILE          = " << osmFile << std::endl;
     std::cout << "POLYGONFILE      = " << polygonFile << std::endl;
     std::cout << "WALKSPEED KM/H   = " << walkspeedKmPerHour << std::endl;
     std::cout << "OUTPUT_DIR       = " << outputDir << std::endl;
     std::cout << std::endl;
-    my::preprocess::UltraGtfsData gtfsData{gtfsFolder};
+
+    std::ifstream gtfs_input_stream{preparatoryGtfsFile};
+    my::preprocess::GtfsParsedData gtfs = my::preprocess::fromStream(gtfs_input_stream);
+    my::preprocess::UltraGtfsData gtfsData{gtfs};
 
     my::preprocess::UltraTransferData transferData =
         buildTransferData(osmFile, polygonFile, gtfsData.stopData, walkspeedKmPerHour, argv[0]);

@@ -216,9 +216,7 @@ bool _checkSerializationIdempotent(GtfsParsedData const& gtfs) {
 
     ifstream in(tmpfile.file);
     GtfsParsedData deserialized = fromStream(in);
-    return (deserialized.rankedRoutes == gtfs.rankedRoutes || deserialized.routeToRank == gtfs.routeToRank ||
-            deserialized.rankedStops == gtfs.rankedStops || deserialized.stopidToRank == gtfs.stopidToRank ||
-            deserialized.routes == gtfs.routes);
+    return deserialized == gtfs;
 }
 
 }  // namespace my::preprocess
