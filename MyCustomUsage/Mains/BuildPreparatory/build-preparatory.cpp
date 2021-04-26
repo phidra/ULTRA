@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
         outputDir.push_back('/');
     }
 
-    std::string hluwOutputDir = argv[5];
+    std::string hluwOutputDir = argv[6];
     if (hluwOutputDir.back() != '/') {
         hluwOutputDir.push_back('/');
     }
