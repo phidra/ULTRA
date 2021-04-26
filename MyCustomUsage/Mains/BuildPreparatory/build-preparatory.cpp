@@ -40,6 +40,8 @@ int main(int argc, char** argv) {
 
     std::ofstream out_gtfs(outputDir + "gtfs.json");
     my::preprocess::toStream(out_gtfs, gtfsData);
+    std::ofstream out_stoptimes(hluwOutputDir + "stoptimes.txt");
+    gtfsData.toHluwStoptimes(out_stoptimes);
 
     // note : this conversion is only necessary so that Graph doesn't depend on GtfsParsing :
     std::vector<my::Stop> stops;

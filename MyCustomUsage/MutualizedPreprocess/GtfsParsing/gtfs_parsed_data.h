@@ -49,8 +49,7 @@ struct GtfsParsedData {
     std::unordered_map<std::string, size_t> stopidToRank;
 
     // serialization/deserialization :
-    void toStream(std::ostream& out) const;
-    static GtfsParsedData fromStream(std::istream& in);
+    void toHluwStoptimes(std::ostream& out) const;  // FIXME : this should be in HL-UW repo
 
     inline bool operator==(GtfsParsedData const& other) const {
         return (rankedRoutes == other.rankedRoutes && routeToRank == other.routeToRank &&

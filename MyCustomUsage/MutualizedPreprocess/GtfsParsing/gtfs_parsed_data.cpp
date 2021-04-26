@@ -176,4 +176,30 @@ GtfsParsedData::GtfsParsedData(string const& gtfsFolder) {
     tie(rankedStops, stopidToRank) = _rankStops(routes, feed);
 }
 
+void GtfsParsedData::toHluwStoptimes(std::ostream& out) const {
+    // this functions dumps the stoptimes to use in HL-UW
+    // FIXME : this should be in HL-UW repo (but for now, it is easier here)
+
+    // these fields are the only ones that are relevant :
+    out << "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n";
+
+    for (auto& [routeLabel, parsedRoute] : routes) {
+        // the stops of this route :
+        vector<string> const& stop_ids = routeLabel.toStopIds();
+
+        // the events of each trips :
+        for (auto& [orderableTripId, events] : parsedRoute.trips) {
+            assert(stop_ids.size() == events.size());
+            auto const& trip_id = orderableTripId.second;
+            size_t stop_sequence = 1;  // in GTFS, stop sequence seem to begin at 1
+            for (auto& [arrivalTime, departureTime] : events) {
+                // FIXME : this assumes that trip AND stop ids don't need escaping
+                out << trip_id << "," << arrivalTime << "," << departureTime << "," << stop_ids[stop_sequence - 1]
+                    << "," << stop_sequence << "\n";
+                ++stop_sequence;
+            }
+        }
+    }
+}
+
 }  // namespace my::preprocess
