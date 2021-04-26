@@ -72,6 +72,8 @@ mv "$INPUT_GTFS_DATA/stop_times.txt" "$INPUT_GTFS_DATA/original_stop_times.txt"
 # === building preparatory data :
 PREPARATORY_OUTPUT_DIR="$WORKDIR/PREPARATORY"
 mkdir "$PREPARATORY_OUTPUT_DIR"
+PREPARATORY_HLUW_OUTPUT_DIR="$PREPARATORY_OUTPUT_DIR/HLUW"
+mkdir "$PREPARATORY_HLUW_OUTPUT_DIR"
 echo ""
 echo "Building preparatory data :"
 set -o xtrace
@@ -80,7 +82,8 @@ set -o xtrace
     "$INPUT_OSM_FILE" \
     "$INPUT_POLYGON_FILE" \
     "$WALKSPEED_KMH" \
-    "$PREPARATORY_OUTPUT_DIR"
+    "$PREPARATORY_OUTPUT_DIR" \
+    "$PREPARATORY_HLUW_OUTPUT_DIR"
 set +o xtrace
 
 # === building ULTRA binary data :

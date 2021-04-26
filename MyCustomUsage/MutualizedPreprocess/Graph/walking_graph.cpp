@@ -128,6 +128,34 @@ void WalkingGraph::toStream(ostream& out) const {
     dump_geojson_graph(out, edgesWithStopsBidirectional, false);
 }
 
+void WalkingGraph::toHluwStructures(std::string const& hluwOutputDir) const {
+    // this functions dumps the structures used by HL-UW.
+    // FIXME : it should rather be in HL-UW repository (but for now, it is easier to have it there).
+
+    // walkspeed :
+    std::ofstream out_walkspeed(hluwOutputDir + "POUET_walkspeed.txt");
+    out_walkspeed << walkspeedKmPerHour << "\n";
+
+    // edges :
+    std::ofstream out_edges(hluwOutputDir + "POUET_edges.txt");
+    out_edges << std::fixed << std::setprecision(0);  // displays integer weight
+    for (auto& edge : edgesWithStopsBidirectional) {
+        out_edges << edge.node_from.id << " ";
+        out_edges << edge.node_to.id << " ";
+        out_edges << edge.weight << "\n";
+    }
+
+    // nodes :
+    std::ofstream out_nodes(hluwOutputDir + "POUET_nodes.txt");
+    for (auto& stop : stopsWithClosestNode) {
+        out_nodes << stop.id << "\n";
+    }
+
+    // stops geojson (used by the HL-UW server) :
+    std::ofstream out_stops(hluwOutputDir + "stops.geojson");
+    dump_geojson_stops(out_stops, stopsWithClosestNode);
+}
+
 WalkingGraph WalkingGraph::fromStream(istream& in) {
     WalkingGraph deserialized;
     deserialized.edgesWithStopsBidirectional = parse_geojson_graph(in);

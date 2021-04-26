@@ -42,6 +42,7 @@ struct WalkingGraph {
     // serialization/deserialization :
     void toStream(std::ostream& out) const;
     static WalkingGraph fromStream(std::istream& in);
+    void toHluwStructures(std::string const& hluwOutputDir) const;  // FIXME : this should be in HL-UW repo
 
    private:
     float walkspeedKmPerHour;

@@ -8,8 +8,9 @@
 #include "MutualizedPreprocess/GtfsParsing/gtfs_geojson.h"
 
 int main(int argc, char** argv) {
-    if (argc < 6) {
-        std::cout << "Usage:  " << argv[0] << "  <GTFS folder>  <osmFile>  <polygonFile>  <walkspeed km/h>  <outputDir>"
+    if (argc < 7) {
+        std::cout << "Usage:  " << argv[0]
+                  << "  <GTFS folder>  <osmFile>  <polygonFile>  <walkspeed km/h>  <outputDir>  <hluwOutputDir>"
                   << std::endl;
         std::exit(0);
     }
@@ -23,11 +24,17 @@ int main(int argc, char** argv) {
         outputDir.push_back('/');
     }
 
+    std::string hluwOutputDir = argv[5];
+    if (hluwOutputDir.back() != '/') {
+        hluwOutputDir.push_back('/');
+    }
+
     std::cout << "GTFS FOLDER      = " << gtfsFolder << std::endl;
     std::cout << "OSMFILE          = " << osmFile << std::endl;
     std::cout << "POLYGONFILE      = " << polygonFile << std::endl;
     std::cout << "WALKSPEED KM/H   = " << walkspeedKmPerHour << std::endl;
     std::cout << "OUTPUT_DIR       = " << outputDir << std::endl;
+    std::cout << "HL-UW OUTPUT_DIR = " << hluwOutputDir << std::endl;
     std::cout << std::endl;
     my::preprocess::GtfsParsedData gtfsData{gtfsFolder};
 
@@ -43,6 +50,7 @@ int main(int argc, char** argv) {
     my::preprocess::WalkingGraph graph{osmFile, polygonFile, stops, walkspeedKmPerHour};
     std::ofstream out_graph(outputDir + "walking_graph.json");
     graph.toStream(out_graph);
+    graph.toHluwStructures(hluwOutputDir);
 
     return 0;
 }
