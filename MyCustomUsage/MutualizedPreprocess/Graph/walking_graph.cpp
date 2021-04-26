@@ -133,11 +133,11 @@ void WalkingGraph::toHluwStructures(std::string const& hluwOutputDir) const {
     // FIXME : it should rather be in HL-UW repository (but for now, it is easier to have it there).
 
     // walkspeed :
-    std::ofstream out_walkspeed(hluwOutputDir + "POUET_walkspeed.txt");
+    std::ofstream out_walkspeed(hluwOutputDir + "walkspeed_km_per_hour.txt");
     out_walkspeed << walkspeedKmPerHour << "\n";
 
     // edges :
-    std::ofstream out_edges(hluwOutputDir + "POUET_edges.txt");
+    std::ofstream out_edges(hluwOutputDir + "graph.edgefile");
     out_edges << std::fixed << std::setprecision(0);  // displays integer weight
     for (auto& edge : edgesWithStopsBidirectional) {
         out_edges << edge.node_from.id << " ";
@@ -146,7 +146,7 @@ void WalkingGraph::toHluwStructures(std::string const& hluwOutputDir) const {
     }
 
     // nodes :
-    std::ofstream out_nodes(hluwOutputDir + "POUET_nodes.txt");
+    std::ofstream out_nodes(hluwOutputDir + "stops.nodes");
     for (auto& stop : stopsWithClosestNode) {
         out_nodes << stop.id << "\n";
     }
