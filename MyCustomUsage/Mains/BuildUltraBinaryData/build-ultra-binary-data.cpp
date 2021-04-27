@@ -10,8 +10,7 @@
 #include "DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {
-    std::cout << "Usage:  " << programName
-              << "  <preparatory GTFS>  <osmFile>  <polygonFile>  <walkspeed km/h>  <outputDir>" << std::endl;
+    std::cout << "Usage:  " << programName << "  <prepared GTFS>  <walking-graph>  <outputDir>" << std::endl;
     exit(0);
 }
 
@@ -31,24 +30,18 @@ my::preprocess::UltraTransferData buildTransferData(my::preprocess::WalkingGraph
 }
 
 int main(int argc, char** argv) {
-    if (argc < 7)
+    if (argc < 4)
         usage(argv[0]);
 
     const std::string preparatoryGtfsFile = argv[1];
     const std::string preparatoryGraph = argv[2];
-    const std::string osmFile = argv[3];
-    const std::string polygonFile = argv[4];
-    const float walkspeedKmPerHour = std::stof(argv[5]);
-    std::string outputDir = argv[6];
+    std::string outputDir = argv[3];
     if (outputDir.back() != '/') {
         outputDir.push_back('/');
     }
 
     std::cout << "PREPARATORY GTFS  = " << preparatoryGtfsFile << std::endl;
     std::cout << "PREPARATORY GRAPH = " << preparatoryGraph << std::endl;
-    std::cout << "OSMFILE           = " << osmFile << std::endl;
-    std::cout << "POLYGONFILE       = " << polygonFile << std::endl;
-    std::cout << "WALKSPEED KM/H    = " << walkspeedKmPerHour << std::endl;
     std::cout << "OUTPUT_DIR        = " << outputDir << std::endl;
     std::cout << std::endl;
 
