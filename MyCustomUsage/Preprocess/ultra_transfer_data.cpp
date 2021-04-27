@@ -6,8 +6,9 @@
 #include "DataStructures/RAPTOR/Data.h"
 #include "DataStructures/Geometry/Point.h"
 #include "DataStructures/Graph/Classes/StaticGraph.h"
-#include "MutualizedPreprocess/Graph/graph.h"
-#include "MutualizedPreprocess/Graph/geojson.h"
+
+#include "graph/graph.h"
+#include "graph/geojson.h"
 #include "Preprocess/autodeletefile.h"
 
 namespace my::preprocess {

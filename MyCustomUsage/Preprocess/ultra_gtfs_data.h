@@ -8,7 +8,7 @@
 #include "DataStructures/RAPTOR/Entities/RouteSegment.h"
 #include "Helpers/Types.h"
 
-#include "GtfsParsing/gtfs_parsed_data.h"
+#include "gtfs/gtfs_parsed_data.h"
 
 namespace my::preprocess {
 

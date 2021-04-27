@@ -5,7 +5,8 @@
 
 #include "DataStructures/Graph/Graph.h"
 #include "DataStructures/RAPTOR/Entities/Stop.h"
-#include "MutualizedPreprocess/Graph/walking_graph.h"
+
+#include "graph/walking_graph.h"
 
 namespace my::preprocess {
 

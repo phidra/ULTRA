@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "ultra_gtfs_data.h"
-#include "MutualizedPreprocess/GtfsParsing/gtfs_parsed_data.h"
+#include "gtfs/gtfs_parsed_data.h"
 #include "Preprocess/autodeletefile.h"
 
 using namespace std;

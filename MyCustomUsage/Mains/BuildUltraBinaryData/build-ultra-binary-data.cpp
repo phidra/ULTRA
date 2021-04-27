@@ -4,8 +4,8 @@
 #include "Preprocess/ultra_transfer_data.h"
 #include "Preprocess/ultra_gtfs_data.h"
 
-#include "MutualizedPreprocess/GtfsParsing/gtfs_parsed_data.h"
-#include "MutualizedPreprocess/GtfsParsing/gtfs_geojson.h"
+#include "gtfs/gtfs_parsed_data.h"
+#include "gtfs/gtfs_geojson.h"
 
 #include "DataStructures/RAPTOR/Data.h"
 
