@@ -16,6 +16,8 @@ namespace my::preprocess {
 
 struct UltraGtfsData {
     UltraGtfsData(GtfsParsedData const&);
+    UltraGtfsData() = default;
+    UltraGtfsData& operator=(UltraGtfsData&&) = default;
     void dump(std::string const& filename) const;
     bool checkSerializationIdempotence(std::ostream& out) const;
 

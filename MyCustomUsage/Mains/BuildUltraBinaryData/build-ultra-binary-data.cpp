@@ -45,13 +45,16 @@ int main(int argc, char** argv) {
     std::cout << "OUTPUT_DIR        = " << outputDir << std::endl;
     std::cout << std::endl;
 
-    std::ifstream gtfs_input_stream{preparatoryGtfsFile};
-    my::preprocess::GtfsParsedData gtfs = my::preprocess::fromStream(gtfs_input_stream);
-    my::preprocess::UltraGtfsData gtfsData{gtfs};
+    my::preprocess::UltraGtfsData gtfsData;
+    {
+        std::ifstream gtfs_input_stream{preparatoryGtfsFile};
+        my::preprocess::GtfsParsedData gtfs = my::preprocess::fromStream(gtfs_input_stream);
+        my::preprocess::UltraGtfsData tmp{gtfs};
+        gtfsData = std::move(tmp);
+    }
 
     std::ifstream walking_graph_input_stream{preparatoryGraph};
     my::preprocess::WalkingGraph graph = my::preprocess::WalkingGraph::fromStream(walking_graph_input_stream);
-
     my::preprocess::UltraTransferData transferData = buildTransferData(std::move(graph), argv[0]);
 
     transferData.walkingGraph.printStats(std::cout);
@@ -60,20 +63,11 @@ int main(int argc, char** argv) {
 
     const std::filesystem::path intermediaryDir = outputDir + "INTERMEDIARY/";
     std::filesystem::create_directory(intermediaryDir);
-    // FIXME : these intermediary structures should be in the preprocess :
-    // transferData.walkingGraph.dumpIntermediary(intermediaryDir);
 
     // serializing data like RAPTOR::Data does :
     const std::string raptorDataFileName = outputDir + "raptor.binary";
     gtfsData.serialize(raptorDataFileName);
     transferData.transferGraphUltra.writeBinary(raptorDataFileName + ".graph");
-
-    // checking that we can unserialize it, and find no mismatch :
-    auto unserialized = RAPTOR::Data::FromBinary(raptorDataFileName);
-    bool areApproxEqual =
-        my::preprocess::UltraTransferData::areApproxEqual(transferData.transferGraphUltra, unserialized.transferGraph);
-    std::cout << "La serialization est-elle idempotente pour le transferGraph ? " << std::boolalpha << areApproxEqual
-              << std::endl;
 
     return 0;
 }
