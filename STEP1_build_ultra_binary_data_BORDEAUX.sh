@@ -7,10 +7,10 @@ set -o pipefail
 this_script_parent="$(realpath "$(dirname "$0")" )"
 
 
-# ARG = preparatory data :
-INPUT_PREPARATORY_DATADIR="$(realpath "${1}" )"
-echo "Using preparatory datadir = $INPUT_PREPARATORY_DATADIR"
-[ ! -d "$INPUT_PREPARATORY_DATADIR" ] && echo "ERROR : missing INPUT preparatory datadir" && exit 1
+# ARG = uwpreprocessed data :
+INPUT_UWPREPROCESSED_DATADIR="$(realpath "${1}" )"
+echo "Using uwpreprocessed datadir = $INPUT_UWPREPROCESSED_DATADIR"
+[ ! -d "$INPUT_UWPREPROCESSED_DATADIR" ] && echo "ERROR : missing INPUT uwpreprocessed datadir : $INPUT_UWPREPROCESSED_DATADIR" && exit 1
 
 
 # WORKDIR :
@@ -31,10 +31,10 @@ make -j -C "$BUILD_DIR" build-ultra-binary-data
 
 
 
-# === copy preparatory data :
-PREPARED_DATA="$WORKDIR/INPUT-PREPARATORY"
-mkdir -p "$PREPARED_DATA"
-cp -R "$INPUT_PREPARATORY_DATADIR"/* "$PREPARED_DATA"
+# === copy uwpreprocessed data :
+UWPREPROCESSED_DATA="$WORKDIR/INPUT-UWPREPROCESSED"
+mkdir -p "$UWPREPROCESSED_DATA"
+cp -R "$INPUT_UWPREPROCESSED_DATADIR"/* "$UWPREPROCESSED_DATA"
 
 
 
@@ -43,6 +43,6 @@ echo ""
 echo "Building ULTRA data :"
 set -o xtrace
 "${BUILD_DIR}/bin/build-ultra-binary-data" \
-    "$PREPARED_DATA/gtfs.json" \
-    "$PREPARED_DATA/walking_graph.json" \
+    "$UWPREPROCESSED_DATA/gtfs.json" \
+    "$UWPREPROCESSED_DATA/walking_graph.json" \
     "$WORKDIR"

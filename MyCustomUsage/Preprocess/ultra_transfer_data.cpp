@@ -7,20 +7,18 @@
 #include "DataStructures/Geometry/Point.h"
 #include "DataStructures/Graph/Classes/StaticGraph.h"
 
-#include "graph/graph.h"
-#include "graph/geojson.h"
 #include "Preprocess/autodeletefile.h"
 
 namespace my::preprocess {
 
 std::tuple<TransferGraph::VertexAttributes, TransferGraph::EdgeAttributes, std::vector<::Edge>>
-buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
+buildTransferGraphStructures(uwpreprocess::WalkingGraph const& walkingGraph) {
     // FIXME : grosse passe de mise au propre nécessaire
 
     // ICI, je crée les nodes et leur coordonnées (pas très pratique, je n'ai les coordonnées que dans les edges...) :
-    TransferGraph::VertexAttributes vertexAttrs(walkingGraph.nodeToOutEdges.size());
+    TransferGraph::VertexAttributes vertexAttrs(walkingGraph.node_to_out_edges.size());
 
-    for (auto edge : walkingGraph.edgesWithStopsBidirectional) {
+    for (auto edge : walkingGraph.edges_with_stops_bidirectional) {
         Geometry::Point node_from_coords{Construct::LatLongTag{}, edge.node_from.lat(), edge.node_from.lon()};
         vertexAttrs.set(Coordinates, ::Vertex{edge.node_from.get_rank()}, node_from_coords);
 
@@ -29,14 +27,14 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     }
 
     // ET LA, je créé les vertex et leur attributs (ToVertex + TravelTime) :
-    TransferGraph::EdgeAttributes edgeAttrs(walkingGraph.edgesWithStopsBidirectional.size());
+    TransferGraph::EdgeAttributes edgeAttrs(walkingGraph.edges_with_stops_bidirectional.size());
     std::vector<::Edge> beginOut;
     // NOTE : ici, il faut plutôt itérer sur les nodes dans l'ordre (si pas encore fait)
     int edge_counter{0};
-    for (auto [rankedNode, outEdges] : walkingGraph.nodeToOutEdges) {
+    for (auto outEdges : walkingGraph.node_to_out_edges) {
         beginOut.push_back(::Edge{edge_counter});
         for (auto outEdgeIdx : outEdges) {
-            auto edge = walkingGraph.edgesWithStopsBidirectional.at(outEdgeIdx);
+            auto edge = walkingGraph.edges_with_stops_bidirectional.at(outEdgeIdx);
 
             edgeAttrs.set(ToVertex, ::Edge{edge_counter}, Vertex{edge.node_to.get_rank()});
 
@@ -51,11 +49,11 @@ buildTransferGraphStructures(WalkingGraph const& walkingGraph) {
     std::cout << "\t beginOut    = " << beginOut.size() << std::endl;
     std::cout << "\t vertexAttrs = " << vertexAttrs.size() << std::endl;
     std::cout << "\t edgeAttrs   = " << edgeAttrs.size() << std::endl;
-    std::cout << "\t nb_edges    = " << walkingGraph.edgesWithStopsBidirectional.size() << std::endl;
+    std::cout << "\t nb_edges    = " << walkingGraph.edges_with_stops_bidirectional.size() << std::endl;
     return {vertexAttrs, edgeAttrs, beginOut};
 }
 
-UltraTransferData::UltraTransferData(WalkingGraph&& graph) : walkingGraph{std::move(graph)} {
+UltraTransferData::UltraTransferData(uwpreprocess::WalkingGraph&& graph) : walkingGraph{std::move(graph)} {
     auto [vertexAttrs, edgeAttrs, beginOut] = buildTransferGraphStructures(walkingGraph);
 
     // serialization :

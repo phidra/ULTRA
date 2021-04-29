@@ -1,6 +1,7 @@
 # this lib depends on :
-#   - the cmake target 'graphlib'
-#   - the cmake target 'gtfs_parsing'
+#   - the cmake target 'graph' (provided by external repo unrestricted-walking-preprocess)
+#   - the cmake target 'gtfs' (provided by external repo unrestricted-walking-preprocess)
+#   - the cmake target 'json' (provided by external repo unrestricted-walking-preprocess)
 #   - some ULTRA code (DataStructures / Helpers) which has to be includable
 
 
@@ -19,5 +20,6 @@ get_filename_component(ULTRA_INCLUDE_DIR "${PREPROCESS_PARENT_DIR}" DIRECTORY)
 
 target_include_directories(preprocess PUBLIC "${PREPROCESS_PARENT_DIR}")
 target_include_directories(preprocess PUBLIC "${ULTRA_INCLUDE_DIR}")
-target_link_libraries(preprocess PUBLIC graphlib)
-target_link_libraries(preprocess PUBLIC gtfs_parsing)
+target_link_libraries(preprocess PUBLIC graph)
+target_link_libraries(preprocess PUBLIC gtfs)
+target_link_libraries(preprocess PUBLIC json)

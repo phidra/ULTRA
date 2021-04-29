@@ -5,16 +5,18 @@
 #include "Preprocess/ultra_gtfs_data.h"
 
 #include "gtfs/gtfs_parsed_data.h"
-#include "gtfs/gtfs_geojson.h"
+#include "json/gtfs_serialization.h"
+#include "json/walking_graph_serialization.h"
 
 #include "DataStructures/RAPTOR/Data.h"
 
 inline void usage(const std::string programName) noexcept {
-    std::cout << "Usage:  " << programName << "  <prepared GTFS>  <walking-graph>  <outputDir>" << std::endl;
+    std::cout << "Usage:  " << programName << "  <uwpreprocessed GTFS>  <uwpreprocessed graph>  <outputDir>"
+              << std::endl;
     exit(0);
 }
 
-my::preprocess::UltraTransferData buildTransferData(my::preprocess::WalkingGraph&& graph, std::string programName) {
+my::preprocess::UltraTransferData buildTransferData(uwpreprocess::WalkingGraph&& graph, std::string programName) {
     try {
         my::preprocess::UltraTransferData transferData{std::move(graph)};
         return transferData;
@@ -33,31 +35,30 @@ int main(int argc, char** argv) {
     if (argc < 4)
         usage(argv[0]);
 
-    const std::string preparatoryGtfsFile = argv[1];
-    const std::string preparatoryGraph = argv[2];
+    const std::string uwpreprocessedGtfsFile = argv[1];
+    const std::string uwpreprocessedGraph = argv[2];
     std::string outputDir = argv[3];
     if (outputDir.back() != '/') {
         outputDir.push_back('/');
     }
 
-    std::cout << "PREPARATORY GTFS  = " << preparatoryGtfsFile << std::endl;
-    std::cout << "PREPARATORY GRAPH = " << preparatoryGraph << std::endl;
-    std::cout << "OUTPUT_DIR        = " << outputDir << std::endl;
+    std::cout << "UWPREPROCESSED GTFS  = " << uwpreprocessedGtfsFile << std::endl;
+    std::cout << "UWPREPROCESSED GRAPH = " << uwpreprocessedGraph << std::endl;
+    std::cout << "OUTPUT_DIR           = " << outputDir << std::endl;
     std::cout << std::endl;
 
     my::preprocess::UltraGtfsData gtfsData;
     {
-        std::ifstream gtfs_input_stream{preparatoryGtfsFile};
-        my::preprocess::GtfsParsedData gtfs = my::preprocess::fromStream(gtfs_input_stream);
+        std::ifstream gtfs_input_stream{uwpreprocessedGtfsFile};
+        uwpreprocess::GtfsParsedData gtfs = uwpreprocess::json::unserialize_gtfs(gtfs_input_stream);
         my::preprocess::UltraGtfsData tmp{gtfs};
         gtfsData = std::move(tmp);
     }
 
-    std::ifstream walking_graph_input_stream{preparatoryGraph};
-    my::preprocess::WalkingGraph graph = my::preprocess::WalkingGraph::fromStream(walking_graph_input_stream);
+    std::ifstream walking_graph_input_stream{uwpreprocessedGraph};
+    uwpreprocess::WalkingGraph graph = uwpreprocess::json::unserialize_walking_graph(walking_graph_input_stream);
     my::preprocess::UltraTransferData transferData = buildTransferData(std::move(graph), argv[0]);
 
-    transferData.walkingGraph.printStats(std::cout);
     std::cout << "transferGraph vertices : " << transferData.transferGraphUltra.numVertices() << std::endl;
     std::cout << "transferGraph edges    : " << transferData.transferGraphUltra.numEdges() << std::endl;
 

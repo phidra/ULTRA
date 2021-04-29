@@ -11,11 +11,11 @@
 namespace my::preprocess {
 
 struct UltraTransferData {
-    UltraTransferData(WalkingGraph&&);
+    UltraTransferData(uwpreprocess::WalkingGraph&&);
     static bool areApproxEqual(TransferGraph const& left, TransferGraph const& right);
     bool checkSerializationIdempotence() const;
 
-    WalkingGraph walkingGraph;
+    uwpreprocess::WalkingGraph walkingGraph;
     TransferGraph transferGraphUltra;  // this is from ULTRA code (unfortunately, in the global namespace)
 };
 
