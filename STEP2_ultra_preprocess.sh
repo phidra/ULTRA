@@ -4,8 +4,26 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-this_script_parent="$(realpath "$(dirname "$0")" )"
 
+echo ""
+echo "USAGE:      $0  </path/to/ultra-binary-data>      <workdir>"
+echo "EXAMPLE:    $0  WORKDIR_bordeaux                  ULTRA_DATA_bordeaux"
+echo "EXAMPLE:    $0  WORKDIR_idf                       ULTRA_DATA_idf"
+
+echo ""
+
+
+# ARG (mandatory thanks to nounset) = ultra-binary data :
+INPUT_ULTRA_BINARY_DATADIR="$(realpath "${1}" )"
+echo "Using ultra-binary datadir = $INPUT_ULTRA_BINARY_DATADIR"
+[ ! -d "$INPUT_ULTRA_BINARY_DATADIR" ] && echo "ERROR : missing INPUT ultra-binary datadir : $INPUT_ULTRA_BINARY_DATADIR" && exit 1
+
+
+# ARG (mandatory thanks to nounset) = working directory (must not exist) :
+WORKDIR="$(realpath "${2}" )"
+echo "Using WORKDIR = $WORKDIR"
+[ -e "$WORKDIR" ] && echo "ERROR : already existing workdir :  $WORKDIR" && exit 1
+mkdir -p "$WORKDIR"
 
 
 # if needed :
@@ -13,15 +31,6 @@ this_script_parent="$(realpath "$(dirname "$0")" )"
 
 # build :
 make -C Runnables
-
-# working directory :
-WORKDIR="${this_script_parent}/WORKDIR_BORDEAUX"
-echo "Using WORKDIR = $WORKDIR"
-mkdir -p "$WORKDIR"
-
-# STEP 0 = input data :
-#==========
-INPUT_DATA="${this_script_parent}/WORKDIR_build_ultra_binary_data_BORDEAUX"
 
 
 # STEP 1 = BuildCoreCH 
@@ -31,8 +40,7 @@ echo "=== RUNNING BuildCoreCH"
 BUILD_CORE_CH_INPUT_DIR="${WORKDIR}/INPUT_DATA"
 BUILD_CORE_CH_OUTPUT_DIR="${WORKDIR}/BUILD_CORE_CH_OUTPUT"
 mkdir -p "${BUILD_CORE_CH_OUTPUT_DIR}"
-rm -rf "${BUILD_CORE_CH_INPUT_DIR}"
-cp -R "${INPUT_DATA}" "${BUILD_CORE_CH_INPUT_DIR}"
+cp -R "${INPUT_ULTRA_BINARY_DATADIR}" "${BUILD_CORE_CH_INPUT_DIR}"
 CORE_DEGREE=14
 Runnables/BuildCoreCH  \
     "${BUILD_CORE_CH_INPUT_DIR}/raptor.binary" \
